@@ -83,7 +83,7 @@ namespace Infrastructure.Services.AuthinticationService
             {
                 if (user.OTP != null && !user.EmailConfirmed && user.OTP.Equals(otp))
                 {
-                    if(DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(6))
+                    if(DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(30))
                     {
                         user.ChangeOTP(OTPGenerator.GenerateOTP());
                         await userManager.UpdateAsync(user);
