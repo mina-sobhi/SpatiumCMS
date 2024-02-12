@@ -24,8 +24,6 @@ namespace Spatium_CMS.Controllers.PostController
             this.userManager = userManager;
         }
 
-        public PostController(IMapper mapper, IUnitOfWork unitOfWork) : base(unitOfWork, mapper) { }
-
         [HttpGet("FilterPosts")]
         public Task<IActionResult> FilterPosts([FromForm]int StatusValue , [FromForm] string postTitle = "" )
         {
@@ -35,10 +33,7 @@ namespace Spatium_CMS.Controllers.PostController
             });
         }
 
-
-
         [HttpGet("{Id:int}")]
-
         public Task<IActionResult> GetPostById(int Id)
         {
             return TryCatchLogAsync(async () =>
@@ -136,7 +131,6 @@ namespace Spatium_CMS.Controllers.PostController
 
         }
 
-
         [HttpPut]
         public Task<IActionResult> Update([FromQuery] int Id, UpdatePostRequest updatePostRequest)
         {
@@ -192,9 +186,6 @@ namespace Spatium_CMS.Controllers.PostController
             });
 
         }
-
-    
-        
     }
 }
 
