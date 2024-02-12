@@ -113,7 +113,9 @@ namespace Domain.BlogsAggregate
 
         public void ChangePostStatus(PostStatusEnum postStatus)
         {
-            this.StatusId=(int)postStatus;
+            var statusId=(int)postStatus;
+            if (statusId == 1) this.PublishDate = DateTime.UtcNow; 
+            if (statusId == 2) this.UnPublishDate = DateTime.UtcNow; 
         }
     }
 }
