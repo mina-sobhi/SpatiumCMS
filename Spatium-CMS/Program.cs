@@ -1,6 +1,4 @@
-using Domian.Interfaces;
 using Infrastructure.Services.AuthinticationService;
-using Infrastructure.UOW;
 using Spatium_CMS.AutoMapperProfiles;
 using Spatium_CMS.Extensions;
 
@@ -36,8 +34,6 @@ app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
-//
-
 app.MapControllers();
 
 app.Run();

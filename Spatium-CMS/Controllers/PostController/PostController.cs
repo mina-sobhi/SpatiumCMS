@@ -3,7 +3,7 @@ using Domain.BlogsAggregate.Input;
 using Domain.BlogsAggregate;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BLog.Response;
+using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Controllers.PostController.Response;
 using Spatium_CMS.Controllers.PostController.Request;
 using Microsoft.AspNetCore.Identity;

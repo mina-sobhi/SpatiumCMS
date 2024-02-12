@@ -48,7 +48,6 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         [HttpGet]
         [Authorize]
         [Route("GetUserDetails")]
-
         public Task<IActionResult> GetUserDetails()
         {
             return TryCatchLogAsync(async () =>
@@ -62,6 +61,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                 return Ok(detailesResult);
             });
         }
+
         [HttpPost]
         [Route("Register")]
         public Task<IActionResult> Register([FromBody] RegisterRequest request)

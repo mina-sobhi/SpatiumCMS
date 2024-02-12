@@ -1,7 +1,8 @@
-﻿namespace Spatium_CMS.Controllers.BLog.Request
+﻿namespace Spatium_CMS.Controllers.BlogsController.Request
 {
-    public class CreateBlogRequest
+    public class UpdateBlogRequest
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string FavIconPath { get; set; }
         public string OwnerId { get; set; }

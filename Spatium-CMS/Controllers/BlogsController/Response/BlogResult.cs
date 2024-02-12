@@ -1,4 +1,4 @@
-﻿namespace Spatium_CMS.Controllers.BLog.Response
+﻿namespace Spatium_CMS.Controllers.BlogsController.Response
 {
     public class BlogResult
     {

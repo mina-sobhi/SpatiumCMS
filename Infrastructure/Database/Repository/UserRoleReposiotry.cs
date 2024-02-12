@@ -1,11 +1,7 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Infrastructure.Database.Database;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Domain.ApplicationUserAggregate.Inputs;
-using Infrastructure.Database.Database;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Database.Repository
 {
