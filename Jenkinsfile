@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/minaawad2030/Spatium-CMS.git'
+                git 'https://github.com/mina-sobhi/SpatiumCMS/tree/Staging'
             }
         }
         stage('Build') {
