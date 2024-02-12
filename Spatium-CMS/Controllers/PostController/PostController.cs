@@ -11,8 +11,7 @@ using Domain.ApplicationUserAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Domain.Base;
 using Utilities.Enums;
-using Spatium_CMS.Filters;
-using System.Security.Claims;
+using Domain.LookupsAggregate;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
@@ -86,17 +85,76 @@ namespace Spatium_CMS.Controllers.PostController
             });
         }
 
-        [HttpPut]
-        [Route("ChangePostStatus")]
-        public Task<IActionResult> ChangePostStatus(int postId,PostStatusEnum postStatus) {
+        //[HttpPut]
+        //[Route("ChangePostStatus")]
+        //public Task<IActionResult> ChangePostStatus(int postId,PostStatusEnum postStatus) {
 
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+        //        if (found!=null)
+        //        {
+        //            found.ChangePostStatus(postStatus);
+        //            await unitOfWork.SaveChangesAsync();
+        //            return Ok(mapper.Map<PostRespone>(found));
+        //        }
+        //        return NotFound();
+        //    });
+        //}
+
+
+        [HttpPut]
+        [Route("SchedulePost")]
+        public Task<IActionResult> SchedulePost(int postId,string ScheduledPublishDateTime, string ScheduledUnpublishDateTime)
+        {
             return TryCatchLogAsync(async () =>
             {
                 var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
-                if (found!=null)
+                if (found != null)
                 {
-                    var post=await unitOfWork.PostRepository.GetByIdAsync(postId);
-                    post.ChangePostStatus(postStatus);
+                    DateTime scheduledPublishDateTime;
+                    DateTime scheduledUnpublishDateTime;
+
+                    if (!DateTime.TryParse(ScheduledPublishDateTime, out scheduledPublishDateTime) ||
+                        !DateTime.TryParse(ScheduledUnpublishDateTime, out scheduledUnpublishDateTime))
+                    {
+                        return BadRequest("Invalid date format");
+                    }
+                    found.SchedualedPost(scheduledPublishDateTime, scheduledUnpublishDateTime);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok(mapper.Map<PostRespone>(found));
+                }
+                return NotFound();
+            });
+        }
+
+        [HttpPut]
+        [Route("PublishedPost")]
+        public Task<IActionResult> PublishedPost(int postId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                if (found != null)
+                {
+                 
+                    found.ChangePostStatus(PostStatusEnum.Published);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok(mapper.Map<PostRespone>(found));
+                }
+                return NotFound();
+            });
+        }
+        [HttpPut]
+        [Route("UnPublishedPost")]
+        public Task<IActionResult> UnPublishedPost(int postId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                if (found != null)
+                {
+                    await unitOfWork.PostRepository.PostStatusCahngeAsync(postId, postStatus);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
                 }

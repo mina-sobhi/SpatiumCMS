@@ -1,16 +1,8 @@
 ﻿using Domain.BlogsAggregate;
-using Domain.BlogsAggregate.Input;
 using Infrastructure.Database.Database;
-using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Globalization;
-using System.Reflection;
 using Domain.Base;
-using System;
 using Infrastructure.Extensions;
-using Utilities.Enums;
-
 namespace Infrastructure.Database.Repository
 {
     public class PostRepository : RepositoryBase, IPostRepository
@@ -19,8 +11,6 @@ namespace Infrastructure.Database.Repository
         {
 
         }
-
-
         public async Task<IEnumerable<Post>> filterAsync(int status , string contain= "")
         {
             if (string.IsNullOrEmpty(contain))
@@ -72,12 +62,6 @@ namespace Infrastructure.Database.Repository
         public async Task UpdateAsync(Post post)
         {
             SpatiumDbContent.Posts.Update(post);
-        }
-
-        public async Task PostStatusCahngeAsync(int postId, PostStatusEnum postStatus)
-        {
-            var found = await SpatiumDbContent.Posts.FindAsync(postId);
-            found.ChangePostStatus(postStatus); 
         }
     }
 }
