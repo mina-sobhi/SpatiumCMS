@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.ConfigureDbContext(builder.Configuration);
 builder.Services.ConfigureIdentityDbContext();
 builder.Services.AddSwaggerConfigs();
+builder.Services.ConfigureCORS(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddBusinessServices(builder.Configuration);
 builder.Services.AddSwaggerGen();

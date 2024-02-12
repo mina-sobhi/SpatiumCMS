@@ -10,11 +10,11 @@ namespace Spatium_CMS.Controllers.AuthenticationController.Request
         [RegularExpression(@"^[a-zA-Z_ ]+$",ErrorMessage = "Full Name Must Be Only Char")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "Job Title is Required")]
-        [MaxLength(60, ErrorMessage = "Job Title must be less Than 60 char or equal")]
-        [MinLength(3, ErrorMessage = "Job Title must be greater Than 3 char or equal")]
-        [RegularExpression(@"^[a-zA-Z_ ]+$", ErrorMessage = "Job Title Must Be Only Char")]
-        public string JobTitle { get; set; }
+        //[Required(ErrorMessage = "Job Title is Required")]
+        //[MaxLength(60, ErrorMessage = "Job Title must be less Than 60 char or equal")]
+        //[MinLength(3, ErrorMessage = "Job Title must be greater Than 3 char or equal")]
+        //[RegularExpression(@"^[a-zA-Z_ ]+$", ErrorMessage = "Job Title Must Be Only Char")]
+        //public string JobTitle { get; set; }
 
         [Required(ErrorMessage = "Email is Required ")]
         public string Email { get; set; }

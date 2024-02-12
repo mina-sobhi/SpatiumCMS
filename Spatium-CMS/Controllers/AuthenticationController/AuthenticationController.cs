@@ -72,6 +72,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                 var converter = new AuthenticationConverter(mapper);
                 var roleId = await roleManager.Roles.Select(x => x.Id).FirstOrDefaultAsync();
                 var userInput = converter.GetApplicationUserInput(request, roleId);
+                userInput.JobTitle = request.FullName;
                 var newUser = new ApplicationUser(userInput);
                 var result = await authenticationService.Register(newUser, request.Password);
                 if (result.Success)
