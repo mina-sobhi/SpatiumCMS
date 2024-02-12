@@ -72,7 +72,7 @@ namespace Domain.BlogsAggregate
             this.CreatedById = postInput.CreatedById;
             this.AuthorId = postInput.AuthorId;
             this.BlogId = postInput.BlogId;
-            this.StatusId = postInput.StatusId;
+            this.StatusId = (int)PostStatusEnum.Draft;
 
 
             foreach (var item in postInput.TableOfContents)
@@ -100,6 +100,7 @@ namespace Domain.BlogsAggregate
             this.AuthorId = postInput.AuthorId;
             this.BlogId = postInput.BlogId;
             this.StatusId = postInput.StatusId;
+            this.LastUpdate = DateTime.UtcNow;
         }
 
 
@@ -107,8 +108,6 @@ namespace Domain.BlogsAggregate
         public void Delete(int id)
         {
             this.IsDeleted = true;
-            var comment= _comments.Find(x =>x.Id == id);
-            _comments.Remove(comment);
         }
 
         public void ChangePostStatus(PostStatusEnum postStatus)
