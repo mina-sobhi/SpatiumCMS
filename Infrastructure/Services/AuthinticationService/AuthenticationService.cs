@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Interfaces;
+using Domian.Interfaces;
 using Infrastructure.Services.AuthinticationService.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,15 @@ namespace Infrastructure.Services.AuthinticationService
         private readonly ISendMailService mailService;
         private readonly AuthConfig authConfig;
         private readonly ILogger<AuthenticationService> _logger;
-        public AuthenticationService(UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager, ISendMailService mailService, AuthConfig jwtSetting, ILogger<AuthenticationService> logger)
+        private readonly IUnitOfWork unitOfWork;
+        public AuthenticationService(UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager, ISendMailService mailService, AuthConfig jwtSetting, ILogger<AuthenticationService> logger, IUnitOfWork unitOfWork)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.mailService = mailService;
             this.authConfig = jwtSetting;
             _logger = logger;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<ApplicationUser> GetUserDetailes(string userId)
@@ -164,7 +167,7 @@ namespace Infrastructure.Services.AuthinticationService
                         },
                     };
                 }
-                var tokenParams = GenerateToken(user);
+                var tokenParams = await GenerateToken(user);
                 var loggedInUser = new LoggedInUser()
                 {
                     Email = email,
@@ -248,17 +251,17 @@ namespace Infrastructure.Services.AuthinticationService
             };
         }
 
-        private TokenParameters GenerateToken(ApplicationUser user)
+        private async Task<TokenParameters> GenerateToken(ApplicationUser user)
         {
             _logger.LogDebug("Generating Token for user {email} at {time}", user.Email, DateTime.UtcNow);
-            int[] x = [1,2,3,4,5,100];
+            var permissions = await unitOfWork.RoleRepository.GetRolePermissionIds(user.Id);
             var claims = new List<Claim>()
             {
                 new (ClaimTypes.NameIdentifier,user.Id),
                 new (ClaimTypes.Email,user.Email),
                 new ("RoleId",user.RoleId)
             };
-            foreach (var item in x)
+            foreach (var item in permissions)
             {
                 claims.Add(new Claim(ClaimTypes.Role, item.ToString()));
             }
@@ -275,7 +278,5 @@ namespace Infrastructure.Services.AuthinticationService
             _logger.LogInformation("Token Generated for user: {email} at {time}", user.Email, DateTime.UtcNow);
             return new TokenParameters(tokenStr, tokenExpireDate);
         }
-
-     
     }
 }
