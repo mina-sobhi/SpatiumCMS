@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Domain.Base;
 using Utilities.Enums;
 using Domain.LookupsAggregate;
+using Spatium_CMS.Filters;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
@@ -154,7 +155,8 @@ namespace Spatium_CMS.Controllers.PostController
                 var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
                 if (found != null)
                 {
-                    await unitOfWork.PostRepository.PostStatusCahngeAsync(postId, postStatus);
+                    var post=await unitOfWork.PostRepository.GetByIdAsync(postId);
+                    post.ChangePostStatus(PostStatusEnum.Unpublished);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
                 }
@@ -195,16 +197,12 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpPut]
         [PermissionFilter(PermissionsEnum.UpdatePost)]
-        public Task<IActionResult> Update([FromQuery] int Id, UpdatePostRequest updatePostRequest)
+        public Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
             {
                 if (ModelState.IsValid)
                 {
-                    if (Id != updatePostRequest.Id)
-                    {
-                        return BadRequest("Invalid Id");
-                    }
                     var userId = GetUserId();
                     var user= await userManager.FindByIdAsync(userId);
                     var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
