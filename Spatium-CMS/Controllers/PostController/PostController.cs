@@ -109,7 +109,20 @@ namespace Spatium_CMS.Controllers.PostController
             {
                 if (ModelState.IsValid)
                 {
+                    DateTime PublishDateTime;
+                    DateTime UnpublishDateTime;
+
+                    if (!DateTime.TryParse(createPostRequest.PublishDate, out PublishDateTime) ||
+                     !DateTime.TryParse(createPostRequest.UnPublishDate, out UnpublishDateTime))
+                    {
+                        return BadRequest("Invalid date format");
+                    }
+                   
+
                     var Postinput = mapper.Map<PostInput>(createPostRequest);
+                    Postinput.PublishDate = PublishDateTime;
+                    Postinput.UnPublishDate = UnpublishDateTime;
+
                     foreach (var item in createPostRequest.TableOfContentRequests)
                     {
                         var tableOfContentInput = mapper.Map<TableOfContentInput>(item);
@@ -147,7 +160,22 @@ namespace Spatium_CMS.Controllers.PostController
                     {
                         return NotFound();
                     }
+
+                    DateTime PublishDateTime;
+                    DateTime UnpublishDateTime;
+
+                    if (!DateTime.TryParse(updatePostRequest.PublishDate, out PublishDateTime) ||
+                     !DateTime.TryParse(updatePostRequest.UnPublishDate, out UnpublishDateTime))
+                    {
+                        return BadRequest("Invalid date format");
+                    }
+
+                    
+
                     var postinput = mapper.Map<PostInput>(updatePostRequest);
+
+                    postinput.PublishDate = PublishDateTime;
+                    postinput.UnPublishDate = UnpublishDateTime;
                     post.Update(postinput);
                     foreach (var tableOfContent in post.TableOfContents)
                     {
