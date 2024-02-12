@@ -102,13 +102,9 @@ namespace Domain.BlogsAggregate
             this.StatusId = postInput.StatusId;
         }
 
-
-
         public void Delete(int id)
         {
             this.IsDeleted = true;
-            var comment= _comments.Find(x =>x.Id == id);
-            _comments.Remove(comment);
         }
 
         public void ChangePostStatus(PostStatusEnum postStatus)

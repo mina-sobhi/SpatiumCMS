@@ -40,7 +40,7 @@ namespace Infrastructure.Services.AuthinticationService
 
         public async Task ChangeUserActivation(string userId)
         {
-            var user=  await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
             user.ChangeActivation();
         }
 
@@ -48,13 +48,13 @@ namespace Infrastructure.Services.AuthinticationService
         {
             _logger.LogInformation("Confirm Change Email started for email {email} at {time}", email, DateTime.UtcNow);
             var user = await userManager.FindByEmailAsync(email);
-            var decodedToken=WebUtility.UrlDecode(token);
-            if(user!=null)
+            var decodedToken = WebUtility.UrlDecode(token);
+            if (user != null)
             {
-                var result=await userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+                var result = await userManager.ResetPasswordAsync(user, decodedToken, newPassword);
                 user.ClearOTP();
                 await userManager.UpdateAsync(user);
-                if(result.Succeeded)
+                if (result.Succeeded)
                 {
                     return new SpatiumResponse()
                     {
@@ -65,7 +65,7 @@ namespace Infrastructure.Services.AuthinticationService
                 return new SpatiumResponse()
                 {
                     Success = false,
-                    Message = string.Join('\n',result.Errors.Select(x=>x.Description).ToArray())
+                    Message = string.Join('\n', result.Errors.Select(x => x.Description).ToArray())
                 };
             }
             return new SpatiumResponse()
@@ -83,11 +83,11 @@ namespace Infrastructure.Services.AuthinticationService
             {
                 if (user.OTP != null && !user.EmailConfirmed && user.OTP.Equals(otp))
                 {
-                    if(DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(30))
+                    if (DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(30))
                     {
                         user.ChangeOTP(OTPGenerator.GenerateOTP());
                         await userManager.UpdateAsync(user);
-                        await mailService.SendMail(user.Email,"Verification Email",user.OTP);
+                        await mailService.SendMail(user.Email, "Verification Email", user.OTP);
                         return new SpatiumResponse()
                         {
                             Success = false,
@@ -203,16 +203,24 @@ namespace Infrastructure.Services.AuthinticationService
                 };
             }
             newUser.ChangeOTP(OTPGenerator.GenerateOTP());
-            await userManager.CreateAsync(newUser, password);
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var encodedToken = WebUtility.UrlEncode(token);
-            _logger.LogInformation("User Created Successfully. user {user} at {date}", newUser, DateTime.UtcNow);
-            await mailService.SendMail(newUser.Email, "Spatium CMS Verification Email!", $"Your OTP is: {newUser.OTP}.");
+            var createUserResult = await userManager.CreateAsync(newUser, password);
+            if (createUserResult.Succeeded)
+            {
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var encodedToken = WebUtility.UrlEncode(token);
+                _logger.LogInformation("User Created Successfully. user {user} at {date}", newUser, DateTime.UtcNow);
+                await mailService.SendMail(newUser.Email, "Spatium CMS Verification Email!", $"Your OTP is: {newUser.OTP}.");
+                return new SpatiumResponse<string>()
+                {
+                    Success = true,
+                    Message = ResponseMessages.UserCreatedSuccessfully,
+                    Data = encodedToken
+                };
+            }
             return new SpatiumResponse<string>()
             {
-                Success = true,
-                Message = ResponseMessages.UserCreatedSuccessfully,
-                Data = encodedToken
+                Success = false,
+                Message = string.Join(System.Environment.NewLine, createUserResult.Errors.Select(x => x.Description).ToArray())
             };
         }
 
