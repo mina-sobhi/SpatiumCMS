@@ -57,7 +57,6 @@ namespace Domain.BlogsAggregate
             this.IsDeleted = false;
             this.LikeCount = 0;
             this.ShareCount = 0;
-
             this.Title = postInput.Title;
             this.Slug = postInput.Slug;
             this.FeaturedImagePath = postInput.FeaturedImagePath;
@@ -66,7 +65,6 @@ namespace Domain.BlogsAggregate
             this.ContentLineSpacing = postInput.ContentLineSpacing;
             this.Category = postInput.Category;
             this.Tag = postInput.Tag;
-
             this.PublishDate = postInput.PublishDate == null ? null : postInput.PublishDate;
             this.UnPublishDate = postInput.UnPublishDate == null ? null : postInput.UnPublishDate;
             this.CreatedById = postInput.CreatedById;
@@ -74,17 +72,14 @@ namespace Domain.BlogsAggregate
             this.BlogId = postInput.BlogId;
             this.StatusId = (int)PostStatusEnum.Draft;
 
-
             foreach (var item in postInput.TableOfContents)
             {
                 this._tableOfContents.Add(new TableOfContent(item));
             }
-
         }
-
         #endregion
 
-        public void Update(PostInput postInput)
+        public void Update(UpdatePostInput postInput)
         {
             this.Title = postInput.Title;
             this.Slug = postInput.Slug;
@@ -94,16 +89,12 @@ namespace Domain.BlogsAggregate
             this.ContentLineSpacing = postInput.ContentLineSpacing;
             this.Category = postInput.Category;
             this.Tag = postInput.Tag;
-            this.PublishDate = postInput.PublishDate == null ? null : postInput.PublishDate;
-            this.UnPublishDate = postInput.UnPublishDate == null ? null : postInput.UnPublishDate;
             this.CreatedById = postInput.CreatedById;
             this.AuthorId = postInput.AuthorId;
-            this.BlogId = postInput.BlogId;
-            this.StatusId = postInput.StatusId;
             this.LastUpdate = DateTime.UtcNow;
         }
 
-        public void Delete(int id)
+        public void Delete()
         {
             this.IsDeleted = true;
         }

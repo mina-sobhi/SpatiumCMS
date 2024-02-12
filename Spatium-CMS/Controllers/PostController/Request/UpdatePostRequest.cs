@@ -11,11 +11,8 @@
         public int ContentLineSpacing { get; set; }
         public string Category { get; set; }
         public string Tag { get; set; }
-        public string? PublishDate { get; set; }
-        public string? UnPublishDate { get; set; }
         public int StatusId { get; set; }
         public string AuthorId { get; set; }
-
         public List<TableOfContentRequest> TableOfContentRequests { get; set; } = new List<TableOfContentRequest>();
     }
 }

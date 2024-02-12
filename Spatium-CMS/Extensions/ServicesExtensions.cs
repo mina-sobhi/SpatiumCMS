@@ -112,7 +112,7 @@ namespace Spatium_CMS.Extensions
           services.AddSwaggerGen(c =>
           {
               c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.PortalApp", Version = "v1" });
-
+              
               #region JWT Token
 
               c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

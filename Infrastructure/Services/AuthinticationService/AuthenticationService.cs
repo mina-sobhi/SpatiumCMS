@@ -262,7 +262,7 @@ namespace Infrastructure.Services.AuthinticationService
         private async Task<TokenParameters> GenerateToken(ApplicationUser user)
         {
             _logger.LogDebug("Generating Token for user {email} at {time}", user.Email, DateTime.UtcNow);
-            var permissions = await unitOfWork.RoleRepository.GetRolePermissionIds(user.Id);
+            var permissions = await unitOfWork.RoleRepository.GetRolePermissionIds(user.RoleId);
             var claims = new List<Claim>()
             {
                 new (ClaimTypes.NameIdentifier,user.Id),

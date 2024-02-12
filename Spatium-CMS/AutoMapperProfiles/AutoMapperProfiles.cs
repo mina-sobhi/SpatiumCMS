@@ -36,10 +36,8 @@ namespace Spatium_CMS.AutoMapperProfiles
 
                 #region posts
                 CreateMap<PostInput, CreatePostRequest>().ReverseMap();
-                CreateMap<PostInput, UpdatePostRequest>().ReverseMap();
+                CreateMap<UpdatePostInput, UpdatePostRequest>().ReverseMap();
                 CreateMap<TableOfContentInput, TableOfContentRequest>().ReverseMap();
-            
-
                 CreateMap<CommentUpdateInput, Comment>().ReverseMap();
                 #endregion
 

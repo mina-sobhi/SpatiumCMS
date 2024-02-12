@@ -11,9 +11,5 @@ namespace Domain.BlogsAggregate
         Task CreateAsync(Post post);
         Task UpdateAsync(Post post);
         Task DeleteAsync(int id);
-
-        Task PostStatusCahngeAsync(int postId,PostStatusEnum postStatus);
-       
-
     }
 }

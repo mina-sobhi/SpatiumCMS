@@ -11,6 +11,8 @@ using Domain.ApplicationUserAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Domain.Base;
 using Utilities.Enums;
+using Spatium_CMS.Filters;
+using System.Security.Claims;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
@@ -93,7 +95,8 @@ namespace Spatium_CMS.Controllers.PostController
                 var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
                 if (found!=null)
                 {
-                    await unitOfWork.PostRepository.PostStatusCahngeAsync(postId, postStatus);
+                    var post=await unitOfWork.PostRepository.GetByIdAsync(postId);
+                    post.ChangePostStatus(postStatus);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
                 }
@@ -109,19 +112,7 @@ namespace Spatium_CMS.Controllers.PostController
             {
                 if (ModelState.IsValid)
                 {
-                    DateTime PublishDateTime;
-                    DateTime UnpublishDateTime;
-
-                    if (!DateTime.TryParse(createPostRequest.PublishDate, out PublishDateTime) ||
-                     !DateTime.TryParse(createPostRequest.UnPublishDate, out UnpublishDateTime))
-                    {
-                        return BadRequest("Invalid date format");
-                    }
-                   
-
                     var Postinput = mapper.Map<PostInput>(createPostRequest);
-                    Postinput.PublishDate = PublishDateTime;
-                    Postinput.UnPublishDate = UnpublishDateTime;
 
                     foreach (var item in createPostRequest.TableOfContentRequests)
                     {
@@ -145,6 +136,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPut]
+        [PermissionFilter(PermissionsEnum.UpdatePost)]
         public Task<IActionResult> Update([FromQuery] int Id, UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -155,28 +147,21 @@ namespace Spatium_CMS.Controllers.PostController
                     {
                         return BadRequest("Invalid Id");
                     }
+                    var userId = GetUserId();
+                    var user= await userManager.FindByIdAsync(userId);
                     var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
+                    if (user.BlogId != post.BlogId)
+                    {
+                        return BadRequest("Invalid Post");
+                    }
                     if (post is null)
                     {
                         return NotFound();
                     }
 
-                    DateTime PublishDateTime;
-                    DateTime UnpublishDateTime;
-
-                    if (!DateTime.TryParse(updatePostRequest.PublishDate, out PublishDateTime) ||
-                     !DateTime.TryParse(updatePostRequest.UnPublishDate, out UnpublishDateTime))
-                    {
-                        return BadRequest("Invalid date format");
-                    }
-
-                    
-
-                    var postinput = mapper.Map<PostInput>(updatePostRequest);
-
-                    postinput.PublishDate = PublishDateTime;
-                    postinput.UnPublishDate = UnpublishDateTime;
+                    var postinput = mapper.Map<UpdatePostInput>(updatePostRequest);
                     post.Update(postinput);
+
                     foreach (var tableOfContent in post.TableOfContents)
                     {
                         tableOfContent.Update(mapper.Map<TableOfContentInput>(tableOfContent));
@@ -203,7 +188,7 @@ namespace Spatium_CMS.Controllers.PostController
                     {
                         return NotFound();
                     }
-                    postModel.Delete(postModel.Id);
+                    postModel.Delete();
                     await unitOfWork.SaveChangesAsync();
                     return Ok(new
                     {
