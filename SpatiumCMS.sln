@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spatium-CMS", "Spatium-CMS\Spatium-CMS.csproj", "{EFE940AC-EC9C-4D27-BFA8-8E472F679089}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Portal", "Portal", "{11CCDE39-0340-484C-A465-610D29333794}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Migrations", "Migrations", "{5A9283AF-3ED7-4CD1-8B17-210B93BE9CA0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMS-Migration-API", "CMS-Migration-API\CMS-Migration-API.csproj", "{D958C3EA-6F42-4CE8-83C8-FA6865438DCF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{73F8CE39-DF1D-470D-ACD1-A018220DE7FD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{DFFD2CAC-D77C-4881-A44F-29780ADF119D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{A7A4E2EB-AF00-47E0-9C48-1685E625B037}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Migrations", "DbMigrations\Migrations.csproj", "{4E44A55E-1049-4C15-8DB9-79EE47909252}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFE940AC-EC9C-4D27-BFA8-8E472F679089}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFE940AC-EC9C-4D27-BFA8-8E472F679089}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFE940AC-EC9C-4D27-BFA8-8E472F679089}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFE940AC-EC9C-4D27-BFA8-8E472F679089}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D958C3EA-6F42-4CE8-83C8-FA6865438DCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D958C3EA-6F42-4CE8-83C8-FA6865438DCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D958C3EA-6F42-4CE8-83C8-FA6865438DCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D958C3EA-6F42-4CE8-83C8-FA6865438DCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F8CE39-DF1D-470D-ACD1-A018220DE7FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F8CE39-DF1D-470D-ACD1-A018220DE7FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F8CE39-DF1D-470D-ACD1-A018220DE7FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F8CE39-DF1D-470D-ACD1-A018220DE7FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFFD2CAC-D77C-4881-A44F-29780ADF119D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFFD2CAC-D77C-4881-A44F-29780ADF119D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFFD2CAC-D77C-4881-A44F-29780ADF119D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFFD2CAC-D77C-4881-A44F-29780ADF119D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7A4E2EB-AF00-47E0-9C48-1685E625B037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7A4E2EB-AF00-47E0-9C48-1685E625B037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7A4E2EB-AF00-47E0-9C48-1685E625B037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7A4E2EB-AF00-47E0-9C48-1685E625B037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E44A55E-1049-4C15-8DB9-79EE47909252}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E44A55E-1049-4C15-8DB9-79EE47909252}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E44A55E-1049-4C15-8DB9-79EE47909252}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E44A55E-1049-4C15-8DB9-79EE47909252}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EFE940AC-EC9C-4D27-BFA8-8E472F679089} = {11CCDE39-0340-484C-A465-610D29333794}
+		{D958C3EA-6F42-4CE8-83C8-FA6865438DCF} = {5A9283AF-3ED7-4CD1-8B17-210B93BE9CA0}
+		{4E44A55E-1049-4C15-8DB9-79EE47909252} = {5A9283AF-3ED7-4CD1-8B17-210B93BE9CA0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2E270928-D8A7-4D65-9C6B-556A196BCF90}
+	EndGlobalSection
+EndGlobal
