@@ -103,8 +103,6 @@ namespace Domain.BlogsAggregate
             this.LastUpdate = DateTime.UtcNow;
         }
 
-
-
         public void Delete(int id)
         {
             this.IsDeleted = true;
