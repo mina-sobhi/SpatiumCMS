@@ -1,24 +1,22 @@
+pip// Declarative //
 pipeline {
     agent any
-    stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/mina-sobhi/SpatiumCMS'
-            }
-        }
 
-        stage('Restore') {
-            steps {
-                sh 'dotnet restore'
-            }
-        }
-        
+    stages {
         stage('Build') {
             steps {
-            
-                sh 'dotnet build'
+                echo 'Building..'
             }
         }
-        
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
     }
 }
