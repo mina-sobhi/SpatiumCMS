@@ -114,8 +114,22 @@ namespace Domain.BlogsAggregate
         public void ChangePostStatus(PostStatusEnum postStatus)
         {
             var statusId=(int)postStatus;
-            if (statusId == 1) this.PublishDate = DateTime.UtcNow; 
-            if (statusId == 2) this.UnPublishDate = DateTime.UtcNow; 
+            if (statusId == 1)
+            {
+                this.PublishDate = DateTime.UtcNow;
+                this.UnPublishDate = null;
+            } 
+            else if (statusId == 2)
+            {
+                this.UnPublishDate = DateTime.UtcNow;
+                this.PublishDate = null;
+            }
+        }
+
+        public void SchedualedPost(DateTime publishDate,DateTime unPublishedDate) {
+            this.PublishDate = publishDate;
+            this.UnPublishDate= unPublishedDate;
+            this.StatusId = (int)PostStatusEnum.Scheduled;
         }
     }
 }
