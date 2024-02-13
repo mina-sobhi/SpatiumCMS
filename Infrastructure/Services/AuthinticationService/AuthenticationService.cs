@@ -79,9 +79,17 @@ namespace Infrastructure.Services.AuthinticationService
         {
             _logger.LogInformation("Confirm OTP started for email {email} at {time}", email, DateTime.UtcNow);
             var user = await userManager.FindByEmailAsync(email);
-            if (user != null)
+            if (user != null && user.OTP != null)
             {
-                if (user.OTP != null && !user.EmailConfirmed && user.OTP.Equals(otp))
+                if(user.EmailConfirmed)
+                {
+                    return new SpatiumResponse
+                    {
+                        Success = false,
+                        Message = ResponseMessages.EmailIsAlreadyConfirmed
+                    };
+                }
+                if (user.OTP.Equals(otp))
                 {
                     if (DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(30))
                     {
@@ -115,8 +123,7 @@ namespace Infrastructure.Services.AuthinticationService
                     };
                 }
             }
-            _logger.LogInformation("Email Not Found {email} at {time}", email, DateTime.UtcNow);
-
+            _logger.LogInformation("Email Not Found or Invalid OTP {email} at {time}", email, DateTime.UtcNow);
             return new SpatiumResponse()
             {
                 Success = false,

@@ -131,6 +131,7 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpPut]
         [Route("PublishedPost")]
+        //[PermissionFilter(PermissionsEnum.PublishPost)]
         public Task<IActionResult> PublishedPost(int postId)
         {
             return TryCatchLogAsync(async () =>
@@ -148,6 +149,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
         [HttpPut]
         [Route("UnPublishedPost")]
+        //[PermissionFilter(PermissionsEnum.UnpublishPost)]
         public Task<IActionResult> UnPublishedPost(int postId)
         {
             return TryCatchLogAsync(async () =>
@@ -165,7 +167,8 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPost]
-        [Authorize] 
+        [Authorize]
+        //[PermissionFilter(PermissionsEnum.CreatePost)]
         public Task<IActionResult> Create(CreatePostRequest createPostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -196,7 +199,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPut]
-        [PermissionFilter(PermissionsEnum.UpdatePost)]
+        //[PermissionFilter(PermissionsEnum.UpdatePost)]
         public Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -206,10 +209,10 @@ namespace Spatium_CMS.Controllers.PostController
                     var userId = GetUserId();
                     var user= await userManager.FindByIdAsync(userId);
                     var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
-                    if (user.BlogId != post.BlogId)
-                    {
-                        return BadRequest("Invalid Post");
-                    }
+                    //if (post!=null && user.BlogId != post.BlogId)
+                    //{
+                    //    return BadRequest("Invalid Post");
+                    //}
                     if (post is null)
                     {
                         return NotFound();
@@ -233,6 +236,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpDelete]
+        //[PermissionFilter(PermissionsEnum.DeletePost)]
         public Task<IActionResult> Remove(int Id)
         {
             return TryCatchLogAsync(async () =>

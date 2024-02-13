@@ -12,18 +12,19 @@ namespace Migrations.Migrations
         {
             migrationBuilder.Sql(@"USE [SpatiumCMS]
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'10def0fc-dbe7-4807-b01c-9d75dfdc67de', NULL, NULL, 1, NULL, N'Super Admin', N'SUPER ADMIN', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'10def0fc-dbe7-4807-b01c-9d75dfdc67de', NULL, NULL, 1, NULL, N'Super Admin', N'SUPER ADMIN', NULL, 1)
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'5c78edbb-0121-4a88-a7b1-5172d77e2aed', NULL, NULL, 1, NULL, N'Unassigned', N'UNASSIGNED', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'5c78edbb-0121-4a88-a7b1-5172d77e2aed', NULL, NULL, 1, NULL, N'Unassigned', N'UNASSIGNED', NULL, 2)
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'8a3f1c05-9db4-447a-989c-d4db082fb6ca', NULL, NULL, 1, NULL, N'Article Creator', N'ARTICLE CREATOR', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'8a3f1c05-9db4-447a-989c-d4db082fb6ca', NULL, NULL, 1, NULL, N'Article Creator', N'ARTICLE CREATOR', NULL, 2)
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'93b6c7df-b613-4b7f-a793-afc260d0a5a0', NULL, NULL, 1, NULL, N'Editor', N'EDITOR', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'93b6c7df-b613-4b7f-a793-afc260d0a5a0', NULL, NULL, 1, NULL, N'Editor', N'EDITOR', NULL, 2)
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'97152995-238d-44a2-a727-f75b0c530f0c', NULL, NULL, 1, NULL, N'Viewer', N'VIEWER', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'97152995-238d-44a2-a727-f75b0c530f0c', NULL, NULL, 1, NULL, N'Viewer', N'VIEWER', NULL, 2)
                     GO
-                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'b62e1554-257e-4e83-94df-9d56e8b27367', NULL, NULL, 1, NULL, N'SEO Specialist', N'SEO SPECIALIST', NULL)
+                    INSERT [dbo].[AspNetRoles] ([Id], [IconPath], [Description], [IsActive], [RoleOwnerId], [Name], [NormalizedName], [ConcurrencyStamp], [Priority]) VALUES (N'b62e1554-257e-4e83-94df-9d56e8b27367', NULL, NULL, 1, NULL, N'SEO Specialist', N'SEO SPECIALIST', NULL, 2)
                     GO
+
 
                     SET IDENTITY_INSERT [dbo].[UserModules] ON 
                     GO

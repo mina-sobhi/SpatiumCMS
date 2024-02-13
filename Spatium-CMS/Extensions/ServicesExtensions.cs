@@ -58,8 +58,11 @@ namespace Spatium_CMS.Extensions
         public static void ConfigureIdentityDbContext(this IServiceCollection services) =>
            services.AddIdentity<ApplicationUser, UserRole>(options =>
            {
-               options.User.RequireUniqueEmail = false;
-               options.Password.RequireNonAlphanumeric = false;
+               options.User.RequireUniqueEmail = true;
+               options.Password.RequireNonAlphanumeric = true;
+               options.Password.RequireUppercase = true;
+               options.Password.RequireLowercase = true;
+               options.Password.RequireDigit = true;
            }).AddEntityFrameworkStores<SpatiumDbContent>()
              .AddDefaultTokenProviders();
 

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
-using Domain.ApplicationUserAggregate.Inputs;
 using Domain.Interfaces;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -68,7 +67,6 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-
                 var converter = new AuthenticationConverter(mapper);
                 var roleId = await roleManager.Roles.Select(x => x.Id).FirstOrDefaultAsync();
                 var userInput = converter.GetApplicationUserInput(request, roleId);
@@ -125,7 +123,12 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                 var result = await authenticationService.ConfirmOTP(request.Email, request.Token, request.OTP);
                 if (result.Success)
                 {
-                    return Ok(result.Message);
+                    var response = new ConfirmEmailResponse()
+                    {
+                        Message = result.Message,
+                        Email = request.Email,
+                    };
+                    return Ok(response);
                 }
                 return BadRequest(result.Message);
             });
