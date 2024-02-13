@@ -68,6 +68,7 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpGet]
         [Route("GetPosts")]
+        [PermissionFilter(PermissionsEnum.CreateUser)]
         public Task<IActionResult> GetPosts([FromQuery] GetEntitiyParams postParams)
         {
             return TryCatchLogAsync(async () =>

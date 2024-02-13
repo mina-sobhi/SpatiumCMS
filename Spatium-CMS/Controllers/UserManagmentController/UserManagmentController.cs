@@ -39,7 +39,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
 
         [HttpPost]
         [Route("CreateUser")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.CreateUser)]
         public Task<IActionResult> CreateUser(CreateUserRequest createUserRequest)
         {

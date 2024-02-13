@@ -89,5 +89,14 @@ namespace Domain.ApplicationUserAggregate
         {
             IsAccountActive=! this.IsAccountActive;
         }
+
+        public void UnAssigne()
+        {
+            RoleId = "5c78edbb-0121-4a88-a7b1-5172d77e2aed";
+        }
+        public void AssigneToRole(string roleId)
+        {
+           this.RoleId = roleId;
+        }
     }
 }

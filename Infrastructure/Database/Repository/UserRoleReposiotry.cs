@@ -2,6 +2,7 @@
 using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Domain.ApplicationUserAggregate.Inputs;
+using Infrastructure.Extensions;
 
 namespace Infrastructure.Database.Repository
 {
@@ -11,6 +12,23 @@ namespace Infrastructure.Database.Repository
         {
          
         }
+        #region Hesham
+        public async Task<IReadOnlyList<UserRole>> GetDefaulteRoleAsync()
+        {
+            return await SpatiumDbContent.Roles.Where(r => r.RoleOwnerId == null).ToListAsync();
+        }
+        public async Task<IReadOnlyList<ApplicationUser>> GetUsersByBlogIdAndRolePriority(int blogId , int priorityOfCurrent)
+        {
+            return await SpatiumDbContent.Users.Where(u => u.BlogId == blogId && u.Role.Priority >= priorityOfCurrent).ToListAsync();
+        }
+        public async Task<List<UserRole>> SearchInRole(string CoulmnName, string Value)
+        {
+            var query = SpatiumDbContent.Roles.AsQueryable();
+            var result = query.ApplySearch(CoulmnName, Value);
+            return await result.ToListAsync();
+        }
+
+        #endregion
 
 
         public async Task<UserRole> GetRoleByIdAsync(string roleId)
