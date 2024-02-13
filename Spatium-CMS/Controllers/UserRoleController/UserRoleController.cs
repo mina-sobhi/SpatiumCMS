@@ -17,12 +17,12 @@ namespace Spatium_CMS.Controllers.UserRoleController
     [ApiController]
     public class UserRoleController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserRoleController(IUserRoleRepository roleService, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+        public UserRoleController(UserManager<ApplicationUser> userManager,IMapper mapper, IUnitOfWork unitOfWork)
             : base(unitOfWork, mapper)
         {
-            this.userManager = userManager;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -50,6 +50,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 return Ok(roleDto);
             });
         }
+
         [HttpPost]
         [Route("createRole")]
         [Authorize(Roles = "Super Admin")]
@@ -57,22 +58,24 @@ namespace Spatium_CMS.Controllers.UserRoleController
         {
             return TryCatchLogAsync(async () =>
             {
-                var email = User.FindFirstValue(ClaimTypes.Email);
-                var currentuser = await userManager.FindByEmailAsync(email);
-
-               
+            
+                    var userId = GetUserId();
+                    var currentUser= await _userManager.FindByIdAsync(userId);
                     var converter = new RoleConverter(mapper);
-
                     UserRoleInput roleInput = new UserRoleInput();
 
-                    if (!currentuser.ParentUserId.IsNullOrEmpty())
+                    if (!currentUser.ParentUserId.IsNullOrEmpty())
                     {
-                        roleInput = converter.GetUserRoleInput(request, currentuser.ParentUserId);
+                        roleInput = converter.CreateUserRoleInput(request, currentUser.ParentUserId);
+                        roleInput.RoleOwnerPriority = currentUser.Role.Priority;
+                    }
+                    else
+                    {
+                        roleInput = converter.CreateUserRoleInput(request, currentUser.Id);
+                        roleInput.RoleOwnerPriority = currentUser.Role.Priority;
                     }
 
-                    roleInput = converter.GetUserRoleInput(request, currentuser.Id);
                     var newRole = new UserRole(roleInput);
-
                     var result = unitOfWork.RoleRepository.CreatAsync(newRole);
 
                     if (result.IsCompletedSuccessfully)
@@ -82,11 +85,11 @@ namespace Spatium_CMS.Controllers.UserRoleController
                         {
                             Messege = $"the role {newRole.Name} is created Successfully "
                         });
-                    }
-                return BadRequest(new RoleResponse()
-                {
-                    Messege=$"can not create role"
-                });
+                        }
+                    return BadRequest(new RoleResponse()
+                    {
+                        Messege=$"can not create role"
+                    });
             });
         }
 
