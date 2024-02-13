@@ -1,4 +1,4 @@
-﻿namespace Spatium_CMS.Controllers.BLog.Request
+﻿namespace Spatium_CMS.Controllers.BlogsController.Request
 {
     public class PaginnationRequest
     {

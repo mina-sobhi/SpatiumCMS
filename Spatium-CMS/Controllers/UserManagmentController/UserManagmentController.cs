@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BLog.Response;
+using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Filters;
 using System.Net;

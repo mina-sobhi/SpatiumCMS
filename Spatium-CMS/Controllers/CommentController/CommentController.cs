@@ -4,8 +4,8 @@ using Domain.BlogsAggregate;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BLog.Request;
-using Spatium_CMS.Controllers.BLog.Response;
+using Spatium_CMS.Controllers.BlogsController.Request;
+using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Controllers.CommentController.Response;
 using Spatium_CMS.Controllers.CommentController.Request;
 

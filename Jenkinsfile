@@ -1,26 +1,31 @@
-pipeline {
+pipline{
     agent any
-    stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/mina-sobhi/SpatiumCMS'
-            }
+
+    stages{
+
+        stage('Checkout'){
+            git 'https://github.com/mina-sobhi/SpatiumCMS.git'
         }
+
 
         stage('Restore Dependencies') {
             steps {
                 script {
-                    sh 'dotnet restore '
+                    sh 'dotnet restore'
                 }
             }
         }
         
         stage('Build') {
             steps {
-            
-                sh 'dotnet build -c Release'
+                script {
+                    sh 'dotnet build -c Release'
+                }
             }
         }
-        
+
+
+
+
     }
 }

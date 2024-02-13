@@ -1,18 +1,16 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
-using Domain.BlogsAggregate;
 using Domain.BlogsAggregate.Input;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BLog.Request;
-using Spatium_CMS.Controllers.BLog.Response;
+using Spatium_CMS.Controllers.BlogsController.Request;
+using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Filters;
 using Utilities.Enums;
 
-namespace Spatium_CMS.Controllers.BLog
+namespace Spatium_CMS.Controllers.Blog
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -83,8 +81,8 @@ namespace Spatium_CMS.Controllers.BLog
             {
                 if (ModelState.IsValid)
                 {
-                  var bloginput =  mapper.Map<BlogInput>(createBlogRequest);
-                  var blog = new Blog(bloginput);
+                    var bloginput = mapper.Map<BlogInput>(createBlogRequest);
+                    var blog = new Domain.BlogsAggregate.Blog(bloginput);
                     await unitOfWork.BlogRepository.CreateAsync(blog);
                     await  unitOfWork.SaveChangesAsync();
                     return Ok(new BlogCreatedResponse
