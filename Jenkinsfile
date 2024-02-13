@@ -7,16 +7,18 @@ pipeline {
             }
         }
 
-        stage('Restore') {
+        stage('Restore Dependencies') {
             steps {
-                sh 'dotnet restore'
+                script {
+                    sh 'dotnet restore '
+                }
             }
         }
         
         stage('Build') {
             steps {
             
-                sh 'dotnet build'
+                sh 'dotnet build -c Release'
             }
         }
         
