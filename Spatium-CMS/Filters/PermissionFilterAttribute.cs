@@ -5,7 +5,7 @@ using Utilities.Enums;
 
 namespace Spatium_CMS.Filters
 {
-    public class PermissionFilter:ActionFilterAttribute
+    public class PermissionFilterAttribute:ActionFilterAttribute
     {
         private readonly int PermissionValue;
         private readonly int PermissionValue2;
@@ -13,7 +13,7 @@ namespace Spatium_CMS.Filters
         public PermissionsEnum PermissionsEnum { get; private set; }
         public PermissionsEnum PermissionsEnum2 { get; private set; }
 
-        public PermissionFilter(PermissionsEnum PermissionsEnum, PermissionsEnum PermissionsEnum2=0)
+        public PermissionFilterAttribute(PermissionsEnum PermissionsEnum, PermissionsEnum PermissionsEnum2=0)
         {
             PermissionValue=(int) PermissionsEnum;
             PermissionValue2 = (int)PermissionsEnum2;

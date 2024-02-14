@@ -21,15 +21,18 @@ namespace Domain.ApplicationUserAggregate
             if (!string.IsNullOrEmpty(input.ParentUserId))
             {
                 ParentUserId = input.ParentUserId;
+                BlogId = input.ParentBlogId;
+            }
+            else
+            {
+                Blog = new Blog(new BlogsAggregate.Input.BlogInput()
+                {
+                    FavIconPath = "Icon path",
+                    Name = FullName,
+                    OwnerId = this.Id
+                });
             }
             CreatedAt = DateTime.UtcNow;
-            Blog= new Blog(new BlogsAggregate.Input.BlogInput()
-            {
-                FavIconPath="Icon path",
-                Name= FullName,
-                OwnerId=this.Id
-            });
-
         }
         #endregion
 
@@ -83,7 +86,6 @@ namespace Domain.ApplicationUserAggregate
             PhoneNumber=input.PhoneNumber;
             ProfileImagePath=input.ProfileImagePath;
         }
-
 
         public void ChangeActivation()
         {

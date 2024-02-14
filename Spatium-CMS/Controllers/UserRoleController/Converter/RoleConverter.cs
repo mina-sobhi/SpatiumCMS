@@ -12,7 +12,7 @@ namespace Spatium_CMS.Controllers.UserRoleController.Converter
         {
             this.mapper = mapper;
         }
-        internal UserRoleInput GetUserRoleInput(RoleRequest request,string roleOwnerId)
+        internal UserRoleInput CreateUserRoleInput(RoleRequest request,string roleOwnerId)
         {
             var RoleInput = mapper.Map<UserRoleInput>(request);
             RoleInput.RoleOwnerId = roleOwnerId;
@@ -24,5 +24,7 @@ namespace Spatium_CMS.Controllers.UserRoleController.Converter
             var RoleInput = mapper.Map<UserRoleInput>(request);
             return RoleInput;
         }
+
+        
     }
 }

@@ -29,11 +29,13 @@ namespace Domain.BlogsAggregate
 
         public TableOfContent(TableOfContentInput tableOfContentInput)
         {
+
             this.Content = tableOfContentInput.Content;
         }
-        public void Update(TableOfContentInput tableOfContentInput)
+
+        public void Update(UpdateTableOfContentInput updateTableOfContent)
         {
-            this.Content = tableOfContentInput.Content;
+            this.Content = updateTableOfContent.Content;
         }
         #endregion
     }

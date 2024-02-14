@@ -12,6 +12,6 @@
         public string Category { get; set; }
         public string Tag { get; set; }
         public string AuthorId { get; set; }
-        public List<TableOfContentRequest> TableOfContentRequests { get; set; } = new List<TableOfContentRequest>();
+        public List<UpdateTableOfContentRequest> TableOfContentRequests { get; set; } = new List<UpdateTableOfContentRequest>();
     }
 }
