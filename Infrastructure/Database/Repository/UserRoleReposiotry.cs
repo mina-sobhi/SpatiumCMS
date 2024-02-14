@@ -11,16 +11,14 @@ namespace Infrastructure.Database.Repository
         {
          
         }
-
-
+        #region GetRoleDetailes
         public async Task<UserRole> GetRoleByIdAsync(string roleId)
         {
             return await SpatiumDbContent.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
         }
-
         public async Task<IReadOnlyList<UserRole>> GetDefaultRoles()
         {
-           return await SpatiumDbContent.Roles.Where(r=>r.RoleOwnerId == null).ToListAsync();   
+            return await SpatiumDbContent.Roles.Where(r => r.RoleOwnerId == null).ToListAsync();
         }
         public async Task<IReadOnlyList<UserRole>> GetRolesAsync(ViewRolePrams viewRoleParams)
         {
@@ -42,11 +40,16 @@ namespace Infrastructure.Database.Repository
                .ToListAsync();
             }
         }
-
+        public async Task<List<UserModule>> GetModuleWithPermissions()
+        {
+            return await SpatiumDbContent.UserModules.Include(m => m.UserPermissions).ToListAsync();
+        }
         public Task<List<int>> GetRolePermissionIds(string roleId)
         {
-            return SpatiumDbContent.RolePermissions.Where(r=>r.UserRoleId== roleId).Select(r=>r.UserPermissionId).ToListAsync();
-        }
+            return SpatiumDbContent.RolePermissions.Where(r => r.UserRoleId == roleId).Select(r => r.UserPermissionId).ToListAsync();
+        } 
+        #endregion 
+
         public async Task CreatAsync(UserRole role)
         {
             await SpatiumDbContent.Roles.AddAsync(role);
@@ -60,9 +63,7 @@ namespace Infrastructure.Database.Repository
             }
         }
 
-
         #region Delete Role 
-       
         public async Task<List<ApplicationUser>> GetUserInRoleAsync(string roleId)
         {
             return await SpatiumDbContent.Users.Where(ur => ur.RoleId == roleId).ToListAsync();
@@ -72,11 +73,6 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.RolePermissions.Where(rp=>rp.UserRoleId== roleId).ToListAsync();
 
-        }
-
-        public async Task<List<UserModule>> GetModuleWithPermissions()
-        {
-            return await SpatiumDbContent.UserModules.Include(m=>m.UserPermissions).ToListAsync();
         }
         #endregion
     }
