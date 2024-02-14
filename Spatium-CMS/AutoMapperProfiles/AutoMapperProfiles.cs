@@ -57,13 +57,16 @@ namespace Spatium_CMS.AutoMapperProfiles
                 #region UserRole
                 //get roles mapper
                 CreateMap<ApplicationUser, UserResponse>();
+                CreateMap<UserRole, RoleResult>();
+
+
                 CreateMap<UserRole, ViewRoles>()
                       .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Id))
                       .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Name))
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                       .ForMember(dest => dest.IconPath, opt => opt.MapFrom(src => src.IconPath))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));
-
+                      
 
                 CreateMap<UserRoleInput, RoleRequest>().ReverseMap();
 

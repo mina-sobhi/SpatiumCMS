@@ -14,7 +14,8 @@ namespace Infrastructure.Database.Repository
         #region GetRoleDetailes
         public async Task<UserRole> GetRoleByIdAsync(string roleId)
         {
-            return await SpatiumDbContent.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
+            return await SpatiumDbContent.Roles.Where(r => r.Id == roleId).Include(ru => ru.ApplicationUsers).FirstOrDefaultAsync();
+
         }
         public async Task<IReadOnlyList<UserRole>> GetDefaultRoles()
         {
