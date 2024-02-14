@@ -1,6 +1,9 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
+using Domain.BlogsAggregate;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
+using Utilities.Exceptions;
+using Utilities.Results;
 
 namespace Domain.ApplicationUserAggregate
 {
@@ -11,12 +14,14 @@ namespace Domain.ApplicationUserAggregate
         public string Description { get; private set; }
         public bool IsActive { get; private set; }
         public string RoleOwnerId { get; private set; }
-        public int Priority { get; private set;}
-        public bool IsDeleted { get; private set;}
+        public int Priority { get; private set; }
+        public bool IsDeleted { get; private set; }
+        public int? BlogId { get; private set; }
         #endregion
 
         #region Navigational Properties
         public virtual ApplicationUser RoleOwner { get; private set; }
+        public virtual Blog Blog { get; private set; }
         #endregion
 
         #region Virtual List
@@ -37,8 +42,9 @@ namespace Domain.ApplicationUserAggregate
             Description = userRoleInput.Description;
             IsActive = userRoleInput.IsActive;
             RoleOwnerId = userRoleInput.RoleOwnerId;
-            Priority = userRoleInput.RoleOwnerPriority++;
+            Priority = ++userRoleInput.RoleOwnerPriority;
             this.IsDeleted = false;
+            BlogId = userRoleInput.BlogId ?? throw new SpatiumException(ResponseMessages.BlogIdCannotBeNull);
             foreach (var permissionId in userRoleInput.UserPermissionId)
             {
                 var newrolepermission = new RolePermission(this.Id, permissionId);
@@ -49,7 +55,9 @@ namespace Domain.ApplicationUserAggregate
         public void Delete()
         {
             this.IsDeleted = true;
-            }
+            foreach (var user in _applicationUsers)
+                user.Unassign();
+        }
         public void ClearPermissions()
         {
             _rolePermission.Clear();
@@ -75,7 +83,7 @@ namespace Domain.ApplicationUserAggregate
             //    _rolePermission.Add(new RolePermission(this.Id, perm));
             //}
         }
-        
+
         public void AddPermissions(List<int> permissionIds)
         {
             foreach (var permissionId in permissionIds)

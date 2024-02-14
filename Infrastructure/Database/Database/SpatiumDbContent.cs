@@ -50,6 +50,8 @@ namespace Infrastructure.Database.Database
 
             #region Global Filter
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
             #endregion
 
             #region Idintity-Configration Seeding-Data

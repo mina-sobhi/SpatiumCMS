@@ -24,5 +24,10 @@
         #region POST
         public const string TocNotFound = "Invalid Table Of content Id!";
         #endregion
+
+        #region Blog
+        public const string BlogIdCannotBeNull = "Blog Cann't be null!";
+
+        #endregion
     }
 }

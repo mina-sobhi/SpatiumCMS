@@ -92,7 +92,7 @@ namespace Domain.ApplicationUserAggregate
             IsAccountActive= activeStatus;
         }
 
-        public void UnAssigne()
+        public void Unassign()
         {
             RoleId = "5c78edbb-0121-4a88-a7b1-5172d77e2aed";
         }

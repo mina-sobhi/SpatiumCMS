@@ -48,6 +48,14 @@ namespace Spatium_CMS.Controllers
             }
         }
 
+        protected int GetBlogId()
+        {
+            if (int.TryParse(User?.FindFirstValue("BlogId"), out int result))
+            {
+                return result;
+            };
+            throw new SpatiumException("Unauthorized");
+        }
         protected string GetUserId()
         {
             return User?.FindFirstValue(ClaimTypes.NameIdentifier);

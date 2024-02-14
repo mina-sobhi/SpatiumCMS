@@ -46,38 +46,50 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 {
                     return BadRequest("Ivalid User Id");
                 }
-                userResult.UnAssigne();
+                userResult.Unassign();
                 await unitOfWork.SaveChangesAsync();
                 return Ok(" User UnAssigne Succefuly ");
             });
         }
 
         [HttpGet]
-        [Route("AssigneUserToSpacificRole")]
+        [Route("Assign")]
         [Authorize(Roles = "Super Admin")]
-        public Task<IActionResult> AssigneUserToSpacificRole(string userId, string RoleId)
+        public Task<IActionResult> Assign(string userId, string roleId)
         {
             return TryCatchLogAsync(async () =>
             {
-                var user = await _userManager.FindByIdAsync(userId);
-                var role = await roleManager.FindByIdAsync(RoleId);
                 var loginUserId = GetUserId();
-                var loginUser = await _userManager.FindByIdAsync(loginUserId);
+                var blogId = GetBlogId();
+                var user = await _userManager.FindUserInBlogAsync(blogId, userId);
+                if (user == null)
+                    return BadRequest("User Not Found");
 
-                if (user is null || role is null)
+                var role = await unitOfWork.RoleRepository.GetAssignRoleById(blogId, roleId);
+                if (role != null)
                 {
-                    return BadRequest(" Ivalid Prameter ");
+                    user.AssigneToRole(roleId);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("User Assigned Successfully");
                 }
-                var blogId = loginUser.BlogId;
-                var priority = loginUser.Role.Priority;
-                var users = await unitOfWork.RoleRepository.GetUsersByBlogIdAndRolePriority(blogId, priority);
-                if (users.SingleOrDefault(u => u.Id == user.ParentUserId) is null)
-                {
-                    return BadRequest("You Are Not Allow To Change This User");
-                }
-                user.AssigneToRole(RoleId);
-                await unitOfWork.SaveChangesAsync();
-                return Ok(" User Assigne To Role  Succefuly ");
+
+                return BadRequest();
+                //var loginUser = await _userManager.FindByIdAsync(loginUserId);
+
+                //if (user is null || role is null)
+                //{
+                //    return BadRequest(" Ivalid Prameter ");
+                //}
+                //var blogId = loginUser.BlogId;
+                //var priority = loginUser.Role.Priority;
+                //var users = await unitOfWork.RoleRepository.GetUsersByBlogIdAndRolePriority(blogId, priority);
+                //if (users.SingleOrDefault(u => u.Id == user.ParentUserId) is null)
+                //{
+                //    return BadRequest("You Are Not Allow To Change This User");
+                //}
+                //user.AssigneToRole(RoleId);
+                //await unitOfWork.SaveChangesAsync();
+                //return Ok(" User Assigne To Role  Succefuly ");
             });
         }
 
@@ -101,13 +113,13 @@ namespace Spatium_CMS.Controllers.UserRoleController
 
         [HttpGet]
         [Route("GetDefaultRoles")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> GetDefaultRoles()
         {
             return TryCatchLogAsync(async () =>
             {
-                var userId=GetUserId();
-                var user=await _userManager.FindByIdAsync(userId);
+                var userId = GetUserId();
+                var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                     return BadRequest("User Not found!");
                 var roles = await unitOfWork.RoleRepository.GetDefaultRoles(user.BlogId);
@@ -115,8 +127,10 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 return Ok(roleresualt);
             });
         }
+
         [HttpGet]
         [Route("GetAllRoles")]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> GetAllRoles([FromQuery] ViewRolePrams parms)
         {
             return TryCatchLogAsync(async () =>
@@ -125,7 +139,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                     return BadRequest("User Not found!");
-                var roles = await unitOfWork.RoleRepository.GetRolesAsync(parms,user.BlogId);
+                var roles = await unitOfWork.RoleRepository.GetRolesAsync(parms, user.BlogId);
                 var roleresualt = mapper.Map<List<ViewRoles>>(roles);
                 return Ok(roleresualt);
             });
@@ -133,11 +147,13 @@ namespace Spatium_CMS.Controllers.UserRoleController
 
         [HttpGet]
         [Route("GetRoleById")]
+        [Authorize]
         public Task<IActionResult> GetById(string roleId)
         {
             return TryCatchLogAsync(async () =>
             {
-                var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId);
+                var blogId = GetBlogId();
+                var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId);
                 if (role == null)
                     return NotFound();
                 var roleDto = mapper.Map<ViewRoles>(role);
@@ -146,21 +162,8 @@ namespace Spatium_CMS.Controllers.UserRoleController
         }
 
         [HttpGet]
-        [Route("GetDefaultRoles")]
-        public Task<IActionResult> GetDefaultRoles()
-        {
-            return TryCatchLogAsync(async () =>
-            {
-                var roles = await unitOfWork.RoleRepository.GetDefaultRoles();
-                if (roles == null)
-                    return NotFound("not found roles");
-                var roleresualt = mapper.Map<List<ViewRoles>>(roles);
-                return Ok(roleresualt);
-            });
-        }
-
-        [HttpGet]
         [Route("GetModuleWithPermissions")]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> GetModuleWithPermissions()
         {
             return TryCatchLogAsync(async () =>
@@ -182,6 +185,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             {
 
                 var userId = GetUserId();
+                var blogId = GetBlogId();
                 var currentUser = await _userManager.FindByIdAsync(userId);
                 var converter = new RoleConverter(mapper);
                 UserRoleInput roleInput = new UserRoleInput();
@@ -190,34 +194,21 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 {
                     roleInput = converter.CreateUserRoleInput(request, currentUser.ParentUserId);
                     roleInput.RoleOwnerPriority = currentUser.Role.Priority;
+                    roleInput.BlogId = blogId;
                 }
                 else
                 {
                     roleInput = converter.CreateUserRoleInput(request, currentUser.Id);
                     roleInput.RoleOwnerPriority = currentUser.Role.Priority;
+                    roleInput.BlogId = blogId;
                 }
-
                 var newRole = new UserRole(roleInput);
-                var result = unitOfWork.RoleRepository.CreatAsync(newRole);
+                var result = await roleManager.CreateAsync(newRole);
 
+                //var result = unitOfWork.RoleRepository.CreatAsync(newRole);
 
-                if (!currentUser.ParentUserId.IsNullOrEmpty())
+                if (result.Succeeded)
                 {
-                    roleInput = converter.CreateUserRoleInput(request, currentUser.ParentUserId);
-                    roleInput.RoleOwnerPriority = currentUser.Role.Priority;
-                }
-                else
-                {
-                    roleInput = converter.CreateUserRoleInput(request, currentUser.Id);
-                    roleInput.RoleOwnerPriority = currentUser.Role.Priority;
-                }
-
-                var newRole = new UserRole(roleInput);
-                var result = unitOfWork.RoleRepository.CreatAsync(newRole);
-
-                if (result.IsCompletedSuccessfully)
-                {
-                    await unitOfWork.SaveChangesAsync();
                     return Ok(new RoleResponse()
                     {
                         Messege = $"the role {newRole.Name} is created Successfully "
@@ -225,7 +216,6 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 }
                 return BadRequest(new RoleResponse()
                 {
-
                     Messege = $"can not create role"
                 });
             });
@@ -235,8 +225,6 @@ namespace Spatium_CMS.Controllers.UserRoleController
         [HttpPut]
         [Route("UpdateRole")]
         [Authorize(Roles = "Super Admin")]
-
-        [Authorize(Roles ="Super Admin")]
         public Task<IActionResult> UpdateRole(UpdateUserRoleRequest request)
         {
             return TryCatchLogAsync(async () =>
@@ -245,11 +233,11 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 if (role != null)
                 {
                     var converter = new RoleConverter(mapper);
-                    var updateRoleInput=mapper.Map<UpdateUserRoleInput>(request);
-                    foreach(var rp in role.RolePermission)
-                    {
-                        unitOfWork.RoleRepository.DeleteRolePermission(rp);
-                    }
+                    var updateRoleInput = mapper.Map<UpdateUserRoleInput>(request);
+                    //foreach (var rp in role.RolePermission)
+                    //{
+                    //    unitOfWork.RoleRepository.DeleteRolePermission(rp);
+                    //}
                     await unitOfWork.SaveChangesAsync();
                     role.UpdateData(updateRoleInput);
                     role.AddPermissions(request.PermissionIds);
@@ -272,39 +260,20 @@ namespace Spatium_CMS.Controllers.UserRoleController
         [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> DeleteRole(string roleId)
         {
-            return TryCatchLogAsync(async () =>{
-
-            var roleAssignedToUsers = await unitOfWork.RoleRepository.IsRoleAssignedToUserAsync(roleId);
-            var roleHasPermissions = await
-             unitOfWork.RoleRepository.DoesRoleHavePermissionsAsync(roleId);
-            if (roleAssignedToUsers || roleHasPermissions)
+            return TryCatchLogAsync(async () =>
             {
-                // await unitOfWork.RoleRepository.DeleteRoleAsync(roleId);
-                return NoContent();
-            }
-            else
-            {
-                var userId = GetUserId();
-                var currentUser = await _userManager.FindByIdAsync(userId);
-                var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId);
-
-                if (role.RoleOwner != null && currentUser.Id==role.RoleOwnerId)
+                var blogId = GetBlogId();
+                var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId);
+                if (role != null && role.RoleOwnerId == null)
+                    return Unauthorized("This role cannot be deleted");
+                role.Delete();
+                await unitOfWork.SaveChangesAsync();
+                return Ok(new
                 {
-                    var roleUsers = await unitOfWork.RoleRepository.GetUserInRoleAsync(roleId);
-                    var rolePermissions=await unitOfWork.RoleRepository.GetRolePermissionsAsync(roleId);
-                    foreach (var user in roleUsers)
-                    {
-                        //implement un Assigned role to users
-                    }
-                    foreach (var rolePermission in rolePermissions)
-                        rolePermission.Deleted();
-                }
-                return BadRequest(new RoleResponse()
-                {
-                    Messege = "Cannot delete role. It is Defualt Role or you do not have permission for it."
+                    Message = $"{role.Name} is Deleted Success!"
                 });
             });
         }
     }
-}
 
+}

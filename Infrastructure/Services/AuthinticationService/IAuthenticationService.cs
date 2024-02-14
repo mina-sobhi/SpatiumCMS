@@ -6,12 +6,12 @@ namespace Domain.Interfaces
 {
     public interface IAuthenticationService
     {
-        public Task<SpatiumResponse<LoggedInUser>> Login (string email , string password);
+        public Task<SpatiumResponse<LoggedInUser>> Login(string email, string password);
         public Task<SpatiumResponse<string>> Register(ApplicationUser newUser, string password);
-        public Task<SpatiumResponse> ConfirmOTP(string email,string token,string otp);
+        public Task<SpatiumResponse> ConfirmEmail(string email, string token, string otp);
         public Task<SpatiumResponse<string>> ResendConfirmationEmailOTP(string email);
         public Task<SpatiumResponse<string>> ForgetPassword(string email);
-        public Task<SpatiumResponse> ConfirmForgetPassword(string email,string token , string newPassword);
+        public Task<SpatiumResponse> ConfirmForgetPassword(string email, string token, string newPassword);
         public Task<ApplicationUser> GetUserDetailes(string userId);
         public Task<SpatiumResponse<string>> ConfirmForgetPasswordOTP(string email, string otp);
 

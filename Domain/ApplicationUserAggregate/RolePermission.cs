@@ -27,8 +27,8 @@
             this.IsDeleted = false;
         }
         #endregion
-       
-        public void Deleted()
+
+        public void Delete()
         {
             this.IsDeleted = true;
         }
