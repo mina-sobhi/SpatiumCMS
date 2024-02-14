@@ -282,7 +282,8 @@ namespace Infrastructure.Services.AuthinticationService
             {
                 new (ClaimTypes.NameIdentifier,user.Id),
                 new (ClaimTypes.Email,user.Email),
-                new ("RoleId",user.RoleId)
+                new ("RoleId",user.RoleId),
+                new (ClaimTypes.Role,user.Role.Name)
             };
             foreach (var item in permissions)
             {

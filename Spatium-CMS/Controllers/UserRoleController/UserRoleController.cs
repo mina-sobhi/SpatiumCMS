@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Spatium_CMS.Controllers.UserRoleController.Converter;
 using Spatium_CMS.Controllers.UserRoleController.Request;
 using Spatium_CMS.Controllers.UserRoleController.Response;
+using System.Data;
 using System.Security.Claims;
 
 namespace Spatium_CMS.Controllers.UserRoleController
@@ -17,14 +18,96 @@ namespace Spatium_CMS.Controllers.UserRoleController
     [ApiController]
     public class UserRoleController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly RoleManager<UserRole> roleManager;
 
-        public UserRoleController(UserManager<ApplicationUser> userManager,IMapper mapper, IUnitOfWork unitOfWork)
+        public UserRoleController(UserManager<ApplicationUser> userManager,IMapper mapper, IUnitOfWork unitOfWork,RoleManager<UserRole> roleManager)
             : base(unitOfWork, mapper)
         {
             _userManager = userManager;
+             this.roleManager = roleManager;
         }
 
+        [HttpGet]
+        [Route("Unassign")]
+        [Authorize(Roles="Super Admin")]
+        public Task<IActionResult> UnAssigne(string userId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                if(user is null)
+                {
+                    return BadRequest("Ivalid User Id");
+                }
+                if(user.ParentUserId is null)
+                {
+                    return BadRequest("You Are not Allowed To UnAssigne This User ");
+                }
+                user.UnAssigne();
+                await unitOfWork.SaveChangesAsync();
+                return Ok(" User UnAssigne Succefuly ");
+            });
+        }
+
+        [HttpGet]
+        [Route("AssigneUserToSpacificRole")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> AssigneUserToSpacificRole(string userId , string RoleId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                var role = await roleManager.FindByIdAsync(RoleId);
+                var loginUserId = GetUserId();
+                var loginUser = await userManager.FindByIdAsync(loginUserId);
+
+                if (user is null || role is null )
+                {
+                    return BadRequest(" Ivalid Prameter ");
+                }
+                var blogId =loginUser.BlogId;
+                var priority = loginUser.Role.Priority;
+                var users = await unitOfWork.RoleRepository.GetUsersByBlogIdAndRolePriority(blogId, priority);
+                if(users.SingleOrDefault(u => u.Id == user.ParentUserId) is null)
+                {
+                    return BadRequest("You Are Not Allow To Change This User");
+                }
+                user.AssigneToRole(RoleId);
+                await unitOfWork.SaveChangesAsync();
+                return Ok(" User Assigne To Role  Succefuly ");
+            });
+        }
+
+
+        [HttpGet]
+        [Route("SearchInRole")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> SearchInRole(string CoulmnName, string Value)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var result = await unitOfWork.RoleRepository.SearchInRole(CoulmnName, Value);
+                if(result.Count() <=0 )
+                {
+                    BadRequest("No Data");
+                }
+                var response = mapper.Map<List<ViewRoles>>(result);
+                return Ok(response);
+            });
+        }
+
+        [HttpGet]
+        [Route("GetDefaulteRole")]
+        public Task<IActionResult> GetDefaulteRole()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var roles = await unitOfWork.RoleRepository.GetDefaulteRoleAsync();
+                var roleresualt = mapper.Map<List<ViewRoles>>(roles);
+                return Ok(roleresualt);
+            });
+        }
         [HttpGet]
         [Route("GetAllRoles")]
         public Task<IActionResult> GetAllRoles([FromQuery]ViewRolePrams parms)

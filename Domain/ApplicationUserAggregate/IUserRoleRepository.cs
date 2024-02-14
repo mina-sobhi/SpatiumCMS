@@ -5,8 +5,12 @@ namespace Domain.ApplicationUserAggregate
 {
     public interface IUserRoleRepository
     {
+        #region Hesham 
+        Task<IReadOnlyList<UserRole>> GetDefaulteRoleAsync();
+        Task<IReadOnlyList<ApplicationUser>> GetUsersByBlogIdAndRolePriority(int blogId, int priorityOfCurrent);
+        Task<List<UserRole>> SearchInRole(string CoulmnName, string Value);
+        #endregion
         public Task<IReadOnlyList<UserRole>> GetRolesAsync(ViewRolePrams prams);
-
         public Task<List<int>> GetRolePermissionIds(string roleId);
         
         public Task<UserRole> GetRoleByIdAsync(string roleId);

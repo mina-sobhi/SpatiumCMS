@@ -39,8 +39,8 @@ namespace Spatium_CMS.Controllers.UserManagmentController
 
         [HttpPost]
         [Route("CreateUser")]
-        [Authorize]
-        [PermissionFilterAttribute(PermissionsEnum.CreateUser)]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.CreateUser)]
         public Task<IActionResult> CreateUser(CreateUserRequest createUserRequest)
         {
             return TryCatchLogAsync(async () =>
