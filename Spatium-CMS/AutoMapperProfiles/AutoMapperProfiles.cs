@@ -28,9 +28,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<CreateBlogRequest , BlogInput>().ReverseMap();
                 CreateMap<UpdateBlogRequest , BlogInput>().ReverseMap();
                 CreateMap<Blog, BlogResult>().ReverseMap();
-
                 CreateMap<CreateUserRequest, ApplicationUserInput>();
-
                 #endregion
 
                 #region posts
@@ -38,13 +36,12 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<UpdatePostInput, UpdatePostRequest>().ReverseMap();
                 CreateMap<TableOfContentInput, TableOfContentRequest>().ReverseMap();
                 CreateMap<CommentUpdateInput, Comment>().ReverseMap();
-
+                CreateMap<UpdateTableOfContentRequest ,UpdateTableOfContentInput>().ReverseMap();
                 #endregion
 
                 #region Comment
                 CreateMap<Comment, CommentResponse>().ReverseMap();
                 CreateMap<CommentRequest, CommentInput>().ReverseMap();
-
                 #endregion
 
                 #region User Management
@@ -66,31 +63,15 @@ namespace Spatium_CMS.AutoMapperProfiles
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                       .ForMember(dest => dest.IconPath, opt => opt.MapFrom(src => src.IconPath))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));
-                      
 
+                CreateMap<UpdateUserRoleInput, UpdateUserRoleRequest>().ReverseMap();
+              
                 CreateMap<UserRoleInput, RoleRequest>().ReverseMap();
 
                 CreateMap<UserModule, ViewModule>();
                 CreateMap<UserPermission,UserModulePermissions>()
                     .ForMember(dest => dest.Id,otp=>otp.MapFrom(src => src.Id))
                     .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));    
-                #endregion
-
-                #region create role mapper
-                //CreateMap<RoleRequest, UserRole>()
-                //         .ForMember(dest => dest.Id, opt => opt.Ignore())
-                //         .ForMember(dest => dest.RolePermission, opt => opt.Ignore());
-                //CreateMap<UserRole, RoleRequest>()
-                //         .ForMember(dest => dest.UserPermissionId, opt => opt.MapFrom(src =>
-                //                src.RolePermission.Select(rp => rp.UserPermissionId)));
-                //CreateMap<int, RolePermission>()
-                //        .ForMember(dest => dest.UserPermissionId, opt => opt.MapFrom(src =>
-                //                   src))
-                //         .ForMember(dest => dest.UserRoleId, opt => opt.Ignore());
-                //CreateMap<RolePermission, int>()
-                //        .ForMember(dest => dest, opt => opt.MapFrom(src =>
-                //                                src.UserPermissionId)).ReverseMap();
-
                 #endregion
 
                 #region ApplicationUser

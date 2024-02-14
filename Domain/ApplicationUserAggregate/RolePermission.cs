@@ -26,8 +26,6 @@
             UserPermissionId = userPermissionId;
             this.IsDeleted = false;
         }
-
-        
         #endregion
        
         public void Deleted()

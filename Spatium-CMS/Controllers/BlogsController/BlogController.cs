@@ -5,6 +5,7 @@ using Domian.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Spatium_CMS.Controllers.BlogsController.Request;
 using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Filters;
@@ -17,8 +18,10 @@ namespace Spatium_CMS.Controllers.Blog
     public class BlogController : CmsControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<BlogController> logger;
 
-        public BlogController(IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper)
+        public BlogController(ILogger<BlogController> logger,IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager) 
+            : base(unitOfWork, mapper, logger)
         {
             this.userManager = userManager;
         }

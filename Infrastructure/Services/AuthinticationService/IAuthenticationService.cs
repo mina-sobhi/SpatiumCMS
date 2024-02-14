@@ -13,7 +13,9 @@ namespace Domain.Interfaces
         public Task<SpatiumResponse<string>> ForgetPassword(string email);
         public Task<SpatiumResponse> ConfirmForgetPassword(string email,string token , string newPassword);
         public Task<ApplicationUser> GetUserDetailes(string userId);
+        public Task<SpatiumResponse<string>> ConfirmForgetPasswordOTP(string email, string otp);
 
-        public Task ChangeUserActivation(string UserId);
+
+        //public Task ChangeUserActivation(string UserId);
     }
 }

@@ -16,7 +16,13 @@
         public const string OTPExpired = "Verification Code Expired! an Email with a new OTP has been sent!";
         public const string PasswordChangedSuccessfully = "Password Changed Successfully!";
         public const string PasswordDoesnotMatch = "Password and Confirm Password doesn't match!";
+        public const string OtpWaitingPeroidError = "Please wait 30 seconds before requesting new OTP.";
+        public const string OtpConfirmed = "OTP Confirmed Successfully!";
 
+        #endregion
+
+        #region POST
+        public const string TocNotFound = "Invalid Table Of content Id!";
         #endregion
     }
 }

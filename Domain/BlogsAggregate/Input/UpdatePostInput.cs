@@ -10,9 +10,8 @@
         public int ContentLineSpacing { get; set; }
         public string Category { get; set; }
         public string Tag { get; set; }
-        public string CreatedById { get; set; }
         public string AuthorId { get; set; }
 
-        public List<TableOfContentInput> TableOfContents = new List<TableOfContentInput>();
+        public List<UpdateTableOfContentInput> UpdateTableOfContentInput = new List<UpdateTableOfContentInput>();
     }
 }

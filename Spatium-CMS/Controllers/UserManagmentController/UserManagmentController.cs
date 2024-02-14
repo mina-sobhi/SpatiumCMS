@@ -26,20 +26,22 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<UserRole> roleManager;
         private readonly ISendMailService sendMailService;
+        private readonly ILogger<UserManagmentController> logger;
 
-        public UserManagmentController(IUnitOfWork unitOfWork , IMapper maper ,
-            UserManager<ApplicationUser> userManager , RoleManager<UserRole> roleManager 
-            , ISendMailService sendMailService) 
-            : base(unitOfWork, maper) 
+        public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
+            UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager
+            , ISendMailService sendMailService, ILogger<UserManagmentController> logger)
+            : base(unitOfWork, maper,logger)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.sendMailService = sendMailService;
+            this.logger = logger;
         }
 
         [HttpPost]
         [Route("CreateUser")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.CreateUser)]
         public Task<IActionResult> CreateUser(CreateUserRequest createUserRequest)
         {
@@ -49,7 +51,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 if(ModelState.IsValid)
                 {
                     var userId = GetUserId();
-                    var LoginUser = await userManager.FindByIdAsync(userId);
+                    var loginUser = await userManager.FindByIdAsync(userId);
 
                     var applicationUserInput = new ApplicationUserInput();
                     applicationUserInput.FullName = createUserRequest.FullName;
@@ -57,7 +59,8 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     applicationUserInput.Email  =   createUserRequest.Email;
                     applicationUserInput.RoleId = createUserRequest.RoleId;
                     applicationUserInput.JobTitle = "UnAssigned";
-                    applicationUserInput.ParentUserId = LoginUser.Id;
+                    applicationUserInput.ParentUserId = loginUser.Id;
+                    applicationUserInput.ParentBlogId = loginUser.BlogId;
                     var applicationUser = new ApplicationUser(applicationUserInput);
 
                     var identityResult = await userManager.CreateAsync(applicationUser, createUserRequest.Password);

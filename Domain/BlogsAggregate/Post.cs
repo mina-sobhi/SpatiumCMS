@@ -4,6 +4,8 @@ using Domain.BlogsAggregate.Input;
 using Domain.LookupsAggregate;
 using System.ComponentModel.DataAnnotations;
 using Utilities.Enums;
+using Utilities.Exceptions;
+using Utilities.Results;
 
 namespace Domain.BlogsAggregate
 {
@@ -89,9 +91,13 @@ namespace Domain.BlogsAggregate
             this.ContentLineSpacing = postInput.ContentLineSpacing;
             this.Category = postInput.Category;
             this.Tag = postInput.Tag;
-            this.CreatedById = postInput.CreatedById;
             this.AuthorId = postInput.AuthorId;
             this.LastUpdate = DateTime.UtcNow;
+            foreach (var tableOfContent in postInput.UpdateTableOfContentInput)
+            {
+                var toc = _tableOfContents.SingleOrDefault(x => x.Id == tableOfContent.Id) ?? throw new SpatiumException(ResponseMessages.TocNotFound);
+                toc.Update(tableOfContent);
+            }
         }
 
         public void Delete()

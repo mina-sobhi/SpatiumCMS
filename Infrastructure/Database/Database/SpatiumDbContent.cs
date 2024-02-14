@@ -47,7 +47,10 @@ namespace Infrastructure.Database.Database
 
             modelBuilder.Entity<Post>().HasMany(x => x.TableOfContents).WithOne(x => x.Post).HasForeignKey(x => x.PostId);
             modelBuilder.Entity<TableOfContent>().HasMany(x => x.ChildTableOfContents).WithOne(x => x.ParentTableOfContent).HasForeignKey(x => x.ParentTableOfContentId);
-            
+
+            #region Global Filter
+            modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
+            #endregion
 
             #region Idintity-Configration Seeding-Data
             //var roles = new UserRole[3];

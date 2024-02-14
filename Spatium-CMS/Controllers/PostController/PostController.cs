@@ -3,7 +3,6 @@ using Domain.BlogsAggregate.Input;
 using Domain.BlogsAggregate;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Controllers.PostController.Response;
 using Spatium_CMS.Controllers.PostController.Request;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +10,6 @@ using Domain.ApplicationUserAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Domain.Base;
 using Utilities.Enums;
-using Domain.LookupsAggregate;
 using Spatium_CMS.Filters;
 namespace Spatium_CMS.Controllers.PostController
 {
@@ -20,22 +18,15 @@ namespace Spatium_CMS.Controllers.PostController
     public class PostController : CmsControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<PostController> logger;
 
-        public PostController(IMapper mapper,IUnitOfWork unitOfWork ,UserManager<ApplicationUser> userManager):base(unitOfWork, mapper)
+        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger)
         {
             this.userManager = userManager;
         }
 
-        [HttpGet("FilterPosts")]
-        public Task<IActionResult> FilterPosts([FromForm]int StatusValue , [FromForm] string postTitle = "" )
-        {
-            return TryCatchLogAsync(async () =>
-            {
-                return Ok();
-            });
-        }
-
         [HttpGet("{Id:int}")]
+        [Authorize]
         public Task<IActionResult> GetPostById(int Id)
         {
             return TryCatchLogAsync(async () =>
@@ -52,6 +43,7 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpGet]
         [Route("GetPostSnippetPreview")]
+        [Authorize]
         public Task<IActionResult> GetPostSnippetPreview(int postId)
         {
             return TryCatchLogAsync(async () =>
@@ -68,11 +60,17 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpGet]
         [Route("GetPosts")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadPost)]
         public Task<IActionResult> GetPosts([FromQuery] GetEntitiyParams postParams)
         {
             return TryCatchLogAsync(async () =>
             {
-                var posts = await unitOfWork.PostRepository.GetPostsAsync(postParams);
+                var userId = GetUserId();
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return BadRequest("User Not found");
+                var posts = await unitOfWork.PostRepository.GetPostsAsync(postParams, user.BlogId);
                 if (posts.Count() <= 0)
                 {
                     return BadRequest(" No post Yet ");
@@ -86,10 +84,10 @@ namespace Spatium_CMS.Controllers.PostController
             });
         }
 
-
         [HttpPut]
         [Route("SchedulePost")]
-        public Task<IActionResult> SchedulePost(int postId,string ScheduledPublishDateTime, string ScheduledUnpublishDateTime)
+        [Authorize]
+        public Task<IActionResult> SchedulePost(int postId, string ScheduledPublishDateTime, string ScheduledUnpublishDateTime)
         {
             return TryCatchLogAsync(async () =>
             {
@@ -118,6 +116,7 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpPut]
         [Route("PublishedPost")]
+        [Authorize]
         [PermissionFilter(PermissionsEnum.PublishPost)]
         public Task<IActionResult> PublishedPost(int postId)
         {
@@ -126,7 +125,7 @@ namespace Spatium_CMS.Controllers.PostController
                 var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
                 if (found != null)
                 {
-                 
+
                     found.ChangePostStatus(PostStatusEnum.Published);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
@@ -144,7 +143,7 @@ namespace Spatium_CMS.Controllers.PostController
                 var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
                 if (found != null)
                 {
-                    var post=await unitOfWork.PostRepository.GetByIdAsync(postId);
+                    var post = await unitOfWork.PostRepository.GetByIdAsync(postId);
                     post.ChangePostStatus(PostStatusEnum.Unpublished);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
@@ -155,7 +154,7 @@ namespace Spatium_CMS.Controllers.PostController
 
         [HttpPost]
         [Authorize]
-        //[PermissionFilter(PermissionsEnum.CreatePost)]
+        [PermissionFilter(PermissionsEnum.CreatePost)]
         public Task<IActionResult> Create(CreatePostRequest createPostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -186,7 +185,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPut]
-        //[PermissionFilter(PermissionsEnum.UpdatePost)]
+        [PermissionFilterAttribute(PermissionsEnum.UpdatePost)]
         public Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -194,36 +193,36 @@ namespace Spatium_CMS.Controllers.PostController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
-                    var user= await userManager.FindByIdAsync(userId);
+                    var user = await userManager.FindByIdAsync(userId);
                     var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
-                    //if (post!=null && user.BlogId != post.BlogId)
-                    //{
-                    //    return BadRequest("Invalid Post");
-                    //}
                     if (post is null)
                     {
                         return NotFound();
                     }
 
-                    var postinput = mapper.Map<UpdatePostInput>(updatePostRequest);
-                    post.Update(postinput);
+                    var postInput = mapper.Map<UpdatePostInput>(updatePostRequest);
 
-                    foreach (var tableOfContent in post.TableOfContents)
+                    foreach (var tableOfContent in updatePostRequest.TableOfContentRequests)
                     {
-                        tableOfContent.Update(mapper.Map<TableOfContentInput>(tableOfContent));
+                        var contentUpdate = mapper.Map<UpdateTableOfContentInput>(tableOfContent);
+                        postInput.UpdateTableOfContentInput.Add(contentUpdate);
                     }
+                    post.Update(postInput);
+
                     await unitOfWork.SaveChangesAsync();
-                    return Ok(new BlogCreatedResponse
+                    var response = new UpdatePostResponse()
                     {
-                        Message = $"post {post.Title} Updated Successfuly"
-                    });
+                        Message = $"Post {post.Title} Updated Successfully!",
+                        PostId = post.Id,
+                    };
+                    return Ok(response);
                 }
                 return BadRequest(ModelState);
             });
         }
 
         [HttpDelete]
-        //[PermissionFilter(PermissionsEnum.DeletePost)]
+        [PermissionFilter(PermissionsEnum.DeletePost)]
         public Task<IActionResult> Remove(int Id)
         {
             return TryCatchLogAsync(async () =>

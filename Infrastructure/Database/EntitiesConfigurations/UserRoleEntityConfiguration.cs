@@ -9,12 +9,15 @@ namespace Infrastructure.Database.EntitiesConfigurations
         public void Configure(EntityTypeBuilder<UserRole> builder)
         {
             builder.HasMany(x => x.ApplicationUsers)
-                .WithOne(x => x.Role)
-                .HasForeignKey(x => x.RoleId);
+                    .WithOne(x => x.Role)
+                    .HasForeignKey(x => x.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
 
             builder.HasOne(x => x.RoleOwner)
                    .WithMany(x => x.OwnedRoles)
-                   .HasForeignKey(x => x.RoleOwnerId);
+                   .HasForeignKey(x => x.RoleOwnerId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
