@@ -199,7 +199,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPut]
-        //[PermissionFilter(PermissionsEnum.UpdatePost)]
+        [PermissionFilterAttribute(PermissionsEnum.UpdatePost)]
         public Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -209,27 +209,27 @@ namespace Spatium_CMS.Controllers.PostController
                     var userId = GetUserId();
                     var user= await userManager.FindByIdAsync(userId);
                     var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
-                    //if (post!=null && user.BlogId != post.BlogId)
-                    //{
-                    //    return BadRequest("Invalid Post");
-                    //}
                     if (post is null)
                     {
                         return NotFound();
                     }
 
-                    var postinput = mapper.Map<UpdatePostInput>(updatePostRequest);
-                    post.Update(postinput);
+                    var postInput = mapper.Map<UpdatePostInput>(updatePostRequest);
 
-                    foreach (var tableOfContent in post.TableOfContents)
+                    foreach (var tableOfContent in updatePostRequest.TableOfContentRequests)
                     {
-                        tableOfContent.Update(mapper.Map<TableOfContentInput>(tableOfContent));
+                        var contentUpdate =mapper.Map<UpdateTableOfContentInput>(tableOfContent);
+                        postInput.UpdateTableOfContentInput.Add(contentUpdate);
                     }
+                    post.Update(postInput);
+
                     await unitOfWork.SaveChangesAsync();
-                    return Ok(new BlogCreatedResponse
+                    var response = new UpdatePostResponse()
                     {
-                        Message = $"post {post.Title} Updated Successfuly"
-                    });
+                        Message = $"Post {post.Title} Updated Successfully!",
+                        PostId = post.Id,
+                    };
+                    return Ok(response);
                 }
                 return BadRequest(ModelState);
             });

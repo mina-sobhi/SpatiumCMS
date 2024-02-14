@@ -245,6 +245,14 @@ namespace Infrastructure.Services.AuthinticationService
                         Success = false,
                     };
                 }
+                if(user.OTPGeneratedAt <= user.OTPGeneratedAt.Value.AddSeconds(30))
+                {
+                    return new SpatiumResponse<string>()
+                    {
+                        Message = ResponseMessages.OtpWaitingPeroidError,
+                        Success = false
+                    };
+                }
                 var newOtp = OTPGenerator.GenerateOTP();
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedToken = WebUtility.UrlEncode(token);

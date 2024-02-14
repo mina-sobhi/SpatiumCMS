@@ -89,9 +89,13 @@ namespace Domain.BlogsAggregate
             this.ContentLineSpacing = postInput.ContentLineSpacing;
             this.Category = postInput.Category;
             this.Tag = postInput.Tag;
-            this.CreatedById = postInput.CreatedById;
             this.AuthorId = postInput.AuthorId;
             this.LastUpdate = DateTime.UtcNow;
+            foreach (var tableOfContent in postInput.UpdateTableOfContentInput)
+            {
+                var toc = _tableOfContents.SingleOrDefault(toc => toc.Id == tableOfContent.Id);
+                toc.Update(tableOfContent);
+            }
         }
 
         public void Delete()

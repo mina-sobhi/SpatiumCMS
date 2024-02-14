@@ -35,9 +35,6 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-                //var email = User.FindFirstValue(ClaimTypes.Email);
-                //var currentuser = await userManager.FindByEmailAsync(email);
-                //var userId = currentuser.Id;
                 await authenticationService.ChangeUserActivation(id);
                 await unitOfWork.SaveChangesAsync();
                 return Ok("the Activation is Changed");

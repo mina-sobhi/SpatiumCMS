@@ -29,9 +29,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<CreateBlogRequest , BlogInput>().ReverseMap();
                 CreateMap<UpdateBlogRequest , BlogInput>().ReverseMap();
                 CreateMap<Blog, BlogResult>().ReverseMap();
-
                 CreateMap<CreateUserRequest, ApplicationUserInput>();
-
                 #endregion
 
                 #region posts
@@ -39,13 +37,12 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<UpdatePostInput, UpdatePostRequest>().ReverseMap();
                 CreateMap<TableOfContentInput, TableOfContentRequest>().ReverseMap();
                 CreateMap<CommentUpdateInput, Comment>().ReverseMap();
-
+                CreateMap<UpdateTableOfContentRequest ,UpdateTableOfContentInput>().ReverseMap();
                 #endregion
 
                 #region Comment
                 CreateMap<Comment, CommentResponse>().ReverseMap();
                 CreateMap<CommentRequest, CommentInput>().ReverseMap();
-
                 #endregion
 
                 #region User Management
