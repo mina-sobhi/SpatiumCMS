@@ -19,9 +19,9 @@ namespace Infrastructure.Database.Repository
             }
             return   await SpatiumDbContent.Posts.Where(p => p.StatusId == status && p.Title.Contains(contain)).ToListAsync();
         }
-        public async Task<List<Post>> GetPostsAsync(GetEntitiyParams postParams)
+        public async Task<List<Post>> GetPostsAsync(GetEntitiyParams postParams,int blogId)
         {
-            var query = SpatiumDbContent.Posts.AsQueryable();
+            var query = SpatiumDbContent.Posts.Where(x=>x.BlogId==blogId).AsQueryable();
 
             if (!string.IsNullOrEmpty(postParams.FilterColumn) && !string.IsNullOrEmpty(postParams.FilterValue))
             {

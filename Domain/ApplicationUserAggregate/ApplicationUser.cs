@@ -87,9 +87,9 @@ namespace Domain.ApplicationUserAggregate
             ProfileImagePath=input.ProfileImagePath;
         }
 
-        public void ChangeActivation()
+        public void ChangeActivation(bool activeStatus)
         {
-            IsAccountActive=! this.IsAccountActive;
+            IsAccountActive= activeStatus;
         }
 
         public void UnAssigne()

@@ -23,7 +23,6 @@
             UserRoleId = userRoleId;
             UserPermissionId = userPermissionId;
         }
-
         #endregion
 
     }

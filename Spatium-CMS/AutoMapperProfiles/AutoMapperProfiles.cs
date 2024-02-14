@@ -61,26 +61,8 @@ namespace Spatium_CMS.AutoMapperProfiles
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                       .ForMember(dest => dest.IconPath, opt => opt.MapFrom(src => src.IconPath))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));
-
-
+                CreateMap<UpdateUserRoleInput, UpdateUserRoleRequest>().ReverseMap();
                 CreateMap<UserRoleInput, RoleRequest>().ReverseMap();
-                #endregion
-
-                #region create role mapper
-                //CreateMap<RoleRequest, UserRole>()
-                //         .ForMember(dest => dest.Id, opt => opt.Ignore())
-                //         .ForMember(dest => dest.RolePermission, opt => opt.Ignore());
-                //CreateMap<UserRole, RoleRequest>()
-                //         .ForMember(dest => dest.UserPermissionId, opt => opt.MapFrom(src =>
-                //                src.RolePermission.Select(rp => rp.UserPermissionId)));
-                //CreateMap<int, RolePermission>()
-                //        .ForMember(dest => dest.UserPermissionId, opt => opt.MapFrom(src =>
-                //                   src))
-                //         .ForMember(dest => dest.UserRoleId, opt => opt.Ignore());
-                //CreateMap<RolePermission, int>()
-                //        .ForMember(dest => dest, opt => opt.MapFrom(src =>
-                //                                src.UserPermissionId)).ReverseMap();
-
                 #endregion
 
                 #region ApplicationUser

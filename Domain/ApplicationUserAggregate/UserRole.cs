@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
 using Microsoft.AspNetCore.Identity;
+using System.Linq;
 
 namespace Domain.ApplicationUserAggregate
 {
@@ -43,6 +44,39 @@ namespace Domain.ApplicationUserAggregate
             }
         }
         #endregion
+        public void ClearPermissions()
+        {
+            _rolePermission.Clear();
+        }
 
+        public void UpdateData(UpdateUserRoleInput updateInput)
+        {
+            IconPath = updateInput.IconPath;
+            Description = updateInput.Description;
+            //var removePermissions = _rolePermission.Select(x => x.UserPermissionId).Except(updateInput.PermissionIds);
+            //var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));
+            //foreach (var permissionId in removePermissions.ToList())
+            //{
+            //    var permission = _rolePermission.FirstOrDefault(x => x.UserPermissionId == permissionId);
+            //    _rolePermission.Remove(permission);
+            //}
+            //foreach (var newPermissionId in newPermissions)
+            //{
+            //    _rolePermission.Add(new RolePermission(Id, newPermissionId));
+            //}
+            //foreach(var perm in updateInput.PermissionIds)
+            //{
+            //    _rolePermission.Add(new RolePermission(this.Id, perm));
+            //}
+        }
+        
+        public void AddPermissions(List<int> permissionIds)
+        {
+            foreach (var permissionId in permissionIds)
+            {
+                _rolePermission.Add(new RolePermission(this.Id, permissionId));
+            }
+
+        }
     }
 }

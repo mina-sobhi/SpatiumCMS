@@ -15,8 +15,11 @@ namespace Spatium_CMS.Controllers.CommentController
     [ApiController]
     public class CommentController : CmsControllerBase
     {
-        public CommentController(IUnitOfWork unitOfWork , IMapper mapper):base(unitOfWork, mapper) 
-        { }
+        private readonly ILogger<CommentController> logger;
+        public CommentController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentController> logger) : base(unitOfWork, mapper,logger)
+        {
+            this.logger = logger;
+        }
         [HttpGet("{Id:int}")]
         public Task<IActionResult> GetcommentById(int Id)
         {

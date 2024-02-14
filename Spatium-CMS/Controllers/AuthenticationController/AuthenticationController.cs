@@ -2,6 +2,7 @@
 using Domain.ApplicationUserAggregate;
 using Domain.Interfaces;
 using Domian.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,24 +21,32 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         private readonly IAuthenticationService authenticationService;
         private readonly RoleManager<UserRole> roleManager;
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<AuthenticationController> logger;  
 
-        public AuthenticationController(IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager ,IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager) :base(unitOfWork ,mapper)
+        public AuthenticationController(ILogger<AuthenticationController> logger,IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager ,IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager) :base(unitOfWork ,mapper, logger)
         {
             this.authenticationService = authenticationService;
             this.roleManager = roleManager;
             this.userManager = userManager;
         }
         [HttpGet]
-        [Route("ChangeUserActivation")]
+        [Route("ChangeUserActivation/{userId}")]
         [Authorize]
         //[PermissionFilter(PermissionsEnum.UpdateUser)]
-        public Task<IActionResult> ChangeUserActivation(string id)
+        public Task<IActionResult> ChangeUserActivation(string userId,bool activeStatus=true)
         {
             return TryCatchLogAsync(async () =>
             {
-                await authenticationService.ChangeUserActivation(id);
-                await unitOfWork.SaveChangesAsync();
-                return Ok("the Activation is Changed");
+                var parentUserId = GetUserId();
+                var parentUser= await userManager.FindByIdAsync(parentUserId);
+                var user = await userManager.FindUserInBlogAsync(parentUser.BlogId, userId);
+                if(user != null)
+                {
+                    user.ChangeActivation(activeStatus);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("the Activation is Changed");
+                }
+                return BadRequest("User Not Found");
             });
         }
 
@@ -200,6 +209,24 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                     Email = request.Email,
                     Message = result.Message
                 });
+            });
+        }
+
+        [HttpPost]
+        [Route("ConfirmForgetPasswordOTP")]
+        public Task<IActionResult> ConfirmForgetPasswordOTP(ConfirmForgetPasswordOTP confirmOtp)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var result = await authenticationService.ConfirmForgetPasswordOTP(confirmOtp.Email, confirmOtp.OTP);
+                if(result.Success)
+                    return Ok(new ConfirmForgetPasswordOtpResponse()
+                    {
+                        Email= confirmOtp.Email,
+                        Message = result.Message,
+                        Token= result.Data
+                    });
+                return BadRequest(result.Message);
             });
         }
     }
