@@ -7,6 +7,8 @@
         public int Id { get; private set; }
         public string Name { get; private set; }
         public int UserModuleId { get; private set; }
+
+        public bool IsDelted { get; set; }
         #endregion
 
         #region Navigational Properties
@@ -28,8 +30,14 @@
         {
             Name = name;
             UserModuleId = moduleId;
+            this.IsDelted = false;
         }
 
-        #endregion
+        public void Delete()
+        {
+            this.IsDelted = true;
+        }
+
+        #endregion 
     }
 }

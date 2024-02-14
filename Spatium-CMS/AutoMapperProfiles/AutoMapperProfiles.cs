@@ -11,7 +11,6 @@ using Spatium_CMS.Controllers.CommentController.Request;
 using Spatium_CMS.Controllers.CommentController.Response;
 using Spatium_CMS.Controllers.PostController.Request;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
-using Utilities.Results;
 using Spatium_CMS.Controllers.UserRoleController.Response;
 using Spatium_CMS.Controllers.UserRoleController.Request;
 using Spatium_CMS.Controllers.PostController.Response;
@@ -67,6 +66,11 @@ namespace Spatium_CMS.AutoMapperProfiles
 
 
                 CreateMap<UserRoleInput, RoleRequest>().ReverseMap();
+
+                CreateMap<UserModule, ViewModule>();
+                CreateMap<UserPermission,UserModulePermissions>()
+                    .ForMember(dest => dest.Id,otp=>otp.MapFrom(src => src.Id))
+                    .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));    
                 #endregion
 
                 #region create role mapper
