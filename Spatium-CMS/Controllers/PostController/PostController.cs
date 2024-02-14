@@ -102,9 +102,13 @@ namespace Spatium_CMS.Controllers.PostController
                     {
                         return BadRequest("Invalid date format");
                     }
-                    found.SchedualedPost(scheduledPublishDateTime, scheduledUnpublishDateTime);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok(mapper.Map<PostRespone>(found));
+                    if (!(scheduledPublishDateTime < DateTime.UtcNow && scheduledUnpublishDateTime <= DateTime.UtcNow) && !(scheduledUnpublishDateTime <= scheduledPublishDateTime) && !(scheduledPublishDateTime >= scheduledUnpublishDateTime))
+                    {
+                        found.SchedualedPost(scheduledPublishDateTime, scheduledUnpublishDateTime);
+                        await unitOfWork.SaveChangesAsync();
+                        return Ok(mapper.Map<PostRespone>(found));
+                    }
+                    return BadRequest("Invalid Schedual DateTime in PublishDateTime or UnpublishDateTime ");
                 }
                 return NotFound();
             });
@@ -131,7 +135,7 @@ namespace Spatium_CMS.Controllers.PostController
         }
         [HttpPut]
         [Route("UnPublishedPost")]
-        //[PermissionFilter(PermissionsEnum.UnpublishPost)]
+        [PermissionFilter(PermissionsEnum.UnpublishPost)]
         public Task<IActionResult> UnPublishedPost(int postId)
         {
             return TryCatchLogAsync(async () =>

@@ -6,6 +6,8 @@
         public string UserRoleId { get; private set; }
         public int UserPermissionId { get; private set; }
 
+        public bool IsDeleted { get; set; }
+
         #endregion
 
         #region Navigtional Properties
@@ -22,8 +24,13 @@
         {
             UserRoleId = userRoleId;
             UserPermissionId = userPermissionId;
+            this.IsDeleted = false;
         }
         #endregion
-
+       
+        public void Deleted()
+        {
+            this.IsDeleted = true;
+        }
     }
 }

@@ -18,11 +18,13 @@ namespace Domain.ApplicationUserAggregate
         public Task CreatAsync(UserRole role);
         public Task UpdateAsync(string roleId, UserRole role);
 
+        public Task<IReadOnlyList<UserRole>> GetDefaultRoles();
+
+        public Task<List<UserModule>> GetModuleWithPermissions();
+
         #region Role Deleation
-        //public Task DeleteRoleAsync(string roleId);
-        public Task<bool> IsRoleAssignedToUserAsync(string roleId);
-        public Task<bool> DoesRoleHavePermissionsAsync(string roleId);
-        public Task<ApplicationUser> GetUserInRoleAsync(string roleId); 
+        public Task<List<RolePermission>> GetRolePermissionsAsync(string roleId);
+        public Task<List<ApplicationUser>> GetUserInRoleAsync(string roleId); 
         #endregion
 
     }

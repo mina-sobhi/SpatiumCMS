@@ -5,6 +5,7 @@ using Domian.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.IdentityModel.Tokens;
 using Spatium_CMS.Controllers.UserRoleController.Converter;
 using Spatium_CMS.Controllers.UserRoleController.Request;
@@ -22,6 +23,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<UserRole> roleManager;
+
 
         public UserRoleController(ILogger<UserRoleController> logger, UserManager<ApplicationUser> userManager, IMapper mapper, IUnitOfWork unitOfWork, RoleManager<UserRole> roleManager)
             : base(unitOfWork, mapper, logger)
@@ -143,8 +145,36 @@ namespace Spatium_CMS.Controllers.UserRoleController
             });
         }
 
+        [HttpGet]
+        [Route("GetDefaultRoles")]
+        public Task<IActionResult> GetDefaultRoles()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var roles = await unitOfWork.RoleRepository.GetDefaultRoles();
+                if (roles == null)
+                    return NotFound("not found roles");
+                var roleresualt = mapper.Map<List<ViewRoles>>(roles);
+                return Ok(roleresualt);
+            });
+        }
+
+        [HttpGet]
+        [Route("GetModuleWithPermissions")]
+        public Task<IActionResult> GetModuleWithPermissions()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var module = await unitOfWork.RoleRepository.GetModuleWithPermissions();
+                if (module == null)
+                    return NotFound("not found Module");
+                var moduleResualt = mapper.Map<List<ViewModule>>(module);
+                return Ok(moduleResualt);
+            });
+        }
+
         [HttpPost]
-        [Route("createRole")]
+        [Route("CreateRole")]
         [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> CreateRole(RoleRequest request)
         {
@@ -170,6 +200,21 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 var newRole = new UserRole(roleInput);
                 var result = unitOfWork.RoleRepository.CreatAsync(newRole);
 
+
+                if (!currentUser.ParentUserId.IsNullOrEmpty())
+                {
+                    roleInput = converter.CreateUserRoleInput(request, currentUser.ParentUserId);
+                    roleInput.RoleOwnerPriority = currentUser.Role.Priority;
+                }
+                else
+                {
+                    roleInput = converter.CreateUserRoleInput(request, currentUser.Id);
+                    roleInput.RoleOwnerPriority = currentUser.Role.Priority;
+                }
+
+                var newRole = new UserRole(roleInput);
+                var result = unitOfWork.RoleRepository.CreatAsync(newRole);
+
                 if (result.IsCompletedSuccessfully)
                 {
                     await unitOfWork.SaveChangesAsync();
@@ -180,13 +225,17 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 }
                 return BadRequest(new RoleResponse()
                 {
+
                     Messege = $"can not create role"
                 });
             });
         }
 
+
         [HttpPut]
         [Route("UpdateRole")]
+        [Authorize(Roles = "Super Admin")]
+
         [Authorize(Roles ="Super Admin")]
         public Task<IActionResult> UpdateRole(UpdateUserRoleRequest request)
         {
@@ -220,8 +269,11 @@ namespace Spatium_CMS.Controllers.UserRoleController
 
         [HttpDelete]
         [Route("DeleteRole")]
-        public async Task<IActionResult> DeleteRole(string roleId)
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> DeleteRole(string roleId)
         {
+            return TryCatchLogAsync(async () =>{
+
             var roleAssignedToUsers = await unitOfWork.RoleRepository.IsRoleAssignedToUserAsync(roleId);
             var roleHasPermissions = await
              unitOfWork.RoleRepository.DoesRoleHavePermissionsAsync(roleId);
@@ -232,12 +284,27 @@ namespace Spatium_CMS.Controllers.UserRoleController
             }
             else
             {
-                return BadRequest("Cannot delete role. It is not assigned to any users or does not have associated permissions.");
-            }
+                var userId = GetUserId();
+                var currentUser = await _userManager.FindByIdAsync(userId);
+                var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId);
+
+                if (role.RoleOwner != null && currentUser.Id==role.RoleOwnerId)
+                {
+                    var roleUsers = await unitOfWork.RoleRepository.GetUserInRoleAsync(roleId);
+                    var rolePermissions=await unitOfWork.RoleRepository.GetRolePermissionsAsync(roleId);
+                    foreach (var user in roleUsers)
+                    {
+                        //implement un Assigned role to users
+                    }
+                    foreach (var rolePermission in rolePermissions)
+                        rolePermission.Deleted();
+                }
+                return BadRequest(new RoleResponse()
+                {
+                    Messege = "Cannot delete role. It is Defualt Role or you do not have permission for it."
+                });
+            });
         }
-
-
-
     }
 }
 

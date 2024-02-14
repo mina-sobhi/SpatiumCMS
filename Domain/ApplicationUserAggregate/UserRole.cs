@@ -11,7 +11,8 @@ namespace Domain.ApplicationUserAggregate
         public string Description { get; private set; }
         public bool IsActive { get; private set; }
         public string RoleOwnerId { get; private set; }
-        public int Priority { get; private set; }
+        public int Priority { get; private set;}
+        public bool IsDeleted { get; private set;}
         #endregion
 
         #region Navigational Properties
@@ -37,6 +38,7 @@ namespace Domain.ApplicationUserAggregate
             IsActive = userRoleInput.IsActive;
             RoleOwnerId = userRoleInput.RoleOwnerId;
             Priority = userRoleInput.RoleOwnerPriority++;
+            this.IsDeleted = false;
             foreach (var permissionId in userRoleInput.UserPermissionId)
             {
                 var newrolepermission = new RolePermission(this.Id, permissionId);
@@ -44,6 +46,10 @@ namespace Domain.ApplicationUserAggregate
             }
         }
         #endregion
+        public void Delete()
+        {
+            this.IsDeleted = true;
+            }
         public void ClearPermissions()
         {
             _rolePermission.Clear();
