@@ -121,6 +121,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             });
         }
 
+
         [HttpPut]
         [Route("UpdateRole")]
         [Authorize(Roles = "Super Admin")]
