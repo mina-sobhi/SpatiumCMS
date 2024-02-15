@@ -42,9 +42,9 @@ namespace Infrastructure.Database.Repository
 
             return paginatedQuery.ToList();
         }
-        public async Task<Post> GetByIdAsync(int id)
+        public async Task<Post> GetByIdAsync(int id , int blogId)
         {
-            return await SpatiumDbContent.Posts.Include( P => P.TableOfContents).FirstOrDefaultAsync(P => P.Id == id);
+            return await SpatiumDbContent.Posts.Include( P => P.TableOfContents).FirstOrDefaultAsync(p => p.Id == id && p.BlogId==blogId);
         }
         public async Task<Post> PostSnippetPreview(int postId)
         {
@@ -54,14 +54,15 @@ namespace Infrastructure.Database.Repository
         {
             await SpatiumDbContent.Posts.AddAsync(post);
         }
-        public async Task DeleteAsync(int id)
-        {
-             SpatiumDbContent.Remove(await GetByIdAsync(id));
-        }
  
         public async Task UpdateAsync(Post post)
         {
             SpatiumDbContent.Posts.Update(post);
+        }
+
+        public Task<Post> GetPostByOwnerId(string userId, int postId)
+        {
+            return SpatiumDbContent.Posts.FirstOrDefaultAsync(x => x.CreatedById == userId && x.Id==postId);
         }
     }
 }

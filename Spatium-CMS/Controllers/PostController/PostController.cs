@@ -31,7 +31,8 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var FlagPost = await unitOfWork.PostRepository.GetByIdAsync(Id);
+                var blogId = GetBlogId();
+                var FlagPost = await unitOfWork.PostRepository.GetByIdAsync(Id,blogId);
                 if (FlagPost == null)
                 {
                     return NotFound();
@@ -91,7 +92,8 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                var blogId=GetBlogId();
+                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
                 if (found != null)
                 {
                     DateTime scheduledPublishDateTime;
@@ -122,7 +124,8 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                var blogId = GetBlogId();
+                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
                 if (found != null)
                 {
 
@@ -140,10 +143,11 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                var blogId= GetBlogId();
+                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
                 if (found != null)
                 {
-                    var post = await unitOfWork.PostRepository.GetByIdAsync(postId);
+                    var post = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
                     post.ChangePostStatus(PostStatusEnum.Unpublished);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
@@ -171,6 +175,7 @@ namespace Spatium_CMS.Controllers.PostController
                     Postinput.CreatedById = GetUserId();
                     var user = await userManager.FindByIdAsync(Postinput.CreatedById);
                     Postinput.BlogId = user.BlogId;
+                    Postinput.CommentsAllowed = true;
                     var post = new Post(Postinput);
                     await unitOfWork.PostRepository.CreateAsync(post);
                     await unitOfWork.SaveChangesAsync();
@@ -185,7 +190,8 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpPut]
-        [PermissionFilterAttribute(PermissionsEnum.UpdatePost)]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdatePost)]
         public Task<IActionResult> Update(UpdatePostRequest updatePostRequest)
         {
             return TryCatchLogAsync(async () =>
@@ -193,8 +199,10 @@ namespace Spatium_CMS.Controllers.PostController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
+                    //var blogId=GetBlogId();
                     var user = await userManager.FindByIdAsync(userId);
-                    var post = await unitOfWork.PostRepository.GetByIdAsync(updatePostRequest.Id);
+                    //if(user.ro)
+                    var post = await unitOfWork.PostRepository.GetPostByOwnerId(userId,updatePostRequest.Id);
                     if (post is null)
                     {
                         return NotFound();
@@ -229,7 +237,8 @@ namespace Spatium_CMS.Controllers.PostController
             {
                 if (ModelState.IsValid)
                 {
-                    var postModel = await unitOfWork.PostRepository.GetByIdAsync(Id);
+                    var blogId=GetBlogId();
+                    var postModel = await unitOfWork.PostRepository.GetByIdAsync(Id, blogId);
                     if (postModel is null)
                     {
                         return NotFound();

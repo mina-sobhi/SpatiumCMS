@@ -7,7 +7,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController.Request
         [Required(ErrorMessage = "Full Name is Required ")]
         [MaxLength(60,ErrorMessage = "full name must be less Than 60 char or equal")]
         [MinLength(3, ErrorMessage = "full name must be greater Than 3 char or equal")]
-        [RegularExpression(@"^[a-zA-Z_ ]+$",ErrorMessage = "Full Name Must Be Only Char")]
+        [RegularExpression(@"^[A-Za-z\s]*$", ErrorMessage = "Full Name Must Be Only Char")]
         public string FullName { get; set; }
 
         //[Required(ErrorMessage = "Job Title is Required")]

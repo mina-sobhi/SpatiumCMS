@@ -59,13 +59,15 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-                var email = GetUserId();
-                var currentuser = await userManager.FindByEmailAsync(email);
-                var userId = currentuser.Id;
-                var userdetailes = await authenticationService.GetUserDetailes(userId);
-                var detailesResult = mapper.Map<ViewUserProfileResult>(userdetailes);
-
-                return Ok(detailesResult);
+                var id = GetUserId();
+                var currentuser = await userManager.FindByIdAsync(id);
+                if (currentuser != null)
+                {
+                    var userdetailes = await authenticationService.GetUserDetailes(currentuser.Id);
+                    var detailesResult = mapper.Map<ViewUserProfileResult>(userdetailes);
+                    return Ok(detailesResult);
+                }
+                return BadRequest("Not found!");
             });
         }
 

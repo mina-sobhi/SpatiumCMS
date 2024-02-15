@@ -29,6 +29,7 @@ namespace Domain.BlogsAggregate
         public string AuthorId { get; private set; }
         public int BlogId { get; private set; }
         public int StatusId {get; private set; }
+        public bool CommentsAllowed { get; private set; }  
         #endregion
 
         #region Navigational Properties
@@ -54,7 +55,6 @@ namespace Domain.BlogsAggregate
         }
         public Post(PostInput postInput)
         {
-
             this.CreationDate = DateTime.UtcNow;
             this.IsDeleted = false;
             this.LikeCount = 0;
@@ -72,6 +72,7 @@ namespace Domain.BlogsAggregate
             this.CreatedById = postInput.CreatedById;
             this.AuthorId = postInput.AuthorId;
             this.BlogId = postInput.BlogId;
+            this.CommentsAllowed = postInput.CommentsAllowed;
             this.StatusId = (int)PostStatusEnum.Draft;
 
             foreach (var item in postInput.TableOfContents)
@@ -107,16 +108,17 @@ namespace Domain.BlogsAggregate
 
         public void ChangePostStatus(PostStatusEnum postStatus)
         {
-            var statusId=(int)postStatus;
-            if (statusId == 1)
+            if (postStatus == PostStatusEnum.Published)
             {
                 this.PublishDate = DateTime.UtcNow;
                 this.UnPublishDate = null;
+                this.StatusId = (int)PostStatusEnum.Published;
             } 
-            else if (statusId == 2)
+            else if (postStatus == PostStatusEnum.Unpublished)
             {
                 this.UnPublishDate = DateTime.UtcNow;
                 this.PublishDate = null;
+                this.StatusId = (int)PostStatusEnum.Unpublished;
             }
         }
 

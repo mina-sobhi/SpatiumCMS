@@ -9,7 +9,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Utilities.Helpers;
 using Utilities.Results;
@@ -74,22 +73,24 @@ namespace Infrastructure.Services.AuthinticationService
         {
             if (user.OTP != null && user.OTP.Equals(otp))
             {
-                //(1 Minute For developing purpose) it should 30 minutes
-                if (DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(1))
+                //(3 Minute For developing purpose) it should 30 minutes
+                if (DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(3))
                 {
-                    user.ChangeOTP(OTPGenerator.GenerateOTP());
+                    user.ClearOTP() ;
                     await userManager.UpdateAsync(user);
-                    await mailService.SendMail(user.Email, "Spatium CMS Verification Email!", $"Your OTP is: {user.OTP}.");
                     return new SpatiumResponse()
                     {
-                        Success = false,
-                        Message = ResponseMessages.OTPExpired
+                        Success = true,
+                        Message = ResponseMessages.OtpConfirmed
                     };
                 }
+                user.ChangeOTP(OTPGenerator.GenerateOTP());
+                await userManager.UpdateAsync(user);
+                await mailService.SendMail(user.Email, "Spatium CMS Verification Email!", $"Your OTP is: {user.OTP}.");
                 return new SpatiumResponse()
                 {
-                    Success = true,
-                    Message = ResponseMessages.OtpConfirmed
+                    Success = false,
+                    Message = ResponseMessages.OTPExpired
                 };
             }
             return new SpatiumResponse()
@@ -217,7 +218,7 @@ namespace Infrastructure.Services.AuthinticationService
         {
             _logger.LogInformation("Registeration Started. user: {user}", newUser);
 
-            var user = await userManager.FindByEmailAsync(newUser.Email);
+            //var user = await userManager.FindByEmailAsync(newUser.Email);
             newUser.ChangeOTP(OTPGenerator.GenerateOTP());
 
             var createUserResult = await userManager.CreateAsync(newUser, password);

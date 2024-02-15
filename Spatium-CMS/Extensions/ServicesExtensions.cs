@@ -63,6 +63,7 @@ namespace Spatium_CMS.Extensions
                options.Password.RequireUppercase = true;
                options.Password.RequireLowercase = true;
                options.Password.RequireDigit = true;
+               options.Password.RequiredLength = 8;
            }).AddEntityFrameworkStores<SpatiumDbContent>()
              .AddDefaultTokenProviders();
 
