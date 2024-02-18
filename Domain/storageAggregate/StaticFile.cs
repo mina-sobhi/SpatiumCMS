@@ -16,7 +16,7 @@ namespace Domain.storageAggregate
         #endregion
 
         #region NavigationProperty
-        public virtual Folder? Folder { get; private set; }
+        public virtual Folder Folder { get; private set; }
         public virtual Blog Blog { get; private set; }
         public virtual ApplicationUser CreatedBy { get; private set; }
 

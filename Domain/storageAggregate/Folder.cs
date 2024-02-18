@@ -12,7 +12,7 @@ namespace Domain.storageAggregate
         public string Name { get; private set; }
         public int StorageId { get; private set; }
         public int BlogId { get; private set; }
-        [ForeignKey(nameof(parent))]
+        [ForeignKey(nameof(Parent))]
         public int? ParentId { get; private set; }
         [ForeignKey(nameof(CreatedBy))]
         public string CreatedById { get; private set; }
@@ -21,7 +21,7 @@ namespace Domain.storageAggregate
         #region NavigationProperty
         public virtual Storage Storage { get; private set; }
         public virtual Blog Blog { get; private set; }
-        public virtual Folder? parent { get; private set; }
+        public virtual Folder Parent { get; private set; }
         public virtual ApplicationUser CreatedBy { get; private set; }
         #endregion
         #region List
