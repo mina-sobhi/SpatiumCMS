@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.BlogsAggregate;
+using Domain.storageAggregate;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -24,6 +25,11 @@ namespace Infrastructure.Database.Database
         public DbSet<Comment> Comments { get; set; }
         public DbSet<TableOfContent> TableOfContents { get; set; }
 
+        #endregion
+        #region Storage Aggregate
+        public DbSet<Storage> Storages { get; set; }
+        public DbSet<Folder> Folders { get; set; }
+        public DbSet<StaticFile> Files { get; set; }
         #endregion
 
         #endregion

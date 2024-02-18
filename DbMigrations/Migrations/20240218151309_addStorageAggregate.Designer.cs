@@ -4,6 +4,7 @@ using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    partial class SpatiumDbContentModelSnapshot : ModelSnapshot
+    [Migration("20240218151309_addStorageAggregate")]
+    partial class addStorageAggregate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -514,7 +517,7 @@ namespace Migrations.Migrations
                     b.Property<string>("FileSize")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FolderId")
+                    b.Property<int>("FolderId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -869,7 +872,8 @@ namespace Migrations.Migrations
                     b.HasOne("Domain.storageAggregate.Folder", "Folder")
                         .WithMany("Files")
                         .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Blog");
 
