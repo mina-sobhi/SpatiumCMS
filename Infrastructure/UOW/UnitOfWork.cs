@@ -1,8 +1,10 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.BlogsAggregate;
+using Domain.storageAggregate;
 using Domian.Interfaces;
 using Infrastructure.Database.Database;
 using Infrastructure.Database.Repository;
+using Infrastructure.Database.Repository.StorageRepository;
 
 namespace Infrastructure.UOW
 {
@@ -12,6 +14,7 @@ namespace Infrastructure.UOW
         private bool disposed = false;
 
         public IBlogRepository BlogRepository { get; }
+        public IStorageRepository StorageRepository { get; }
 
         //public ITableOfContent TableOfContentRepository { get; }
 
@@ -32,6 +35,7 @@ namespace Infrastructure.UOW
             //TableOfContentRepository = new TableOfContentRepository(spatiumDbContent);
             //CommentRepository = new CommentRepository(spatiumDbContent);
             RoleRepository = new UserRoleReposiotry(spatiumDbContent);
+            StorageRepository = new StorageRepository(spatiumDbContent);
             #endregion
         }
 
