@@ -23,27 +23,25 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     [ApiController]
     public class UserManagmentController : CmsControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
-        private readonly IMapper maper;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<UserRole> roleManager;
         private readonly ISendMailService sendMailService;
+        private readonly ILogger<UserManagmentController> logger;
 
-        public UserManagmentController(IUnitOfWork unitOfWork , IMapper maper ,
-            UserManager<ApplicationUser> userManager , RoleManager<UserRole> roleManager 
-            , ISendMailService sendMailService) 
-            : base(unitOfWork, maper) 
+        public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
+            UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager
+            , ISendMailService sendMailService, ILogger<UserManagmentController> logger)
+            : base(unitOfWork, maper,logger)
         {
-            this.unitOfWork = unitOfWork;
-            this.maper = maper;
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.sendMailService = sendMailService;
+            this.logger = logger;
         }
 
         [HttpPost]
         [Route("CreateUser")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.CreateUser)]
         public Task<IActionResult> CreateUser(CreateUserRequest createUserRequest)
         {
@@ -52,29 +50,19 @@ namespace Spatium_CMS.Controllers.UserManagmentController
 
                 if(ModelState.IsValid)
                 {
-                    // get Current User
                     var userId = GetUserId();
-                    var LoginUser = await userManager.FindByIdAsync(userId);
-                    // check user is superAdmin 
-                    //var FlagUserInRole = LoginUser.Role.Name == "Super Admin";
-                    //if (!FlagUserInRole)
-                    //{
-                    //    return Unauthorized("You Are Not Allow To Create User ");
-                    //}
-                    // Create New User 
+                    var loginUser = await userManager.FindByIdAsync(userId);
+
                     var applicationUserInput = new ApplicationUserInput();
                     applicationUserInput.FullName = createUserRequest.FullName;
                     applicationUserInput.ProfileImagePath = createUserRequest.ProfileImagePath;
                     applicationUserInput.Email  =   createUserRequest.Email;
                     applicationUserInput.RoleId = createUserRequest.RoleId;
                     applicationUserInput.JobTitle = "UnAssigned";
-                    applicationUserInput.ParentUserId = LoginUser.Id;
+                    applicationUserInput.ParentUserId = loginUser.Id;
+                    applicationUserInput.ParentBlogId = loginUser.BlogId;
                     var applicationUser = new ApplicationUser(applicationUserInput);
-                    var user = await userManager.FindByEmailAsync(applicationUser.Email);
-                    if (user != null)
-                    {
-                        return BadRequest($"Email {applicationUser.Email} Already Exists ");
-                    }
+
                     var identityResult = await userManager.CreateAsync(applicationUser, createUserRequest.Password);
 
                     if(identityResult.Succeeded)
@@ -85,15 +73,10 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                         await unitOfWork.SaveChangesAsync();
                       
                         string MailBody = $"<h1> Your OTP is {applicationUser.OTP} </h1> <br/> <a style='padding:10px;background-color:blue;color:#fff ;text-decoration:none' href ='https://localhost:7109/api/Authentication/ConfirmEmail?email={applicationUser.Email}&token={encodedToken}'> Verification Email </a>";
-                        var flag = await sendMailService
-                        .SendMail(applicationUser.Email, "Spatium CMS Verification Email!", MailBody);
-                        if(flag)
-                        {
-                            return Ok("User Created Succefuly ");
-                        }
-                        return BadRequest("error In Mail Sever ");
+                        await sendMailService.SendMail(applicationUser.Email, "Spatium CMS Verification Email!", MailBody);
+                        return Ok("User Created Successfully!");
                     }
-                    return BadRequest("Error In DB")
+                    return BadRequest(identityResult.Errors.Select(x => x.Description));
 ;
                 }
                 return BadRequest(ModelState);

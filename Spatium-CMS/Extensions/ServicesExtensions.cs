@@ -58,8 +58,12 @@ namespace Spatium_CMS.Extensions
         public static void ConfigureIdentityDbContext(this IServiceCollection services) =>
            services.AddIdentity<ApplicationUser, UserRole>(options =>
            {
-               options.User.RequireUniqueEmail = false;
-               options.Password.RequireNonAlphanumeric = false;
+               options.User.RequireUniqueEmail = true;
+               options.Password.RequireNonAlphanumeric = true;
+               options.Password.RequireUppercase = true;
+               options.Password.RequireLowercase = true;
+               options.Password.RequireDigit = true;
+               options.Password.RequiredLength = 8;
            }).AddEntityFrameworkStores<SpatiumDbContent>()
              .AddDefaultTokenProviders();
 
@@ -112,7 +116,7 @@ namespace Spatium_CMS.Extensions
           services.AddSwaggerGen(c =>
           {
               c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.PortalApp", Version = "v1" });
-
+              
               #region JWT Token
 
               c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

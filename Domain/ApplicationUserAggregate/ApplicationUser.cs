@@ -21,15 +21,18 @@ namespace Domain.ApplicationUserAggregate
             if (!string.IsNullOrEmpty(input.ParentUserId))
             {
                 ParentUserId = input.ParentUserId;
+                BlogId = input.ParentBlogId;
+            }
+            else
+            {
+                Blog = new Blog(new BlogsAggregate.Input.BlogInput()
+                {
+                    FavIconPath = "Icon path",
+                    Name = FullName,
+                    OwnerId = this.Id
+                });
             }
             CreatedAt = DateTime.UtcNow;
-            Blog= new Blog(new BlogsAggregate.Input.BlogInput()
-            {
-                FavIconPath="Icon path",
-                Name= FullName,
-                OwnerId=this.Id
-            });
-
         }
         #endregion
 
@@ -84,10 +87,18 @@ namespace Domain.ApplicationUserAggregate
             ProfileImagePath=input.ProfileImagePath;
         }
 
-
-        public void ChangeActivation()
+        public void ChangeActivation(bool activeStatus)
         {
-            IsAccountActive=! this.IsAccountActive;
+            IsAccountActive= activeStatus;
+        }
+
+        public void Unassign()
+        {
+            RoleId = "5c78edbb-0121-4a88-a7b1-5172d77e2aed";
+        }
+        public void AssigneToRole(string roleId)
+        {
+           this.RoleId = roleId;
         }
     }
 }

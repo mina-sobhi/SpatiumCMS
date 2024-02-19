@@ -8,5 +8,6 @@
         public string JobTitle { get; set; }
         public string ProfileImagePath { get; set; }
         public string ParentUserId { get; set; }
+        public int ParentBlogId { get; set; }   
     }
 }

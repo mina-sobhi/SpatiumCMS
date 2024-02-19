@@ -15,14 +15,17 @@ namespace Spatium_CMS.Controllers.CommentController
     [ApiController]
     public class CommentController : CmsControllerBase
     {
-        public CommentController(IUnitOfWork unitOfWork , IMapper mapper):base(unitOfWork, mapper) 
-        { }
+        private readonly ILogger<CommentController> logger;
+        public CommentController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentController> logger) : base(unitOfWork, mapper,logger)
+        {
+            this.logger = logger;
+        }
         [HttpGet("{Id:int}")]
         public Task<IActionResult> GetcommentById(int Id)
         {
             return TryCatchLogAsync(async () =>
             {
-                var FlagComment = await unitOfWork.CommentRepository.GetByIdAsync(Id);
+                var FlagComment = await unitOfWork.BlogRepository.GetCommentByIdAsync(Id);
                 if (FlagComment == null)
                 {
                     return NotFound();
@@ -36,7 +39,7 @@ namespace Spatium_CMS.Controllers.CommentController
         {
             return TryCatchLogAsync(async () =>
             {
-                var comments = await unitOfWork.CommentRepository.GetBlogsAsync();
+                var comments = await unitOfWork.BlogRepository.GetCommentsAsync();
                 if (comments.Count() == 0)
                 {
                     return BadRequest(" No comment Yet ");
@@ -59,7 +62,7 @@ namespace Spatium_CMS.Controllers.CommentController
                 {
                     var commentinput = mapper.Map<CommentInput>(commentRequest);
                     var comment = new Comment(commentinput);
-                    await unitOfWork.CommentRepository.CreateAsync(comment);
+                    await unitOfWork.BlogRepository.CreateCommentAsync(comment);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(new 
                     {
@@ -81,7 +84,7 @@ namespace Spatium_CMS.Controllers.CommentController
                     {
                         return BadRequest("Invalid Id");
                     }
-                    var fLagComment = await unitOfWork.CommentRepository.GetByIdAsync(updateCommentRequest.Id);
+                    var fLagComment = await unitOfWork.BlogRepository.GetCommentByIdAsync(updateCommentRequest.Id);
                     if (fLagComment is null)
                     {
                         return NotFound();
@@ -106,7 +109,7 @@ namespace Spatium_CMS.Controllers.CommentController
             {
                 if (ModelState.IsValid)
                 {
-                    var commentModel = await unitOfWork.CommentRepository.GetByIdAsync(Id);
+                    var commentModel = await unitOfWork.BlogRepository.GetCommentByIdAsync(Id);
                     if (commentModel is null)
                     {
                         return NotFound();

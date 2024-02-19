@@ -134,11 +134,14 @@ namespace Migrations.Migrations
                     b.Property<int>("UserPermissionId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.HasKey("UserRoleId", "UserPermissionId");
 
                     b.HasIndex("UserPermissionId");
 
-                    b.ToTable("RolePermission", (string)null);
+                    b.ToTable("RolePermission");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserModule", b =>
@@ -154,7 +157,7 @@ namespace Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserModules", (string)null);
+                    b.ToTable("UserModules");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserPermission", b =>
@@ -164,6 +167,9 @@ namespace Migrations.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -175,13 +181,16 @@ namespace Migrations.Migrations
 
                     b.HasIndex("UserModuleId");
 
-                    b.ToTable("UserPermissions", (string)null);
+                    b.ToTable("UserPermissions");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserRole", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("BlogId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -196,6 +205,9 @@ namespace Migrations.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -204,10 +216,15 @@ namespace Migrations.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
                     b.Property<string>("RoleOwnerId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
@@ -241,7 +258,7 @@ namespace Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Blogs", (string)null);
+                    b.ToTable("Blogs");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Comment", b =>
@@ -281,7 +298,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Post", b =>
@@ -300,6 +317,9 @@ namespace Migrations.Migrations
 
                     b.Property<string>("Category")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("CommentsAllowed")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -359,7 +379,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.TableOfContent", b =>
@@ -391,7 +411,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("TableOfContents", (string)null);
+                    b.ToTable("TableOfContents");
                 });
 
             modelBuilder.Entity("Domain.LookupsAggregate.CommentStatus", b =>
@@ -424,6 +444,126 @@ namespace Migrations.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PostStatus", "Lookup");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Folder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StorageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("StorageId");
+
+                    b.ToTable("Folders");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.StaticFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Caption")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Extention")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileSize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("FolderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("FolderId");
+
+                    b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Storage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Capacity")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("BlogId");
+
+                    b.ToTable("Storages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -547,7 +687,8 @@ namespace Migrations.Migrations
 
                     b.HasOne("Domain.ApplicationUserAggregate.UserRole", "Role")
                         .WithMany("ApplicationUsers")
-                        .HasForeignKey("RoleId");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Blog");
 
@@ -588,9 +729,17 @@ namespace Migrations.Migrations
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserRole", b =>
                 {
+                    b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "RoleOwner")
                         .WithMany("OwnedRoles")
-                        .HasForeignKey("RoleOwnerId");
+                        .HasForeignKey("RoleOwnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Blog");
 
                     b.Navigation("RoleOwner");
                 });
@@ -656,12 +805,12 @@ namespace Migrations.Migrations
             modelBuilder.Entity("Domain.BlogsAggregate.TableOfContent", b =>
                 {
                     b.HasOne("Domain.BlogsAggregate.TableOfContent", "ParentTableOfContent")
-                        .WithMany("TableOfContents")
+                        .WithMany("ChildTableOfContents")
                         .HasForeignKey("ParentTableOfContentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.BlogsAggregate.Post", "Post")
-                        .WithMany()
+                        .WithMany("TableOfContents")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -669,6 +818,82 @@ namespace Migrations.Migrations
                     b.Navigation("ParentTableOfContent");
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Folder", b =>
+                {
+                    b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.storageAggregate.Folder", "parent")
+                        .WithMany("Folders")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.storageAggregate.Storage", "Storage")
+                        .WithMany("Folders")
+                        .HasForeignKey("StorageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Blog");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Storage");
+
+                    b.Navigation("parent");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.StaticFile", b =>
+                {
+                    b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.storageAggregate.Folder", "Folder")
+                        .WithMany("Files")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Blog");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Folder");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Storage", b =>
+                {
+                    b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Blog");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -759,11 +984,25 @@ namespace Migrations.Migrations
             modelBuilder.Entity("Domain.BlogsAggregate.Post", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("TableOfContents");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.TableOfContent", b =>
                 {
-                    b.Navigation("TableOfContents");
+                    b.Navigation("ChildTableOfContents");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Folder", b =>
+                {
+                    b.Navigation("Files");
+
+                    b.Navigation("Folders");
+                });
+
+            modelBuilder.Entity("Domain.storageAggregate.Storage", b =>
+                {
+                    b.Navigation("Folders");
                 });
 #pragma warning restore 612, 618
         }

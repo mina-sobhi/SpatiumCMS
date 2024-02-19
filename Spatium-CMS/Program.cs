@@ -9,10 +9,11 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddControllers();
 builder.Services.ConfigureDbContext(builder.Configuration);
 builder.Services.ConfigureIdentityDbContext();
-builder.Services.AddSwaggerConfigs();
+builder.Services.ConfigureCORS(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddBusinessServices(builder.Configuration);
 builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerConfigs();
 
 var authConfig = builder.Configuration.GetSection("AuthConfig").Get<AuthConfig>();
 if(authConfig != null)
@@ -26,7 +27,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.EnableDeepLinking();
+    });
 }
 
 app.UseHttpsRedirection();

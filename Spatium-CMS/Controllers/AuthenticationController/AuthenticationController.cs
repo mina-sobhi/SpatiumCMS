@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
-using Domain.ApplicationUserAggregate.Inputs;
 using Domain.Interfaces;
 using Domian.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.Controllers.AuthenticationController.Converter;
 using Spatium_CMS.Controllers.AuthenticationController.Request;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
+using Spatium_CMS.Filters;
+using Utilities.Enums;
 using Utilities.Results;
 
 namespace Spatium_CMS.Controllers.AuthenticationController
@@ -21,27 +23,32 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         private readonly IAuthenticationService authenticationService;
         private readonly RoleManager<UserRole> roleManager;
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<AuthenticationController> logger;
 
-        public AuthenticationController(IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager ,IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager) :base(unitOfWork ,mapper)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger)
         {
             this.authenticationService = authenticationService;
             this.roleManager = roleManager;
             this.userManager = userManager;
         }
         [HttpGet]
-        [Route("ChangeUserActivation")]
+        [Route("ChangeUserActivation/{userId}")]
         [Authorize]
-        //[PermissionFilter(PermissionsEnum.UpdateUser)]
-        public Task<IActionResult> ChangeUserActivation(string id)
+        [PermissionFilter(PermissionsEnum.UpdateUser)]
+        public Task<IActionResult> ChangeUserActivation(string userId, bool activeStatus = true)
         {
             return TryCatchLogAsync(async () =>
             {
-                //var email = User.FindFirstValue(ClaimTypes.Email);
-                //var currentuser = await userManager.FindByEmailAsync(email);
-                //var userId = currentuser.Id;
-                await authenticationService.ChangeUserActivation(id);
-                await unitOfWork.SaveChangesAsync();
-                return Ok("the Activation is Changed");
+                var parentUserId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId);
+                if (user != null)
+                {
+                    user.ChangeActivation(activeStatus);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("the Activation is Changed");
+                }
+                return BadRequest("User Not Found");
             });
         }
 
@@ -52,13 +59,15 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-                var email = GetUserId();
-                var currentuser = await userManager.FindByEmailAsync(email);
-                var userId = currentuser.Id;
-                var userdetailes=await authenticationService.GetUserDetailes(userId);
-                var detailesResult=mapper.Map<ViewUserProfileResult>(userdetailes);
-
-                return Ok(detailesResult);
+                var id = GetUserId();
+                var currentuser = await userManager.FindByIdAsync(id);
+                if (currentuser != null)
+                {
+                    var userdetailes = await authenticationService.GetUserDetailes(currentuser.Id);
+                    var detailesResult = mapper.Map<ViewUserProfileResult>(userdetailes);
+                    return Ok(detailesResult);
+                }
+                return BadRequest("Not found!");
             });
         }
 
@@ -68,10 +77,10 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-
                 var converter = new AuthenticationConverter(mapper);
-                var roleId = await roleManager.Roles.Select(x => x.Id).FirstOrDefaultAsync();
-                var userInput = converter.GetApplicationUserInput(request, roleId);
+                var role = await roleManager.Roles.FirstOrDefaultAsync(x => x.Name == "Super Admin");
+                var userInput = converter.GetApplicationUserInput(request, role.Id);
+                userInput.JobTitle = request.FullName;
                 var newUser = new ApplicationUser(userInput);
                 var result = await authenticationService.Register(newUser, request.Password);
                 if (result.Success)
@@ -121,10 +130,15 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         {
             return TryCatchLogAsync(async () =>
             {
-                var result = await authenticationService.ConfirmOTP(request.Email, request.Token, request.OTP);
+                var result = await authenticationService.ConfirmEmail(request.Email, request.Token, request.OTP);
                 if (result.Success)
                 {
-                    return Ok(result.Message);
+                    var response = new ConfirmEmailResponse()
+                    {
+                        Message = result.Message,
+                        Email = request.Email,
+                    };
+                    return Ok(response);
                 }
                 return BadRequest(result.Message);
             });
@@ -185,7 +199,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                         Email = request.Email,
                         Message = ResponseMessages.PasswordDoesnotMatch
                     });
-                var result =await authenticationService.ConfirmForgetPassword(request.Email, request.Token, request.NewPassword);
+                var result = await authenticationService.ConfirmForgetPassword(request.Email, request.Token, request.NewPassword);
                 if (result.Success)
                 {
                     return Ok(new ConfirmForgetPasswordResponse()
@@ -199,6 +213,24 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                     Email = request.Email,
                     Message = result.Message
                 });
+            });
+        }
+
+        [HttpPost]
+        [Route("ConfirmForgetPasswordOTP")]
+        public Task<IActionResult> ConfirmForgetPasswordOTP(ConfirmForgetPasswordOTP confirmOtp)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var result = await authenticationService.ConfirmForgetPasswordOTP(confirmOtp.Email, confirmOtp.OTP);
+                if (result.Success)
+                    return Ok(new ConfirmForgetPasswordOtpResponse()
+                    {
+                        Email = confirmOtp.Email,
+                        Message = result.Message,
+                        Token = result.Data
+                    });
+                return BadRequest(result.Message);
             });
         }
     }

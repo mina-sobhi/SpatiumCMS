@@ -1,16 +1,8 @@
 ﻿using Domain.BlogsAggregate;
-using Domain.BlogsAggregate.Input;
 using Infrastructure.Database.Database;
-using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Globalization;
-using System.Reflection;
 using Domain.Base;
-using System;
 using Infrastructure.Extensions;
-using Utilities.Enums;
-
 namespace Infrastructure.Database.Repository
 {
     public class PostRepository : RepositoryBase, IPostRepository
@@ -19,8 +11,6 @@ namespace Infrastructure.Database.Repository
         {
 
         }
-
-
         public async Task<IEnumerable<Post>> filterAsync(int status , string contain= "")
         {
             if (string.IsNullOrEmpty(contain))
@@ -29,9 +19,9 @@ namespace Infrastructure.Database.Repository
             }
             return   await SpatiumDbContent.Posts.Where(p => p.StatusId == status && p.Title.Contains(contain)).ToListAsync();
         }
-        public async Task<List<Post>> GetPostsAsync(GetEntitiyParams postParams)
+        public async Task<List<Post>> GetPostsAsync(GetEntitiyParams postParams,int blogId)
         {
-            var query = SpatiumDbContent.Posts.AsQueryable();
+            var query = SpatiumDbContent.Posts.Where(x=>x.BlogId==blogId).AsQueryable();
 
             if (!string.IsNullOrEmpty(postParams.FilterColumn) && !string.IsNullOrEmpty(postParams.FilterValue))
             {
@@ -52,9 +42,9 @@ namespace Infrastructure.Database.Repository
 
             return paginatedQuery.ToList();
         }
-        public async Task<Post> GetByIdAsync(int id)
+        public async Task<Post> GetByIdAsync(int id , int blogId)
         {
-            return await SpatiumDbContent.Posts.Include( P => P.TableOfContents).FirstOrDefaultAsync(P => P.Id == id);
+            return await SpatiumDbContent.Posts.Include( P => P.TableOfContents).FirstOrDefaultAsync(p => p.Id == id && p.BlogId==blogId);
         }
         public async Task<Post> PostSnippetPreview(int postId)
         {
@@ -64,20 +54,15 @@ namespace Infrastructure.Database.Repository
         {
             await SpatiumDbContent.Posts.AddAsync(post);
         }
-        public async Task DeleteAsync(int id)
-        {
-             SpatiumDbContent.Remove(await GetByIdAsync(id));
-        }
  
         public async Task UpdateAsync(Post post)
         {
             SpatiumDbContent.Posts.Update(post);
         }
 
-        public async Task PostStatusCahngeAsync(int postId, PostStatusEnum postStatus)
+        public Task<Post> GetPostByOwnerId(string userId, int postId)
         {
-            var found = await SpatiumDbContent.Posts.FindAsync(postId);
-            found.ChangePostStatus(postStatus); 
+            return SpatiumDbContent.Posts.FirstOrDefaultAsync(x => x.CreatedById == userId && x.Id==postId);
         }
     }
 }

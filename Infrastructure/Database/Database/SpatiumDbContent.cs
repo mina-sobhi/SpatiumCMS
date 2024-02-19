@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.BlogsAggregate;
+using Domain.storageAggregate;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -25,6 +26,11 @@ namespace Infrastructure.Database.Database
         public DbSet<TableOfContent> TableOfContents { get; set; }
 
         #endregion
+        #region Storage Aggregate
+        public DbSet<Storage> Storages { get; set; }
+        public DbSet<Folder> Folders { get; set; }
+        public DbSet<StaticFile> Files { get; set; }
+        #endregion
 
         #endregion
 
@@ -47,7 +53,12 @@ namespace Infrastructure.Database.Database
 
             modelBuilder.Entity<Post>().HasMany(x => x.TableOfContents).WithOne(x => x.Post).HasForeignKey(x => x.PostId);
             modelBuilder.Entity<TableOfContent>().HasMany(x => x.ChildTableOfContents).WithOne(x => x.ParentTableOfContent).HasForeignKey(x => x.ParentTableOfContentId);
-            
+
+            #region Global Filter
+            modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
+            #endregion
 
             #region Idintity-Configration Seeding-Data
             //var roles = new UserRole[3];

@@ -38,24 +38,18 @@ namespace Infrastructure.Services.AuthinticationService
             return await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
-        public async Task ChangeUserActivation(string userId)
-        {
-            var user=  await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            user.ChangeActivation();
-        }
-
         public async Task<SpatiumResponse> ConfirmForgetPassword(string email, string token, string newPassword)
         {
             _logger.LogInformation("Confirm Change Email started for email {email} at {time}", email, DateTime.UtcNow);
             var user = await userManager.FindByEmailAsync(email);
-            var decodedToken=WebUtility.UrlDecode(token);
-            if(user!=null)
+            var decodedToken = WebUtility.UrlDecode(token);
+            if (user != null)
             {
-                var result=await userManager.ResetPasswordAsync(user, decodedToken, newPassword);
-                user.ClearOTP();
-                await userManager.UpdateAsync(user);
-                if(result.Succeeded)
+                var result = await userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+                if (result.Succeeded)
                 {
+                    user.ClearOTP();
+                    await userManager.UpdateAsync(user);
                     return new SpatiumResponse()
                     {
                         Success = true,
@@ -65,7 +59,7 @@ namespace Infrastructure.Services.AuthinticationService
                 return new SpatiumResponse()
                 {
                     Success = false,
-                    Message = string.Join('\n',result.Errors.Select(x=>x.Description).ToArray())
+                    Message = string.Join('\n', result.Errors.Select(x => x.Description).ToArray())
                 };
             }
             return new SpatiumResponse()
@@ -75,39 +69,73 @@ namespace Infrastructure.Services.AuthinticationService
             };
         }
 
-        public async Task<SpatiumResponse> ConfirmOTP(string email, string token, string otp)
+        private async Task<SpatiumResponse> ConfirmOtp(ApplicationUser user, string otp)
         {
-            _logger.LogInformation("Confirm OTP started for email {email} at {time}", email, DateTime.UtcNow);
+            if (user.OTP != null && user.OTP.Equals(otp))
+            {
+                //(3 Minute For developing purpose) it should 30 minutes
+                if (DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(3))
+                {
+                    user.ClearOTP() ;
+                    await userManager.UpdateAsync(user);
+                    return new SpatiumResponse()
+                    {
+                        Success = true,
+                        Message = ResponseMessages.OtpConfirmed
+                    };
+                }
+                user.ChangeOTP(OTPGenerator.GenerateOTP());
+                await userManager.UpdateAsync(user);
+                await mailService.SendMail(user.Email, "Spatium CMS Verification Email!", $"Your OTP is: {user.OTP}.");
+                return new SpatiumResponse()
+                {
+                    Success = false,
+                    Message = ResponseMessages.OTPExpired
+                };
+            }
+            return new SpatiumResponse()
+            {
+                Success = false,
+                Message = ResponseMessages.InvalidOTP
+            };
+        }
+
+        public async Task<SpatiumResponse> ConfirmEmail(string email, string token, string otp)
+        {
+            _logger.LogInformation("Confirm Email started for email {email} at {time}", email, DateTime.UtcNow);
             var user = await userManager.FindByEmailAsync(email);
             if (user != null)
             {
-                if (user.OTP != null && !user.EmailConfirmed && user.OTP.Equals(otp))
+                if (user.EmailConfirmed)
                 {
-                    if(DateTime.UtcNow >= user.OTPGeneratedAt.Value.AddMinutes(6))
+                    _logger.LogInformation("Email is already confirmed {email} at {time}", email, DateTime.UtcNow);
+
+                    return new SpatiumResponse
                     {
-                        user.ChangeOTP(OTPGenerator.GenerateOTP());
-                        await userManager.UpdateAsync(user);
-                        await mailService.SendMail(user.Email,"Verification Email",user.OTP);
-                        return new SpatiumResponse()
-                        {
-                            Success = false,
-                            Message = ResponseMessages.OTPExpired
-                        };
-                    }
+                        Success = false,
+                        Message = ResponseMessages.EmailIsAlreadyConfirmed
+                    };
+                }
+
+                var otpConfirmationResult = await ConfirmOtp(user, otp);
+                if (otpConfirmationResult.Success)
+                {
                     var decodedToken = WebUtility.UrlDecode(token);
                     var identityResult = await userManager.ConfirmEmailAsync(user, decodedToken);
+
                     if (identityResult.Succeeded)
                     {
-                        _logger.LogInformation("Email Confirmed forr user {user} at {time}", user, DateTime.UtcNow);
-                        //To be modified using unit of work to save changes once (turn of auto save of identity)
                         user.ClearOTP();
+                        _logger.LogInformation("Email Confirmed forr user {user} at {time}", user, DateTime.UtcNow);
                         await userManager.UpdateAsync(user);
+
                         return new SpatiumResponse
                         {
                             Success = true,
                             Message = ResponseMessages.EmailConfirmedSuccessfully
                         };
                     }
+
                     return new SpatiumResponse
                     {
                         Success = false,
@@ -115,8 +143,7 @@ namespace Infrastructure.Services.AuthinticationService
                     };
                 }
             }
-            _logger.LogInformation("Email Not Found {email} at {time}", email, DateTime.UtcNow);
-
+            _logger.LogInformation("Email Not Found or Invalid OTP {email} at {time}", email, DateTime.UtcNow);
             return new SpatiumResponse()
             {
                 Success = false,
@@ -129,15 +156,12 @@ namespace Infrastructure.Services.AuthinticationService
             var user = await userManager.FindByEmailAsync(email);
             if (user != null)
             {
-                var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = WebUtility.UrlEncode(token);
                 user.ChangeOTP(OTPGenerator.GenerateOTP());
                 await mailService.SendMail(user.Email, "Spatium CMS Verification Email!", $"Your OTP is: {user.OTP}.");
                 await userManager.UpdateAsync(user);
                 return new SpatiumResponse<string>()
                 {
                     Success = true,
-                    Data = encodedToken,
                     Message = ResponseMessages.ForgetPasswordEmailSent
                 };
             }
@@ -167,6 +191,7 @@ namespace Infrastructure.Services.AuthinticationService
                         },
                     };
                 }
+
                 var tokenParams = await GenerateToken(user);
                 var loggedInUser = new LoggedInUser()
                 {
@@ -192,27 +217,31 @@ namespace Infrastructure.Services.AuthinticationService
         public async Task<SpatiumResponse<string>> Register(ApplicationUser newUser, string password)
         {
             _logger.LogInformation("Registeration Started. user: {user}", newUser);
-            var user = await userManager.FindByEmailAsync(newUser.Email);
-            if (user != null)
+
+            //var user = await userManager.FindByEmailAsync(newUser.Email);
+            newUser.ChangeOTP(OTPGenerator.GenerateOTP());
+
+            var createUserResult = await userManager.CreateAsync(newUser, password);
+
+            if (createUserResult.Succeeded)
             {
-                _logger.LogInformation("User is already registered. user: {user}", newUser);
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var encodedToken = WebUtility.UrlEncode(token);
+                _logger.LogInformation("User Created Successfully. user {user} at {date}", newUser, DateTime.UtcNow);
+                await mailService.SendMail(newUser.Email, "Spatium CMS Verification Email!", $"Your OTP is: {newUser.OTP}.");
                 return new SpatiumResponse<string>()
                 {
-                    Success = false,
-                    Message = ResponseMessages.EmailIsAlreadyExist
+                    Success = true,
+                    Message = ResponseMessages.UserCreatedSuccessfully,
+                    Data = encodedToken
                 };
             }
-            newUser.ChangeOTP(OTPGenerator.GenerateOTP());
-            await userManager.CreateAsync(newUser, password);
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var encodedToken = WebUtility.UrlEncode(token);
-            _logger.LogInformation("User Created Successfully. user {user} at {date}", newUser, DateTime.UtcNow);
-            await mailService.SendMail(newUser.Email, "Spatium CMS Verification Email!", $"Your OTP is: {newUser.OTP}.");
+
+            _logger.LogInformation("Registeration failed with {errors} user: {newUser.Email}", createUserResult.Errors, newUser.Email);
             return new SpatiumResponse<string>()
             {
-                Success = true,
-                Message = ResponseMessages.UserCreatedSuccessfully,
-                Data = encodedToken
+                Success = false,
+                Message = string.Join(System.Environment.NewLine, createUserResult.Errors.Select(x => x.Description).ToArray())
             };
         }
 
@@ -228,6 +257,14 @@ namespace Infrastructure.Services.AuthinticationService
                     {
                         Message = ResponseMessages.EmailIsAlreadyConfirmed,
                         Success = false,
+                    };
+                }
+                if (user.OTPGeneratedAt != null && DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(30))
+                {
+                    return new SpatiumResponse<string>()
+                    {
+                        Message = ResponseMessages.OtpWaitingPeroidError,
+                        Success = false
                     };
                 }
                 var newOtp = OTPGenerator.GenerateOTP();
@@ -254,12 +291,14 @@ namespace Infrastructure.Services.AuthinticationService
         private async Task<TokenParameters> GenerateToken(ApplicationUser user)
         {
             _logger.LogDebug("Generating Token for user {email} at {time}", user.Email, DateTime.UtcNow);
-            var permissions = await unitOfWork.RoleRepository.GetRolePermissionIds(user.Id);
+            var permissions = await unitOfWork.RoleRepository.GetRolePermissionIds(user.RoleId);
             var claims = new List<Claim>()
             {
                 new (ClaimTypes.NameIdentifier,user.Id),
                 new (ClaimTypes.Email,user.Email),
-                new ("RoleId",user.RoleId)
+                new ("RoleId",user.RoleId),
+                new (ClaimTypes.Role,user.Role.Name),
+                new ("BlogId",user.BlogId.ToString())
             };
             foreach (var item in permissions)
             {
@@ -277,6 +316,44 @@ namespace Infrastructure.Services.AuthinticationService
             var tokenExpireDate = token.ValidTo;
             _logger.LogInformation("Token Generated for user: {email} at {time}", user.Email, DateTime.UtcNow);
             return new TokenParameters(tokenStr, tokenExpireDate);
+        }
+
+        public async Task<SpatiumResponse<string>> ConfirmForgetPasswordOTP(string email, string otp)
+        {
+            _logger.LogInformation("confirm Forget Password OTP Started for email: {email}", email);
+
+            var user = await userManager.FindByEmailAsync(email);
+            if (user != null)
+            {
+                var otpConfirmationResult = await ConfirmOtp(user, otp);
+                if (otpConfirmationResult.Success)
+                {
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                    var encodedToken = WebUtility.UrlEncode(token);
+                    user.ClearOTP();
+                    await userManager.UpdateAsync(user);
+                    _logger.LogInformation("OTP Confirmed email: {email}", email);
+
+                    return new SpatiumResponse<string>
+                    {
+                        Success = true,
+                        Data = encodedToken,
+                        Message = ResponseMessages.OtpConfirmed
+                    };
+                }
+
+                return new SpatiumResponse<string>()
+                {
+                    Message = ResponseMessages.InvalidOTP,
+                    Success = false,
+                };
+            }
+
+            return new SpatiumResponse<string>()
+            {
+                Message = ResponseMessages.InvalidEmail,
+                Success = false,
+            };
         }
     }
 }

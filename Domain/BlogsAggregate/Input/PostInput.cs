@@ -14,11 +14,11 @@ namespace Domain.BlogsAggregate.Input
         public string Tag { get;  set; }
         public DateTime? PublishDate { get;  set; }
         public DateTime? UnPublishDate { get;  set; }
-     
         public int StatusId { get;  set; }
         public string CreatedById { get;  set; }
         public string AuthorId { get;  set; }
         public int BlogId { get;  set; }
+        public bool CommentsAllowed { get; set; }
 
         public List<TableOfContentInput> TableOfContents = new List<TableOfContentInput>();
     }
