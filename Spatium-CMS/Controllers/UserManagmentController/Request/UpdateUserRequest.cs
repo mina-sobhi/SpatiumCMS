@@ -7,8 +7,8 @@ namespace Spatium_CMS.Controllers.UserManagmentController.Request
         [Required(ErrorMessage = "Full Name is Required ")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "Role Id is Required ")]
-        public string RoleId { get; set; }
+        //[Required(ErrorMessage = "Role Id is Required ")]
+        //public string RoleId { get; set; }
 
         [Required(ErrorMessage = " Iamge is Required ")]
         public string ProfileImagePath { get; set; }

@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Authorization;
 using Domain.Base;
 using Utilities.Enums;
 using Spatium_CMS.Filters;
+using Infrastructure.Strategies.AuthorizationStrategy;
+using Utilities.Results;
+using Utilities.Exceptions;
+using Infrastructure.Extensions;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
@@ -18,43 +22,39 @@ namespace Spatium_CMS.Controllers.PostController
     public class PostController : CmsControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly ILogger<PostController> logger;
+        private readonly IAuthorizationStrategyFactory authorizationStrategyFactory;
 
-        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger)
+        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAuthorizationStrategyFactory authorizationStrategyFactory) : base(unitOfWork, mapper, logger)
         {
             this.userManager = userManager;
+            this.authorizationStrategyFactory = authorizationStrategyFactory;
         }
 
         [HttpGet("{Id:int}")]
         [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadPost)]
         public Task<IActionResult> GetPostById(int Id)
         {
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var FlagPost = await unitOfWork.BlogRepository.GetPostByIdAsync(Id,blogId);
-                if (FlagPost == null)
-                {
-                    return NotFound();
-                }
-                var result = mapper.Map<PostRespone>(FlagPost);
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(Id, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                var result = mapper.Map<PostRespone>(post);
                 return Ok(result);
             });
         }
 
         [HttpGet]
-        [Route("GetPostSnippetPreview")]
+        [Route("GetPostSnippetPreview/{id}")]
         [Authorize]
-        public Task<IActionResult> GetPostSnippetPreview(int postId)
+        [PermissionFilter(PermissionsEnum.ReadPost)]
+        public Task<IActionResult> GetPostSnippetPreview(int id)
         {
             return TryCatchLogAsync(async () =>
             {
-                var FlagPost = await unitOfWork.BlogRepository.PostSnippetPreview(postId);
-                if (FlagPost == null)
-                {
-                    return NotFound();
-                }
-                var result = mapper.Map<PostSnippetPreviewResponse>(FlagPost);
+                var blogId=GetBlogId();
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(id, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                var result = mapper.Map<PostSnippetPreviewResponse>(post);
                 return Ok(result);
             });
         }
@@ -68,51 +68,41 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var userId = GetUserId();
-                var user = await userManager.FindByIdAsync(userId);
-                if (user == null)
-                    return BadRequest("User Not found");
+                var user = await userManager.FindByIdAsync(userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var posts = await unitOfWork.BlogRepository.GetPostsAsync(postParams, user.BlogId);
-                if (posts.Count() <= 0)
-                {
-                    return BadRequest(" No post Yet ");
-                }
-                List<PostRespone> PostsResults = new List<PostRespone>();
+                List<PostRespone> postsResponse = new List<PostRespone>();
                 foreach (var item in posts)
                 {
-                    PostsResults.Add(mapper.Map<PostRespone>(item));
+                    postsResponse.Add(mapper.Map<PostRespone>(item));
                 }
-                return Ok(PostsResults);
+                return Ok(postsResponse);
             });
         }
 
         [HttpPut]
         [Route("SchedulePost")]
         [Authorize]
+        [PermissionFilter(PermissionsEnum.PublishPost)]
         public Task<IActionResult> SchedulePost(int postId, string ScheduledPublishDateTime, string ScheduledUnpublishDateTime)
         {
             return TryCatchLogAsync(async () =>
             {
-                var blogId=GetBlogId();
-                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
-                if (found != null)
-                {
-                    DateTime scheduledPublishDateTime;
-                    DateTime scheduledUnpublishDateTime;
+                var blogId = GetBlogId();
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
 
-                    if (!DateTime.TryParse(ScheduledPublishDateTime, out scheduledPublishDateTime) ||
-                        !DateTime.TryParse(ScheduledUnpublishDateTime, out scheduledUnpublishDateTime))
-                    {
-                        return BadRequest("Invalid date format");
-                    }
-                    if (!(scheduledPublishDateTime < DateTime.UtcNow && scheduledUnpublishDateTime <= DateTime.UtcNow) && !(scheduledUnpublishDateTime <= scheduledPublishDateTime) && !(scheduledPublishDateTime >= scheduledUnpublishDateTime))
-                    {
-                        found.SchedualedPost(scheduledPublishDateTime, scheduledUnpublishDateTime);
-                        await unitOfWork.SaveChangesAsync();
-                        return Ok(mapper.Map<PostRespone>(found));
-                    }
-                    return BadRequest("Invalid Schedual DateTime in PublishDateTime or UnpublishDateTime ");
+                if (!DateTime.TryParse(ScheduledPublishDateTime, out DateTime scheduledPublishDateTime) ||
+                    !DateTime.TryParse(ScheduledUnpublishDateTime, out DateTime scheduledUnpublishDateTime))
+                {
+                    throw new SpatiumException(ResponseMessages.InvalidDateFormat);
                 }
-                return NotFound();
+                if (!(scheduledPublishDateTime < DateTime.UtcNow) && !(scheduledUnpublishDateTime <= DateTime.UtcNow) && !(scheduledUnpublishDateTime <= scheduledPublishDateTime) && !(scheduledPublishDateTime >= scheduledUnpublishDateTime))
+                {
+                    post.SchedualedPost(scheduledPublishDateTime, scheduledUnpublishDateTime);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok(mapper.Map<PostRespone>(post));
+                }
+                return BadRequest("Invalid Schedual DateTime in PublishDateTime or UnpublishDateTime ");
+
             });
         }
 
@@ -125,34 +115,26 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
-                if (found != null)
-                {
-
-                    found.ChangePostStatus(PostStatusEnum.Published);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok(mapper.Map<PostRespone>(found));
-                }
-                return NotFound();
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                post.ChangePostStatus(PostStatusEnum.Published);
+                await unitOfWork.SaveChangesAsync();
+                return Ok(mapper.Map<PostRespone>(post));
             });
         }
+
         [HttpPut]
         [Route("UnPublishedPost")]
+        [Authorize]
         [PermissionFilter(PermissionsEnum.UnpublishPost)]
         public Task<IActionResult> UnPublishedPost(int postId)
         {
             return TryCatchLogAsync(async () =>
             {
-                var blogId= GetBlogId();
-                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
-                if (found != null)
-                {
-                    var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
-                    post.ChangePostStatus(PostStatusEnum.Unpublished);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok(mapper.Map<PostRespone>(found));
-                }
-                return NotFound();
+                var blogId = GetBlogId();
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                post.ChangePostStatus(PostStatusEnum.Unpublished);
+                await unitOfWork.SaveChangesAsync();
+                return Ok(mapper.Map<PostRespone>(post));
             });
         }
 
@@ -165,23 +147,27 @@ namespace Spatium_CMS.Controllers.PostController
             {
                 if (ModelState.IsValid)
                 {
-                    var Postinput = mapper.Map<PostInput>(createPostRequest);
+                    var userId = GetUserId();
+                    var blogId = GetBlogId();
 
+                    var postInput = mapper.Map<PostInput>(createPostRequest);
                     foreach (var item in createPostRequest.TableOfContentRequests)
                     {
                         var tableOfContentInput = mapper.Map<TableOfContentInput>(item);
-                        Postinput.TableOfContents.Add(tableOfContentInput);
+                        postInput.TableOfContents.Add(tableOfContentInput);
                     }
-                    Postinput.CreatedById = GetUserId();
-                    var user = await userManager.FindByIdAsync(Postinput.CreatedById);
-                    Postinput.BlogId = user.BlogId;
-                    Postinput.CommentsAllowed = true;
-                    var post = new Post(Postinput);
+                    postInput.CreatedById = userId;
+                    postInput.BlogId = blogId;
+                    postInput.CommentsAllowed = true;
+                    var post = new Post(postInput);
+
                     await unitOfWork.BlogRepository.CreatePostAsync(post);
                     await unitOfWork.SaveChangesAsync();
-                    return Ok(new
+
+                    return Ok(new SpatiumResponse()
                     {
-                        Message = $"post {createPostRequest.Title} Created Successfuly"
+                        Message = $"Post {createPostRequest.Title} Created Successfuly!",
+                        Success = true
                     });
                 }
                 return BadRequest(ModelState);
@@ -199,17 +185,18 @@ namespace Spatium_CMS.Controllers.PostController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
-                    //var blogId=GetBlogId();
-                    var user = await userManager.FindByIdAsync(userId);
-                    //if(user.ro)
-                    var post = await unitOfWork.BlogRepository.GetPostByOwnerId(userId,updatePostRequest.Id);
-                    if (post is null)
-                    {
-                        return NotFound();
-                    }
+                    var blogId = GetBlogId();
+                    var roleId = GetRoleId();
 
+                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId);
+                    var author= await userManager.FindUserInBlogAsync(blogId, userId)?? throw new SpatiumException(ResponseMessages.AuthorNotFound);
+                    var user = await userManager.FindUserInBlogAsync(blogId,userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
+
+                    var strategy = authorizationStrategyFactory.GetEditStrategy(role, blogId, userId, updatePostRequest.Id);
+                    var expression = strategy.GetUpdatePostExpression();
+
+                    var post = await unitOfWork.BlogRepository.GetPostByExpression(expression) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
                     var postInput = mapper.Map<UpdatePostInput>(updatePostRequest);
-
                     foreach (var tableOfContent in updatePostRequest.TableOfContentRequests)
                     {
                         var contentUpdate = mapper.Map<UpdateTableOfContentInput>(tableOfContent);
@@ -218,10 +205,11 @@ namespace Spatium_CMS.Controllers.PostController
                     post.Update(postInput);
 
                     await unitOfWork.SaveChangesAsync();
-                    var response = new UpdatePostResponse()
+
+                    var response = new SpatiumResponse()
                     {
                         Message = $"Post {post.Title} Updated Successfully!",
-                        PostId = post.Id,
+                        Success = true,
                     };
                     return Ok(response);
                 }
@@ -230,24 +218,29 @@ namespace Spatium_CMS.Controllers.PostController
         }
 
         [HttpDelete]
+        [Authorize]
         [PermissionFilter(PermissionsEnum.DeletePost)]
-        public Task<IActionResult> Remove(int Id)
+        public Task<IActionResult> Remove(int id)
         {
             return TryCatchLogAsync(async () =>
             {
                 if (ModelState.IsValid)
                 {
-                    var blogId=GetBlogId();
-                    var postModel = await unitOfWork.BlogRepository.GetPostByIdAsync(Id, blogId);
-                    if (postModel is null)
-                    {
-                        return NotFound();
-                    }
-                    postModel.Delete();
+                    var blogId = GetBlogId();
+                    var roleId = GetRoleId();
+                    var userId = GetUserId();
+
+                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId)?? throw new SpatiumException(ResponseMessages.InvalidRole);
+
+                    var strategy = authorizationStrategyFactory.GetDeleteStartegy(role, blogId, userId, id);
+                    var expression = strategy.GetDeletePostExpression();
+                    var post = await unitOfWork.BlogRepository.GetPostByExpression(expression) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                    post.Delete();
                     await unitOfWork.SaveChangesAsync();
-                    return Ok(new
+                    return Ok(new SpatiumResponse()
                     {
-                        Message = $" post {postModel.Title} Deleted Successfuly "
+                        Message = $"Post {post.Title} Deleted Successfuly!",
+                        Success = true
                     });
                 }
                 return BadRequest(ModelState);
@@ -256,4 +249,3 @@ namespace Spatium_CMS.Controllers.PostController
         }
     }
 }
-

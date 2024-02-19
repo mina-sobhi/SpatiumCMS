@@ -46,10 +46,6 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.Posts.Include( P => P.TableOfContents).FirstOrDefaultAsync(p => p.Id == id && p.BlogId==blogId);
         }
-        public async Task<Post> PostSnippetPreview(int postId)
-        {
-            return await SpatiumDbContent.Posts.FindAsync(postId);
-        }
         public async Task CreateAsync(Post post)
         {
             await SpatiumDbContent.Posts.AddAsync(post);

@@ -2,9 +2,7 @@
 using Domain.BlogsAggregate.Input;
 using Domain.BlogsAggregate;
 using Domian.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Spatium_CMS.Controllers.BlogsController.Request;
 using Spatium_CMS.Controllers.BlogsController.Response;
 using Spatium_CMS.Controllers.CommentController.Response;
 using Spatium_CMS.Controllers.CommentController.Request;
@@ -15,10 +13,8 @@ namespace Spatium_CMS.Controllers.CommentController
     [ApiController]
     public class CommentController : CmsControllerBase
     {
-        private readonly ILogger<CommentController> logger;
         public CommentController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentController> logger) : base(unitOfWork, mapper,logger)
         {
-            this.logger = logger;
         }
         [HttpGet("{Id:int}")]
         public Task<IActionResult> GetcommentById(int Id)

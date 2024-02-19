@@ -23,6 +23,7 @@ namespace Spatium_CMS.Controllers.PostController.Request
 
         [Required]
         [MaxLength(250, ErrorMessage = "Max Length is 250 letter")]
+        [MinLength(10, ErrorMessage = "Min Length is 10 letter")]
         public string MetaDescription { get; set; }
 
         public int ContentLineSpacing { get; set; } = 20;
