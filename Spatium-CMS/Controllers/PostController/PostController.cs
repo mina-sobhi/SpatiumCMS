@@ -32,7 +32,7 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var FlagPost = await unitOfWork.PostRepository.GetByIdAsync(Id,blogId);
+                var FlagPost = await unitOfWork.BlogRepository.GetPostByIdAsync(Id,blogId);
                 if (FlagPost == null)
                 {
                     return NotFound();
@@ -49,7 +49,7 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var FlagPost = await unitOfWork.PostRepository.PostSnippetPreview(postId);
+                var FlagPost = await unitOfWork.BlogRepository.PostSnippetPreview(postId);
                 if (FlagPost == null)
                 {
                     return NotFound();
@@ -71,7 +71,7 @@ namespace Spatium_CMS.Controllers.PostController
                 var user = await userManager.FindByIdAsync(userId);
                 if (user == null)
                     return BadRequest("User Not found");
-                var posts = await unitOfWork.PostRepository.GetPostsAsync(postParams, user.BlogId);
+                var posts = await unitOfWork.BlogRepository.GetPostsAsync(postParams, user.BlogId);
                 if (posts.Count() <= 0)
                 {
                     return BadRequest(" No post Yet ");
@@ -93,7 +93,7 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId=GetBlogId();
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
+                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
                 if (found != null)
                 {
                     DateTime scheduledPublishDateTime;
@@ -125,7 +125,7 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
+                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
                 if (found != null)
                 {
 
@@ -144,10 +144,10 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId= GetBlogId();
-                var found = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
+                var found = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
                 if (found != null)
                 {
-                    var post = await unitOfWork.PostRepository.GetByIdAsync(postId, blogId);
+                    var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
                     post.ChangePostStatus(PostStatusEnum.Unpublished);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(found));
@@ -177,7 +177,7 @@ namespace Spatium_CMS.Controllers.PostController
                     Postinput.BlogId = user.BlogId;
                     Postinput.CommentsAllowed = true;
                     var post = new Post(Postinput);
-                    await unitOfWork.PostRepository.CreateAsync(post);
+                    await unitOfWork.BlogRepository.CreatePostAsync(post);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(new
                     {
@@ -202,7 +202,7 @@ namespace Spatium_CMS.Controllers.PostController
                     //var blogId=GetBlogId();
                     var user = await userManager.FindByIdAsync(userId);
                     //if(user.ro)
-                    var post = await unitOfWork.PostRepository.GetPostByOwnerId(userId,updatePostRequest.Id);
+                    var post = await unitOfWork.BlogRepository.GetPostByOwnerId(userId,updatePostRequest.Id);
                     if (post is null)
                     {
                         return NotFound();
@@ -238,7 +238,7 @@ namespace Spatium_CMS.Controllers.PostController
                 if (ModelState.IsValid)
                 {
                     var blogId=GetBlogId();
-                    var postModel = await unitOfWork.PostRepository.GetByIdAsync(Id, blogId);
+                    var postModel = await unitOfWork.BlogRepository.GetPostByIdAsync(Id, blogId);
                     if (postModel is null)
                     {
                         return NotFound();

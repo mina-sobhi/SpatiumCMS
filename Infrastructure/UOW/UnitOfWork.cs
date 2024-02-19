@@ -13,11 +13,11 @@ namespace Infrastructure.UOW
 
         public IBlogRepository BlogRepository { get; }
 
-        public ITableOfContent TableOfContentRepository { get; }
+        //public ITableOfContent TableOfContentRepository { get; }
 
-        public IPostRepository PostRepository { get; }
+        //public IPostRepository PostRepository { get; }
 
-        public ICommentRepository CommentRepository { get; }
+        //public ICommentRepository CommentRepository { get; }
 
         public IUserRoleRepository RoleRepository { get; }
 
@@ -28,9 +28,9 @@ namespace Infrastructure.UOW
             #region Repos
             //Repo init goes Here
             BlogRepository= new BlogRepository(spatiumDbContent);
-            PostRepository = new PostRepository(spatiumDbContent);
-            TableOfContentRepository = new TableOfContentRepository(spatiumDbContent);
-            CommentRepository = new CommentRepository(spatiumDbContent);
+            //PostRepository = new PostRepository(spatiumDbContent);
+            //TableOfContentRepository = new TableOfContentRepository(spatiumDbContent);
+            //CommentRepository = new CommentRepository(spatiumDbContent);
             RoleRepository = new UserRoleReposiotry(spatiumDbContent);
             #endregion
         }
