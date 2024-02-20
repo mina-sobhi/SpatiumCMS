@@ -1,10 +1,11 @@
 ﻿namespace Spatium_CMS.Controllers.StorageController.Request
 {
-    public class CreateFolderRequest
+    public class RenameFolderRequest
     {
         public int StorageId { get; set; }
         public int? ParentId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string OldName { get; set; }
+        public string NewName { get; set; }
+
     }
 }

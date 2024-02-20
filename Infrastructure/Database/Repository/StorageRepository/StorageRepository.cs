@@ -35,32 +35,48 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             SpatiumDbContent.Folders.Update(folder);
         }
+        public async Task<bool> ChechNameExists(int blogId, int? parenetId ,string FolderName)
+        {
+            bool flag;
+            //if(parenetId == null)
+            //   flag =await SpatiumDbContent.Folders.SingleOrDefaultAsync(f => f.BlogId == blogId && f.ParentId == null && f.Name.ToLower() == FolderName ) is not null? true : false;
+            //else
+            flag = await SpatiumDbContent.Folders.SingleOrDefaultAsync(f => f.BlogId == blogId && f.ParentId == parenetId && f.Name.ToLower() == FolderName) is not null ? true : false;
+            return flag;
+        }
+
+        public async Task<Folder> GetFolderByName(string FolderName, int blogId, int? ParentId)
+        {
+           return await SpatiumDbContent.Folders.SingleOrDefaultAsync(f => f.Name == FolderName&& f.BlogId == blogId && f.ParentId == ParentId);
+        }
         #endregion
         #region File
-            public async Task CreateFileAsync(StaticFile File)
+        public async Task CreateFileAsync(StaticFile File)
+        {
+            await SpatiumDbContent.Files.AddAsync(File);
+        }
+        public async Task DeleteFileAsync(int FileId)
+        {
+            var file = await GetFileAsync(FileId);
+            if (file is not null)
             {
-                await SpatiumDbContent.Files.AddAsync(File);
+                SpatiumDbContent.Files.Remove(file);
             }
-            public async Task DeleteFileAsync(int FileId)
-            {
-                var file = await GetFileAsync(FileId);
-                if (file is not null)
-                {
-                    SpatiumDbContent.Files.Remove(file);
-                }
-            }
-            public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
-            {
-                return await SpatiumDbContent.Files.ToListAsync();
-            }
-            public async Task<StaticFile> GetFileAsync(int id)
-            {
-                return await SpatiumDbContent.Files.FindAsync(id);
-            }
-            public void UpdateFile(StaticFile File)
-            {
-                SpatiumDbContent.Files.Update(File);
-            }
+        }
+        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
+        {
+            return await SpatiumDbContent.Files.ToListAsync();
+        }
+        public async Task<StaticFile> GetFileAsync(int id)
+        {
+            return await SpatiumDbContent.Files.FindAsync(id);
+        }
+        public void UpdateFile(StaticFile File)
+        {
+            SpatiumDbContent.Files.Update(File);
+        }
+
+       
 
         #endregion
     }

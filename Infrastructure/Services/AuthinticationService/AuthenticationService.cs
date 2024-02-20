@@ -302,7 +302,7 @@ namespace Infrastructure.Services.AuthinticationService
             };
             foreach (var item in permissions)
             {
-                claims.Add(new Claim(ClaimTypes.Role, item.ToString()));
+                claims.Add(new Claim("Permissions", item.ToString()));
             }
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authConfig.SecretKey));
             var token = new JwtSecurityToken(
