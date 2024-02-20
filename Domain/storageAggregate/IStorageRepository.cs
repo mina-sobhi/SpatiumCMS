@@ -1,5 +1,5 @@
 ﻿
-namespace Domain.storageAggregate
+namespace Domain.StorageAggregate
 {
     public interface IStorageRepository
     {

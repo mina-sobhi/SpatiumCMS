@@ -560,8 +560,8 @@ namespace Migrations.Migrations
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Capacity")
-                        .HasColumnType("float");
+                    b.Property<string>("Capacity")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Domain.storageAggregate;
+using Domain.StorageAggregate;
 
 namespace Spatium_CMS.AttachmentService
 {

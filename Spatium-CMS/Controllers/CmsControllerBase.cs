@@ -28,15 +28,15 @@ namespace Spatium_CMS.Controllers
             {
                 return await func.Invoke();
             }
-            catch (SpatiumException svuScholarshipException)
+            catch (SpatiumException spatException)
             {
-                _logger.LogInformation("Exception Message: {message}", svuScholarshipException.Message);
+                _logger.LogInformation("Exception Message: {message}", spatException.Message);
                 var response = new SpatiumErrorResponse()
                 {
-                    Message = svuScholarshipException.Message,
+                    Message = spatException.Message,
                     Path = Request.Path
                 };
-                return StatusCode(402, response);
+                return StatusCode(400, response);
             }
             catch (AggregateException aggException)
             {
@@ -48,7 +48,7 @@ namespace Spatium_CMS.Controllers
                         Message = aggException.InnerException.Message,
                         Path = Request.Path
                     };
-                    return StatusCode(402, aggResponse);
+                    return StatusCode(400, aggResponse);
                 }
                 var response = new SpatiumErrorResponse()
                 {
@@ -56,7 +56,7 @@ namespace Spatium_CMS.Controllers
                     Path = Request.Path
                 };
                 _logger.LogError("Exception Message: {message} \n Stack Trace:\n {stack}", aggException.Message, aggException.StackTrace);
-                return StatusCode(402, response);
+                return StatusCode(400, response);
             }
             catch (Exception ex)
             {

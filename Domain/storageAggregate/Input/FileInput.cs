@@ -1,4 +1,4 @@
-﻿namespace Domain.storageAggregate.Input
+﻿namespace Domain.StorageAggregate.Input
 {
     public class FileInput
     {

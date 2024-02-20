@@ -188,7 +188,7 @@ namespace Spatium_CMS.Controllers.PostController
                     var blogId = GetBlogId();
                     var roleId = GetRoleId();
 
-                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId);
+                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId)??throw new SpatiumException(ResponseMessages.InvalidRole);
                     var author= await userManager.FindUserInBlogAsync(blogId, userId)?? throw new SpatiumException(ResponseMessages.AuthorNotFound);
                     var user = await userManager.FindUserInBlogAsync(blogId,userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
 

@@ -13,9 +13,9 @@ namespace Spatium_CMS.Filters
         public PermissionsEnum PermissionsEnum { get; private set; }
         public PermissionsEnum PermissionsEnum2 { get; private set; }
 
-        public PermissionFilterAttribute(PermissionsEnum PermissionsEnum, PermissionsEnum PermissionsEnum2=0)
+        public PermissionFilterAttribute(PermissionsEnum PermissionsEnum, PermissionsEnum PermissionsEnum2 = 0)
         {
-            PermissionValue=(int) PermissionsEnum;
+            PermissionValue = (int)PermissionsEnum;
             PermissionValue2 = (int)PermissionsEnum2;
         }
 

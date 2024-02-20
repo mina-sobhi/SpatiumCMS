@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240219154559_applaychangesinstorageandfileandfolder")]
-    partial class applaychangesinstorageandfileandfolder
+    [Migration("20240220072331_FolderAndStorageFix")]
+    partial class FolderAndStorageFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -563,8 +563,8 @@ namespace Migrations.Migrations
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Capacity")
-                        .HasColumnType("float");
+                    b.Property<string>("Capacity")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");

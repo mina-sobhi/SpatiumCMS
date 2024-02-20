@@ -1,9 +1,9 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Base;
 using Domain.BlogsAggregate;
-using Domain.storageAggregate.Input;
-using Utilities.Exceptions;
-namespace Domain.storageAggregate
+using Domain.StorageAggregate.Input;
+
+namespace Domain.StorageAggregate
 {
     public class StaticFile : EntityBase
     {
@@ -20,11 +20,13 @@ namespace Domain.storageAggregate
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
         #endregion
+
         #region NavigationProperty
         public virtual Folder Folder { get; private set; }
         public virtual Blog Blog { get; private set; }
         public virtual ApplicationUser CreatedBy { get; private set; }
         #endregion
+
         #region Ctor
         public StaticFile()
         {
@@ -62,8 +64,5 @@ namespace Domain.storageAggregate
         private void validations(string Name, string Description)
         {}
         #endregion
-
-
-
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Base;
 using Domain.BlogsAggregate;
-using Domain.storageAggregate.Input;
+using Domain.StorageAggregate.Input;
 using System.ComponentModel.DataAnnotations.Schema;
 using Utilities.Exceptions;
-namespace Domain.storageAggregate
+
+namespace Domain.StorageAggregate
 {
     public class Folder : EntityBase
     {
@@ -20,18 +21,21 @@ namespace Domain.storageAggregate
         [ForeignKey(nameof(CreatedBy))]
         public string CreatedById { get; private set; }
         #endregion
+
         #region NavigationProperty
         public virtual Storage Storage { get; private set; }
         public virtual Blog Blog { get; private set; }
         public virtual Folder Parent { get; private set; }
         public virtual ApplicationUser CreatedBy { get; private set; }
         #endregion
+
         #region List
         private readonly List<StaticFile> _files = new List<StaticFile>();
         public virtual IReadOnlyList<StaticFile> Files { get { return _files.ToList(); } }
         private readonly List<Folder> _folders = new List<Folder>();
         public virtual IReadOnlyList<Folder> Folders { get { return _folders.ToList(); } }
         #endregion
+
         #region Ctor
         public Folder()
         {}
@@ -49,6 +53,7 @@ namespace Domain.storageAggregate
             this.IsDeleted = false;
         }
         #endregion
+
         #region Method
         public void Update(updateFolderInput input)
         {

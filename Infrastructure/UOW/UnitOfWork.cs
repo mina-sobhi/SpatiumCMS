@@ -1,6 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.BlogsAggregate;
-using Domain.storageAggregate;
+using Domain.StorageAggregate;
 using Domian.Interfaces;
 using Infrastructure.Database.Database;
 using Infrastructure.Database.Repository;

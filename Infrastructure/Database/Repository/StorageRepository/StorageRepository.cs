@@ -1,4 +1,4 @@
-﻿using Domain.storageAggregate;
+﻿using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Database.Repository.StorageRepository
