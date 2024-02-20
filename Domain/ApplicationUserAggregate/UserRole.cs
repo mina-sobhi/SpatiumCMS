@@ -62,7 +62,6 @@ namespace Domain.ApplicationUserAggregate
         {
             _rolePermission.Clear();
         }
-
         public void UpdateData(UpdateUserRoleInput updateInput)
         {
             IconPath = updateInput.IconPath;
@@ -94,17 +93,7 @@ namespace Domain.ApplicationUserAggregate
             }
 
         }
+
+
     }
 }
-/* 
-    add new permissions to current role 
-    var newrRolePermissions = request.PermissionIds.Except(updateRoleInput.PermissionIds).ToList();
-    role.AddPermissions(newrRolePermissions);
-
-    //check if the current permissions found and make it is deleted
-    var commonRolePermissions = request.PermissionIds.Intersect(updateRoleInput.PermissionIds).ToList();
-    foreach (var permission in commonRolePermissions)
-    {
-        unitOfWork.RoleRepository.DeleteRolePermission
-    }
-*/
