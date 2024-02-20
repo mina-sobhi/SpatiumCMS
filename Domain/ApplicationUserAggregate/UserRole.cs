@@ -67,7 +67,7 @@ namespace Domain.ApplicationUserAggregate
         {
             IconPath = updateInput.IconPath;
             Description = updateInput.Description;
-
+             
             //change the state of old permission 
             var oldPermissions = _rolePermission.Select(x => x.UserPermissionId).Except(updateInput.PermissionIds);
             foreach (var perm in oldPermissions)
