@@ -26,6 +26,7 @@ namespace Infrastructure.Database.Database
         public DbSet<TableOfContent> TableOfContents { get; set; }
 
         #endregion
+
         #region Storage Aggregate
         public DbSet<Storage> Storages { get; set; }
         public DbSet<Folder> Folders { get; set; }
@@ -58,6 +59,7 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
             #endregion
 
             #region Idintity-Configration Seeding-Data

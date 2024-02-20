@@ -10,6 +10,8 @@ using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Filters;
 using System.Net;
 using Utilities.Enums;
+using Utilities.Exceptions;
+using Utilities.Extensions;
 using Utilities.Helpers;
 
 namespace Spatium_CMS.Controllers.UserManagmentController
@@ -21,7 +23,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<UserRole> roleManager;
         private readonly ISendMailService sendMailService;
-        private readonly ILogger<UserManagmentController> logger;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
             UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager
@@ -31,7 +32,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.sendMailService = sendMailService;
-            this.logger = logger;
         }
 
         [HttpPost]
@@ -42,11 +42,12 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         {
             return TryCatchLogAsync(async () =>
             {
-
                 if(ModelState.IsValid)
                 {
+                    if (createUserRequest.RoleId == MainRolesIdsEnum.SuperAdmin.GetDescription())
+                        throw new SpatiumException(ResponseMessages.InvalidRole);
                     var userId = GetUserId();
-                    var loginUser = await userManager.FindByIdAsync(userId);
+                    var loginUser = await userManager.FindByIdAsync(userId)??throw new SpatiumException(ResponseMessages.UserNotFound);
 
                     var applicationUserInput = new ApplicationUserInput();
                     applicationUserInput.FullName = createUserRequest.FullName;
@@ -69,9 +70,20 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                       
                         string MailBody = $"<h1> Your OTP is {applicationUser.OTP} </h1> <br/> <a style='padding:10px;background-color:blue;color:#fff ;text-decoration:none' href ='https://localhost:7109/api/Authentication/ConfirmEmail?email={applicationUser.Email}&token={encodedToken}'> Verification Email </a>";
                         await sendMailService.SendMail(applicationUser.Email, "Spatium CMS Verification Email!", MailBody);
-                        return Ok("User Created Successfully!");
+
+                        var response = new SpatiumResponse()
+                        {
+                            Message=ResponseMessages.UserCreatedSuccessfully,
+                            Success=true
+                        };
+                        return Ok(response);
                     }
-                    return BadRequest(identityResult.Errors.Select(x => x.Description));
+                    var errorResponse = new SpatiumErrorResponse()
+                    {
+                        Message = string.Join(System.Environment.NewLine, identityResult.Errors.Select(x => x.Description)),
+                        Path = Request.Path,
+                    };
+                    return BadRequest(errorResponse);
 ;
                 }
                 return BadRequest(ModelState);
@@ -85,13 +97,12 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         {
             return TryCatchLogAsync(async () =>
             {
-
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
-                    var LoginUser = await userManager.FindByIdAsync(userId);
+                    var user = await userManager.FindByIdAsync(userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
                     var userUpdateInput = mapper.Map<ApplicationUserUpdateInput>(updateUserRequest);
-                    LoginUser.Update(userUpdateInput);
+                    user.Update(userUpdateInput);
                     await unitOfWork.SaveChangesAsync();
                     return Ok("Update Successfuly");
                 }

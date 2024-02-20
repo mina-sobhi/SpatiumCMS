@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Domian.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using System.Security.Claims;
 using Utilities.Exceptions;
+using Utilities.Results;
 
 namespace Spatium_CMS.Controllers
 {
@@ -29,22 +31,42 @@ namespace Spatium_CMS.Controllers
             catch (SpatiumException svuScholarshipException)
             {
                 _logger.LogInformation("Exception Message: {message}", svuScholarshipException.Message);
-                return StatusCode(402, svuScholarshipException.Message);
+                var response = new SpatiumErrorResponse()
+                {
+                    Message = svuScholarshipException.Message,
+                    Path = Request.Path
+                };
+                return StatusCode(402, response);
             }
             catch (AggregateException aggException)
             {
                 if (aggException.InnerException is SpatiumException)
                 {
-                    _logger.LogInformation("Exception Message: {message} \n Stack Trace:\n {stack}", aggException.Message, aggException.StackTrace); ;
-                    return StatusCode(402, (aggException.InnerException as SpatiumException).Message);
+                    _logger.LogInformation("Exception Message: {message} \n Stack Trace:\n {stack}", aggException.Message, aggException.StackTrace);
+                    var aggResponse = new SpatiumErrorResponse()
+                    {
+                        Message = aggException.InnerException.Message,
+                        Path = Request.Path
+                    };
+                    return StatusCode(402, aggResponse);
                 }
+                var response = new SpatiumErrorResponse()
+                {
+                    Message = aggException.Message,
+                    Path = Request.Path
+                };
                 _logger.LogError("Exception Message: {message} \n Stack Trace:\n {stack}", aggException.Message, aggException.StackTrace);
-                return StatusCode(402, "Error");
+                return StatusCode(402, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Exception Message: {message} \n Stack Trace:\n {stack}", ex.Message, ex.InnerException);
-                return StatusCode(402, "Error");
+                var response = new SpatiumErrorResponse()
+                {
+                    Message = ex.Message,
+                    Path = Request.Path
+                };
+                return StatusCode(402, response);
             }
         }
 
@@ -54,12 +76,16 @@ namespace Spatium_CMS.Controllers
             {
                 return result;
             };
-            throw new SpatiumException("Unauthorized");
+            throw new SpatiumException(ResponseMessages.UnauthorizedAccessLoginFirst);
         }
         protected string GetUserId()
         {
-            return User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            return User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new SpatiumException(ResponseMessages.UnauthorizedAccessLoginFirst);
+        }
 
+        protected string GetRoleId()
+        {
+            return User?.FindFirstValue("RoleId")?? throw new SpatiumException(ResponseMessages.UnauthorizedAccessLoginFirst);
         }
     }
 }

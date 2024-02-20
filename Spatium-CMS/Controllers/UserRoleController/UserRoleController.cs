@@ -14,6 +14,8 @@ using Infrastructure.Extensions;
 using System.Data;
 using System.Security.Claims;
 using Spatium_CMS.Filters;
+using Utilities.Exceptions;
+using Utilities.Results;
 
 namespace Spatium_CMS.Controllers.UserRoleController
 {
@@ -40,15 +42,16 @@ namespace Spatium_CMS.Controllers.UserRoleController
             return TryCatchLogAsync(async () =>
             {
                 string parentUserId = GetUserId();
-                var parentUser = await _userManager.FindByIdAsync(parentUserId);
-                var userResult = await _userManager.FindUserInBlogAsync(parentUser.BlogId, userId);
-                if (userResult is null)
-                {
-                    return BadRequest("Ivalid User Id");
-                }
+                var blogId = GetBlogId();
+                var userResult = await _userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 userResult.Unassign();
                 await unitOfWork.SaveChangesAsync();
-                return Ok(" User UnAssigne Succefuly ");
+                var response = new SpatiumResponse()
+                {
+                    Message = ResponseMessages.UserUnassignedSuccessfully,
+                    Success = true
+                };
+                return Ok(response);
             });
         }
 
@@ -61,35 +64,18 @@ namespace Spatium_CMS.Controllers.UserRoleController
             {
                 var loginUserId = GetUserId();
                 var blogId = GetBlogId();
-                var user = await _userManager.FindUserInBlogAsync(blogId, userId);
-                if (user == null)
-                    return BadRequest("User Not Found");
+                var user = await _userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
 
-                var role = await unitOfWork.RoleRepository.GetAssignRoleById(blogId, roleId);
-                if (role != null)
+                var role = await unitOfWork.RoleRepository.GetAssignRoleById(blogId, roleId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
+
+                user.AssigneToRole(roleId);
+                await unitOfWork.SaveChangesAsync();
+                var response = new SpatiumResponse()
                 {
-                    user.AssigneToRole(roleId);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok("User Assigned Successfully");
-                }
-
-                return BadRequest();
-                //var loginUser = await _userManager.FindByIdAsync(loginUserId);
-
-                //if (user is null || role is null)
-                //{
-                //    return BadRequest(" Ivalid Prameter ");
-                //}
-                //var blogId = loginUser.BlogId;
-                //var priority = loginUser.Role.Priority;
-                //var users = await unitOfWork.RoleRepository.GetUsersByBlogIdAndRolePriority(blogId, priority);
-                //if (users.SingleOrDefault(u => u.Id == user.ParentUserId) is null)
-                //{
-                //    return BadRequest("You Are Not Allow To Change This User");
-                //}
-                //user.AssigneToRole(RoleId);
-                //await unitOfWork.SaveChangesAsync();
-                //return Ok(" User Assigne To Role  Succefuly ");
+                    Message = ResponseMessages.UserAssignedSuccessfully,
+                    Success = true,
+                };
+                return Ok(response);
             });
         }
 

@@ -82,7 +82,7 @@ namespace Domain.ApplicationUserAggregate
         public void Update(ApplicationUserUpdateInput input)
         {
             this.FullName = input.FullName;
-            this.RoleId = input.RoleId;
+            //this.RoleId = input.RoleId;
             PhoneNumber=input.PhoneNumber;
             ProfileImagePath=input.ProfileImagePath;
         }
