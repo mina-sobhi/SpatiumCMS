@@ -13,7 +13,6 @@ using Utilities.Enums;
 using Utilities.Exceptions;
 using Utilities.Extensions;
 using Utilities.Helpers;
-using Utilities.Results;
 
 namespace Spatium_CMS.Controllers.UserManagmentController
 {
