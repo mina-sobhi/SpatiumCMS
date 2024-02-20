@@ -17,13 +17,9 @@ namespace Spatium_CMS.Controllers.Blog
     [ApiController]
     public class BlogController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly ILogger<BlogController> logger;
-
         public BlogController(ILogger<BlogController> logger,IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager) 
-            : base(unitOfWork, mapper, logger)
+            : base(unitOfWork, mapper, logger, userManager)
         {
-            this.userManager = userManager;
         }
 
         //[HttpGet("{Id:int}")]

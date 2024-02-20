@@ -21,16 +21,14 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     [ApiController]
     public class UserManagmentController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<UserRole> roleManager;
         private readonly ISendMailService sendMailService;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
             UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager
             , ISendMailService sendMailService, ILogger<UserManagmentController> logger)
-            : base(unitOfWork, maper,logger)
+            : base(unitOfWork, maper,logger, userManager)
         {
-            this.userManager = userManager;
             this.roleManager = roleManager;
             this.sendMailService = sendMailService;
         }

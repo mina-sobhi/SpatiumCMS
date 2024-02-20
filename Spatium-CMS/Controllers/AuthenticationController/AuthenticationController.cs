@@ -25,7 +25,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         private readonly RoleManager<UserRole> roleManager;
         private readonly UserManager<ApplicationUser> userManager;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger, userManager)
         {
             this.authenticationService = authenticationService;
             this.roleManager = roleManager;

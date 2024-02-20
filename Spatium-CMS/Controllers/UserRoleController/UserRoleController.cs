@@ -23,14 +23,12 @@ namespace Spatium_CMS.Controllers.UserRoleController
     [ApiController]
     public class UserRoleController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<UserRole> roleManager;
 
 
         public UserRoleController(ILogger<UserRoleController> logger, UserManager<ApplicationUser> userManager, IMapper mapper, IUnitOfWork unitOfWork, RoleManager<UserRole> roleManager)
-            : base(unitOfWork, mapper, logger)
+            : base(unitOfWork, mapper, logger, userManager)
         {
-            _userManager = userManager;
             this.roleManager = roleManager;
         }
 
@@ -43,7 +41,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             {
                 string parentUserId = GetUserId();
                 var blogId = GetBlogId();
-                var userResult = await _userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var userResult = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 userResult.Unassign();
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
@@ -64,7 +62,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             {
                 var loginUserId = GetUserId();
                 var blogId = GetBlogId();
-                var user = await _userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
 
                 var role = await unitOfWork.RoleRepository.GetAssignRoleById(blogId, roleId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
 
@@ -105,7 +103,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             return TryCatchLogAsync(async () =>
             {
                 var userId = GetUserId();
-                var user = await _userManager.FindByIdAsync(userId);
+                var user = await userManager.FindByIdAsync(userId);
                 if (user == null)
                     return BadRequest("User Not found!");
                 var roles = await unitOfWork.RoleRepository.GetDefaultRoles(user.BlogId);
@@ -122,7 +120,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
             return TryCatchLogAsync(async () =>
             {
                 var userId = GetUserId();
-                var user = await _userManager.FindByIdAsync(userId);
+                var user = await userManager.FindByIdAsync(userId);
                 if (user == null)
                     return BadRequest("User Not found!");
                 var roles = await unitOfWork.RoleRepository.GetRolesAsync(parms, user.BlogId);
@@ -172,7 +170,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
 
                 var userId = GetUserId();
                 var blogId = GetBlogId();
-                var currentUser = await _userManager.FindByIdAsync(userId);
+                var currentUser = await userManager.FindByIdAsync(userId);
                 var converter = new RoleConverter(mapper);
                 UserRoleInput roleInput = new UserRoleInput();
 

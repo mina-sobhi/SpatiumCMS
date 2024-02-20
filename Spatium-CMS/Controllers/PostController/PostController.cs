@@ -21,12 +21,10 @@ namespace Spatium_CMS.Controllers.PostController
     [ApiController]
     public class PostController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
         private readonly IAuthorizationStrategyFactory authorizationStrategyFactory;
 
-        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAuthorizationStrategyFactory authorizationStrategyFactory) : base(unitOfWork, mapper, logger)
+        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAuthorizationStrategyFactory authorizationStrategyFactory) : base(unitOfWork, mapper, logger, userManager)
         {
-            this.userManager = userManager;
             this.authorizationStrategyFactory = authorizationStrategyFactory;
         }
 
@@ -68,8 +66,8 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var userId = GetUserId();
-                var user = await userManager.FindByIdAsync(userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
-                var posts = await unitOfWork.BlogRepository.GetPostsAsync(postParams, user.BlogId);
+                var blogId = GetBlogId();
+                var posts = await unitOfWork.BlogRepository.GetPostsAsync(postParams, blogId);
                 List<PostRespone> postsResponse = new List<PostRespone>();
                 foreach (var item in posts)
                 {
