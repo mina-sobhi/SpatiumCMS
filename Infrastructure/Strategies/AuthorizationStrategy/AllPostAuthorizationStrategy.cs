@@ -19,6 +19,12 @@ namespace Infrastructure.Strategies.AuthorizationStrategy
             return expression;
         }
 
+        public Expression<Func<Post, bool>> GetPublishPostSelectExpression()
+        {
+            Expression<Func<Post, bool>> filter = f => f.BlogId == blogId && f.Id == postId;
+            return filter;
+        }
+
         public Expression<Func<Post, bool>> GetUpdatePostExpression()
         {
             Expression<Func<Post, bool>> filter = f=>f.BlogId == blogId && f.Id == postId;
