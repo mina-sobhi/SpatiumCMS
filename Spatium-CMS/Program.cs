@@ -1,6 +1,9 @@
+using Domain.ApplicationUserAggregate;
 using Infrastructure.Services.AuthinticationService;
+using Microsoft.AspNetCore.Identity;
 using Spatium_CMS.AutoMapperProfiles;
 using Spatium_CMS.Extensions;
+using Spatium_CMS.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,8 @@ if(authConfig != null)
     builder.Services.AddSingleton(authConfig);
     builder.Services.ConfigureAuthentication(authConfig);
 }
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,6 +43,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
+//(UserManager<ApplicationUser>) WebApplication.ApplicationServices.GetService(typeof(UserManager<ApplicationUser>));
+app.UseMiddleware<ValidateTokenMiddleware>();
 app.MapControllers();
-
 app.Run();
