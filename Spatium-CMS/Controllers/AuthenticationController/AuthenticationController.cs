@@ -42,7 +42,7 @@ namespace Spatium_CMS.Controllers.AuthenticationController
             {
                 var parentUserId = GetUserId();
                 var blogId = GetBlogId();
-                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 if (user.IsAccountActive == activeStatus)
                     throw new SpatiumException(ResponseMessages.CannotChangeStatus);
                 user.ChangeActivation(activeStatus);
