@@ -3,6 +3,7 @@ using Domain.BlogsAggregate;
 using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Database.Repository
@@ -130,6 +131,11 @@ namespace Infrastructure.Database.Repository
         {
             return SpatiumDbContent.Posts.FirstOrDefaultAsync(x => x.CreatedById == userId && x.Id == postId);
         }
+
+        public async Task<Post> GetPostByExpression(Expression<Func<Post, bool>> expression)
+        {
+            return await SpatiumDbContent.Posts.Where(expression).FirstOrDefaultAsync();
+        }
         #endregion
 
         #region TableOfContent
@@ -157,6 +163,7 @@ namespace Infrastructure.Database.Repository
         {
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }
+
         #endregion
     }
 }

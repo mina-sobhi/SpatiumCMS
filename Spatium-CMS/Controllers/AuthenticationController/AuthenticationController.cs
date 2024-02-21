@@ -12,6 +12,7 @@ using Spatium_CMS.Controllers.AuthenticationController.Request;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Filters;
 using Utilities.Enums;
+using Utilities.Exceptions;
 using Utilities.Results;
 
 namespace Spatium_CMS.Controllers.AuthenticationController
@@ -23,14 +24,14 @@ namespace Spatium_CMS.Controllers.AuthenticationController
         private readonly IAuthenticationService authenticationService;
         private readonly RoleManager<UserRole> roleManager;
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly ILogger<AuthenticationController> logger;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IMapper mapper, RoleManager<UserRole> roleManager, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger, userManager)
         {
             this.authenticationService = authenticationService;
             this.roleManager = roleManager;
             this.userManager = userManager;
         }
+
         [HttpGet]
         [Route("ChangeUserActivation/{userId}")]
         [Authorize]
@@ -41,33 +42,34 @@ namespace Spatium_CMS.Controllers.AuthenticationController
             {
                 var parentUserId = GetUserId();
                 var blogId = GetBlogId();
-                var user = await userManager.FindUserInBlogAsync(blogId, userId);
-                if (user != null)
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                if (user.IsAccountActive == activeStatus)
+                    throw new SpatiumException(ResponseMessages.CannotChangeStatus);
+                user.ChangeActivation(activeStatus);
+                await unitOfWork.SaveChangesAsync();
+                var response = new SpatiumResponse()
                 {
-                    user.ChangeActivation(activeStatus);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok("the Activation is Changed");
-                }
-                return BadRequest("User Not Found");
+                    Message = ResponseMessages.UserStatusChanged,
+                    Success = true,
+                };
+                return Ok(response);
             });
         }
 
         [HttpGet]
-        [Authorize]
         [Route("GetUserDetails")]
+        [Authorize]
         public Task<IActionResult> GetUserDetails()
         {
             return TryCatchLogAsync(async () =>
             {
-                var id = GetUserId();
-                var currentuser = await userManager.FindByIdAsync(id);
-                if (currentuser != null)
-                {
-                    var userdetailes = await authenticationService.GetUserDetailes(currentuser.Id);
-                    var detailesResult = mapper.Map<ViewUserProfileResult>(userdetailes);
-                    return Ok(detailesResult);
-                }
-                return BadRequest("Not found!");
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var currentuser = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+
+                var userdetailes = await authenticationService.GetUserDetailes(currentuser.Id);
+                var detailesResult = mapper.Map<ViewUserProfileResult>(userdetailes);
+                return Ok(detailesResult);
             });
         }
 

@@ -18,15 +18,34 @@
         public const string PasswordDoesnotMatch = "Password and Confirm Password doesn't match!";
         public const string OtpWaitingPeroidError = "Please wait 30 seconds before requesting new OTP.";
         public const string OtpConfirmed = "OTP Confirmed Successfully!";
+        public const string UnauthorizedAccessLoginFirst = "Unauthorized Access! Please login First!";
+        public const string UserNotFound = "User Not Found!";
+        public const string UserStatusChanged = "User Status Changed Successfully!";
+        public const string CannotChangeStatus = "User is already in this state!";
+        public const string UserUnassignedSuccessfully = "User unassigned Successfully";
+        public const string UserAssignedSuccessfully = "User Assigned Successfully";
+
 
         #endregion
 
         #region POST
         public const string TocNotFound = "Invalid Table Of content Id!";
+        public const string PostNotFound = "Post not found";
+        public const string AuthorNotFound = "No Author with Id in Blog";
         #endregion
 
         #region Blog
-        public const string BlogIdCannotBeNull = "Blog Cann't be null!";
+        public const string BlogIdCannotBeNull = "Blog Can't be null!";
+
+        #endregion
+
+        #region Roles
+        public const string InvalidRole = "Role is Invalid";
+
+        #endregion
+
+        #region Other
+        public const string InvalidDateFormat = "Invalid Date Format";
 
         #endregion
     }

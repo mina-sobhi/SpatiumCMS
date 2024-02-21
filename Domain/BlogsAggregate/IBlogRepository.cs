@@ -1,4 +1,5 @@
 ﻿using Domain.Base;
+using System.Linq.Expressions;
 
 namespace Domain.BlogsAggregate
 {
@@ -12,6 +13,7 @@ namespace Domain.BlogsAggregate
         Task UpdateAsync(Blog blog);
         Task DeleteAsync(int id);
         #endregion
+
         #region Comment
         Task<Comment> GetCommentByIdAsync(int id);
         Task<IEnumerable<Comment>> GetCommentsAsync();
@@ -27,6 +29,7 @@ namespace Domain.BlogsAggregate
         Task<Post> PostSnippetPreview(int postId);
         Task CreatePostAsync(Post post);
         Task UpdatePostAsync(Post post);
+        Task <Post> GetPostByExpression(Expression<Func<Post, bool>> expression);   
         #endregion
 
         #region TableOfContent

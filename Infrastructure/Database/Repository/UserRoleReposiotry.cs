@@ -16,7 +16,7 @@ namespace Infrastructure.Database.Repository
         public async Task<UserRole> GetRoleByIdAsync(string roleId, int blogId)
         {
             return await SpatiumDbContent.Roles.Include(ru => ru.ApplicationUsers)
-                            .Where(r => (r.Id == roleId && r.BlogId == blogId))
+                            .Where(r => r.Id == roleId && (r.BlogId == blogId || r.BlogId==null))
                             .FirstOrDefaultAsync();
 
         }

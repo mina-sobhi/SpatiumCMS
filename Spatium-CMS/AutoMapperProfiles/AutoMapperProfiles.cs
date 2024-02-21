@@ -14,6 +14,8 @@ using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Controllers.UserRoleController.Response;
 using Spatium_CMS.Controllers.UserRoleController.Request;
 using Spatium_CMS.Controllers.PostController.Response;
+using Domain.StorageAggregate.Input;
+using Spatium_CMS.Controllers.StorageController.Request;
 
 namespace Spatium_CMS.AutoMapperProfiles
 {
@@ -97,6 +99,8 @@ namespace Spatium_CMS.AutoMapperProfiles
 
           
                 #endregion
+
+                CreateMap<AddFolderInput,CreateFolderRequest>().ReverseMap();
             }
         }
     }
