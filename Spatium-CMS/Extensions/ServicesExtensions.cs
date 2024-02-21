@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Spatium_CMS.AttachmentService;
 using System.Text;
 
 namespace Spatium_CMS.Extensions
@@ -109,6 +110,9 @@ namespace Spatium_CMS.Extensions
             services.AddScoped<IUserRoleRepository, UserRoleReposiotry>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthorizationStrategyFactory, AuthorizationStrategyFactory>();
+            services.AddScoped<IAttachmentService, AttachmmentService>();
+
+
 
         }
         #endregion
