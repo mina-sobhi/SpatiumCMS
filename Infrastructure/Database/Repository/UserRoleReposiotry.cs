@@ -3,6 +3,7 @@ using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Domain.ApplicationUserAggregate.Inputs;
 using Infrastructure.Extensions;
+using Domain.LookupsAggregate;
 
 namespace Infrastructure.Database.Repository
 {
@@ -21,7 +22,7 @@ namespace Infrastructure.Database.Repository
 
         }
 
-        public async Task<IReadOnlyList<UserRole>> GetDefaultRoles(int blogId)
+        public async Task<List<UserRole>> GetDefaultRoles(int blogId)
         {
             return await SpatiumDbContent.Roles.Include(x => x.ApplicationUsers.Where(y => y.BlogId == blogId)).Where(r => r.RoleOwnerId == null).ToListAsync();
         }
@@ -141,14 +142,15 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Users.Where(ur => ur.RoleId == roleId).ToListAsync();
         }
 
-        Task<List<UserRole>> IUserRoleRepository.GetDefaultRoles(int blogId)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<UserRole> GetAssignRoleById(int blogId, string roleId)
         {
             return await SpatiumDbContent.Roles.FirstOrDefaultAsync(x => x.Priority>1 && (x.BlogId == blogId ||x.Blog==null) && x.Id == roleId);
+        }
+
+        public async Task<List<RoleIcon>> GetRoleIconsAsync()
+        {
+            return await SpatiumDbContent.RoleIcons.ToListAsync();
         }
     }
 }

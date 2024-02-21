@@ -58,13 +58,15 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<ApplicationUser, UserResponse>();
                 CreateMap<UserRole, RoleResult>();
 
-
                 CreateMap<UserRole, ViewRoles>()
                       .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Id))
                       .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Name))
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                      .ForMember(dest => dest.IconPath, opt => opt.MapFrom(src => src.IconPath))
+                      .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));
+
+                CreateMap<RoleIcon, RoleIconRespones>().
+                    ForMember(dest => dest.IconPath, otp => otp.MapFrom<IconUrlResolver>());
 
                 CreateMap<UpdateUserRoleInput, UpdateUserRoleRequest>().ReverseMap();
               
@@ -73,7 +75,8 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<UserModule, ViewModule>();
                 CreateMap<UserPermission,UserModulePermissions>()
                     .ForMember(dest => dest.Id,otp=>otp.MapFrom(src => src.Id))
-                    .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));    
+                    .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));  
+
                 #endregion
 
                 #region ApplicationUser

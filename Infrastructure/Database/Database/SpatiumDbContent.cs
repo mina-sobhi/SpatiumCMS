@@ -14,8 +14,9 @@ namespace Infrastructure.Database.Database
         #region Application user Aggregate
         public DbSet<UserModule> UserModules { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
-        public DbSet<RolePermission> RoleModules { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<RoleIcon> RoleIcons { get; set; }
+
         #endregion
 
         #region Blog Aggregate

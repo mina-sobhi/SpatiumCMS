@@ -11,6 +11,7 @@ using Spatium_CMS.Controllers.UserRoleController.Converter;
 using Spatium_CMS.Controllers.UserRoleController.Request;
 using Spatium_CMS.Controllers.UserRoleController.Response;
 using Infrastructure.Extensions;
+using Utilities.Exceptions;
 using System.Data;
 using System.Security.Claims;
 using Spatium_CMS.Filters;
@@ -256,6 +257,17 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 {
                     Message = $"{role.Name} is Deleted Success!"
                 });
+            });
+        }
+        [HttpGet]
+        [Route("GetRoleIcons")]
+        public Task<IActionResult> GetRoleIcons()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var resualt =await unitOfWork.RoleRepository.GetRoleIconsAsync()?? throw new SpatiumException("not found");
+                return Ok(mapper.Map<List<RoleIconRespones>>(resualt));
+                
             });
         }
     }
