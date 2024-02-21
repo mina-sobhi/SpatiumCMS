@@ -62,35 +62,38 @@ namespace Domain.ApplicationUserAggregate
         {
             _rolePermission.Clear();
         }
-
         public void UpdateData(UpdateUserRoleInput updateInput)
         {
             IconPath = updateInput.IconPath;
             Description = updateInput.Description;
-            //var removePermissions = _rolePermission.Select(x => x.UserPermissionId).Except(updateInput.PermissionIds);
-            //var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));
-            //foreach (var permissionId in removePermissions.ToList())
-            //{
-            //    var permission = _rolePermission.FirstOrDefault(x => x.UserPermissionId == permissionId);
-            //    _rolePermission.Remove(permission);
-            //}
-            //foreach (var newPermissionId in newPermissions)
-            //{
-            //    _rolePermission.Add(new RolePermission(Id, newPermissionId));
-            //}
-            //foreach(var perm in updateInput.PermissionIds)
-            //{
-            //    _rolePermission.Add(new RolePermission(this.Id, perm));
-            //}
-        }
-
-        public void AddPermissions(List<int> permissionIds)
-        {
-            foreach (var permissionId in permissionIds)
+             
+            //change the state of old permission 
+            var oldPermissions = _rolePermission.Select(x => x.UserPermissionId).Except(updateInput.PermissionIds);
+            foreach (var perm in oldPermissions)
             {
-                _rolePermission.Add(new RolePermission(this.Id, permissionId));
+                //reset the old permissions to be deleted 
+                var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
+                if (!permission.IsDeleted)
+                    permission.IsDeleted = true;
+            }
+            //change the state of current permission
+            var CommonPermissions = _rolePermission.Select(x => x.UserPermissionId).Intersect(updateInput.PermissionIds);
+            foreach (var perm in CommonPermissions)
+            {
+                //reset the deleted permissions
+                var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
+                if (permission.IsDeleted) 
+                    permission.IsDeleted = false;
+            }
+            //add new permissions 
+            var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));
+            foreach (var newPermissionId in newPermissions)
+            {
+                _rolePermission.Add(new RolePermission(Id, newPermissionId));
             }
 
         }
+
+
     }
 }
