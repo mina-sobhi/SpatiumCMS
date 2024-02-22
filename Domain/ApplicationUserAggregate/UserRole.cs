@@ -1,7 +1,7 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
 using Domain.BlogsAggregate;
+using Domain.LookupsAggregate;
 using Microsoft.AspNetCore.Identity;
-using System.Linq;
 using Utilities.Exceptions;
 using Utilities.Results;
 
@@ -10,18 +10,22 @@ namespace Domain.ApplicationUserAggregate
     public class UserRole : IdentityRole
     {
         #region Properties
-        public string IconPath { get; private set; }
         public string Description { get; private set; }
         public bool IsActive { get; private set; }
         public string RoleOwnerId { get; private set; }
         public int Priority { get; private set; }
         public bool IsDeleted { get; private set; }
+        public string? Color { get; private set; } 
         public int? BlogId { get; private set; }
+        public int? RoleIconId { get; private set; }
+
+
         #endregion
 
         #region Navigational Properties
         public virtual ApplicationUser RoleOwner { get; private set; }
         public virtual Blog Blog { get; private set; }
+        public virtual RoleIcon RoleIcon { get; private set; }
         #endregion
 
         #region Virtual List
@@ -38,11 +42,12 @@ namespace Domain.ApplicationUserAggregate
         public UserRole(UserRoleInput userRoleInput)
         {
             Name = userRoleInput.Name;
-            IconPath = userRoleInput.IconPath;
             Description = userRoleInput.Description;
             IsActive = userRoleInput.IsActive;
             RoleOwnerId = userRoleInput.RoleOwnerId;
             Priority = ++userRoleInput.RoleOwnerPriority;
+            //RoleIconId = userRoleInput.RoleIconId;
+            Color = userRoleInput.Color;
             this.IsDeleted = false;
             BlogId = userRoleInput.BlogId ?? throw new SpatiumException(ResponseMessages.BlogIdCannotBeNull);
             foreach (var permissionId in userRoleInput.UserPermissionId)
@@ -64,7 +69,6 @@ namespace Domain.ApplicationUserAggregate
         }
         public void UpdateData(UpdateUserRoleInput updateInput)
         {
-            IconPath = updateInput.IconPath;
             Description = updateInput.Description;
              
             //change the state of old permission 

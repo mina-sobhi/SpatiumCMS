@@ -1,4 +1,5 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
+using Domain.LookupsAggregate;
 
 
 namespace Domain.ApplicationUserAggregate
@@ -23,6 +24,7 @@ namespace Domain.ApplicationUserAggregate
         public Task<List<ApplicationUser>> GetUsersInRoleAsync(string roleId);
         public Task<List<RolePermission>> GetRolePermissionsAsync(string roleId);
         public Task<List<ApplicationUser>> GetUserInRoleAsync(string roleId);
+        public Task<List<RoleIcon>> GetRoleIconsAsync();
 
     }
 }

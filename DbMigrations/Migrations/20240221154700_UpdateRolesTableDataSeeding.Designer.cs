@@ -4,6 +4,7 @@ using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    partial class SpatiumDbContentModelSnapshot : ModelSnapshot
+    [Migration("20240221154700_UpdateRolesTableDataSeeding")]
+    partial class UpdateRolesTableDataSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -487,9 +490,6 @@ namespace Migrations.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -523,9 +523,6 @@ namespace Migrations.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Alt")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
 
@@ -537,9 +534,6 @@ namespace Migrations.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Dimension")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Extention")
                         .HasColumnType("nvarchar(max)");
@@ -554,9 +548,6 @@ namespace Migrations.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UrlPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -584,8 +575,8 @@ namespace Migrations.Migrations
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Capacity")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Capacity")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");

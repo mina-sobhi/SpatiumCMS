@@ -1,0 +1,62 @@
+[
+  {
+    "Name": "3d-cube-scan",
+    "IconPath": "/RoleIcon/3d-cube-scan.svg"
+  },
+  {
+    "Name": "abstract-32",
+    "IconPath": "/RoleIcon/abstract-32.svg"
+  },
+  {
+    "Name": "brifecase-timer",
+    "IconPath": "/RoleIcon/brifecase-timer.svg"
+  },
+  {
+    "Name": "building-4",
+    "IconPath": "/RoleIcon/building-4.svg"
+  },
+  {
+    "Name": "calculator",
+    "IconPath": "/RoleIcon/calculator.svg"
+  },
+  {
+    "Name": "chart",
+    "IconPath": "/RoleIcon/chart.svg"
+  },
+  {
+    "Name": "check",
+    "IconPath": "/RoleIcon/check.svg"
+  },
+  {
+    "Name": "code",
+    "IconPath": "/RoleIcon/code.svg"
+  },
+  {
+    "Name": "eye",
+    "IconPath": "/RoleIcon/eye.svg"
+  },
+  {
+    "Name": "monitor-mobbile",
+    "IconPath": "/RoleIcon/monitor-mobbile.svg"
+  },
+  {
+    "Name": "note-2",
+    "IconPath": "/RoleIcon/note-2.svg"
+  },
+  {
+    "Name": "pencxil",
+    "IconPath": "/RoleIcon/pencxil.svg"
+  },
+  {
+    "Name": "security-time",
+    "IconPath": "/RoleIcon/security-time.svg"
+  },
+  {
+    "Name": "status-up",
+    "IconPath": "/RoleIcon/status-up.svg"
+  },
+  {
+    "Name": "user-edit",
+    "IconPath": "/RoleIcon/user-edit.svg"
+  }
+]
