@@ -16,6 +16,8 @@ using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Org.BouncyCastle.Utilities;
 using System.IO;
+using static System.Net.WebRequestMethods;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -238,7 +240,27 @@ namespace Spatium_CMS.Controllers.StorageController
                 return Ok(fileUrl);
             });
         }
-     
+
+        [HttpGet]
+        [Route("DownloadFile")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public async Task<IActionResult> DownloadFile(int fileId)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException("File Not Found!!");
+
+            var path = Path.Combine(currentDirectory, @"wwwroot\", file.UrlPath);
+            var bytes = await System.IO.File.ReadAllBytesAsync(path);
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (!provider.TryGetContentType(file.UrlPath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            return File(bytes, contentType, Path.GetFileName(path));
+        }
+
         #endregion
     }
 }
