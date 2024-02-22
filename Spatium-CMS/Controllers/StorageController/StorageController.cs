@@ -13,8 +13,9 @@ using Infrastructure.Extensions;
 using Utilities.Exceptions;
 using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
-using Spatium_CMS.AttachmentService;
 using Domain.Base;
+using Org.BouncyCastle.Utilities;
+using System.IO;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -209,6 +210,35 @@ namespace Spatium_CMS.Controllers.StorageController
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }
+
+        [HttpGet]
+        [Route("FilePreview")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public Task<IActionResult> FilePreview(int fileId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException("File Not Found!!");
+                return Ok(mapper.Map<ViewFile>(file));
+            });
+        }
+
+        [HttpGet]
+        [Route("CopyURL")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public Task<IActionResult> CopyURL(int fileId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException("File Not Found!!");
+                var resualt=mapper.Map<ViewFile>(file);
+                var fileUrl = resualt.UrlPath;
+                return Ok(fileUrl);
+            });
+        }
+     
         #endregion
     }
 }
