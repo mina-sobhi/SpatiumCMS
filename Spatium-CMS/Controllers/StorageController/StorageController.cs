@@ -12,6 +12,7 @@ using Utilities.Enums;
 using Infrastructure.Extensions;
 using Utilities.Exceptions;
 using Utilities.Results;
+using Spatium_CMS.Controllers.StorageController.Response;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -23,17 +24,88 @@ namespace Spatium_CMS.Controllers.StorageController
         public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger, userManager)
         {
         }
-
         [HttpGet]
-        public Task<IActionResult> ShowAllFolders(int? x, int? y)
+        [Route("DeleteFolders")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> Delete([FromQuery] int folderId)
         {
             return TryCatchLogAsync(async () =>
             {
-                logger.LogInformation("hamada");
-                if (x == y)
-                    return Ok();
-                else
-                    return BadRequest();
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+                var folder =await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+                if(folder == null)
+                {
+                    throw new SpatiumException($"Invalid Folder Id ");
+                }
+                var deleteResponse = new DeleteResponse() { 
+                    Id= folder.Id,
+                    FolderName  = folder.Name,
+                    FileCount = folder.Files.Count()
+                
+                };
+                return Ok(deleteResponse);
+            });
+        }
+        [HttpDelete]
+        [Route("ConfirmDeleteFolders")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> ConfirmDelete([FromQuery] int folderId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+                if (folder == null)
+                {
+                    throw new SpatiumException($"Invalid Folder Id ");
+                }
+                folder.Delete();
+                await unitOfWork.SaveChangesAsync();
+                return Ok($"Folder {folder.Name} Deleted Successfuly");
+            });
+        }
+
+        [HttpGet()]
+        [Route("ShowAllFolders")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public  Task<IActionResult> ShowAllFolders([FromQuery] int? FolderId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId= GetUserId();
+                var blogId=GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId,userId)??throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId)??throw new  SpatiumException("Invalid Blog Id");
+               
+                List<ViewFolderResponse> respone =  new List<ViewFolderResponse>();
+                foreach (var folder in storage.Folders.Where(f=> f.ParentId == FolderId && f.IsDeleted == false))
+                {
+                    ViewFolderResponse responseitem = new ViewFolderResponse()
+                    {
+                        Id = folder.Id,
+                        FolderName = folder.Name,
+                        CreatedBy = user.FullName,
+                        ProfileImage = user.ProfileImagePath
+                    };
+                    responseitem.NumberOfFolders = folder.Folders.Count();
+                    responseitem.NumberOfFiles = folder.Files.Count();
+                    respone.Add(responseitem); 
+                }
+                if( respone.Count == 0 )
+                {
+                    throw new SpatiumException("There Is No Folder Here ");
+                }
+
+                return Ok(respone);
             });
         }
 
@@ -48,7 +120,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var userId = GetUserId();
                     var blogId = GetBlogId();
-                    var user = await userManager.FindUserInBlogAsync(blogId, userId);
+                    var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound); ;
                     if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.Name.ToLower()))
                     {
                         throw new SpatiumException($"Name {Request.Name} Already Exist!");

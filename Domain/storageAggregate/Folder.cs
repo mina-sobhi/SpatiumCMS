@@ -65,7 +65,19 @@ namespace Domain.StorageAggregate
         }
         public void Delete()
         {
-           this.IsDeleted = true;
+            this.IsDeleted = true;
+            foreach (var file in this._files)
+            {
+                file.Delete();
+            }
+            foreach (var subFolder in this._folders)
+            {
+                subFolder.Delete();
+                foreach (var file in subFolder.Files)
+                {
+                    file.Delete();
+                }
+            }
         }
         public void Rename(string newName)
         {
