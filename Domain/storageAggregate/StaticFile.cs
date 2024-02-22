@@ -61,6 +61,11 @@ namespace Domain.StorageAggregate
         {
             this.IsDeleted = true;
         }
+
+        public void MoveToFolderId(int? FoldrId)
+        {
+            this.FolderId = FoldrId;
+        }
         private void validations(string Name, string Description)
         {}
         #endregion
