@@ -3,9 +3,7 @@
     public class AddFileRequest
     {
         public string Name { get; set; }
-        public string Extention { get; set; }
         public string Caption { get; set; }
-        public string FileSize { get; set; }
         public string Alt { get; set; }
         public string Dimension { get; set; }
         public int? FolderId { get; set; }

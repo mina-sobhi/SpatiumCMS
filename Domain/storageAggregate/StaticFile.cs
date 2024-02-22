@@ -20,6 +20,7 @@ namespace Domain.StorageAggregate
         public string CreatedById { get; private set; }
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
+        public DateTime LastUpdate { get; private set; }
         #endregion
 
         #region NavigationProperty
@@ -35,9 +36,7 @@ namespace Domain.StorageAggregate
         }
         public StaticFile(FileInput input)
         {
-            validations(input.Name, input.Caption, input.Alt);
-            ExtensionValidations(input.Extention);
-            
+            validations(input.Name, input.Caption, input.Alt);           
             this.CreationDate = DateTime.UtcNow;
             this.FolderId = input.FolderId;
             this.CreatedById = input.CreatedById;
@@ -53,14 +52,15 @@ namespace Domain.StorageAggregate
         #endregion
 
         #region Method
-        public void Update(FileInput input)
+        public void Update(UpdateFileInput input)
         {
-            this.Name = input.Name;
-            this.Extention = input.Extention;
-            this.Caption = input.Caption;
-            this.FileSize = input.FileSize;
+            validations(input.Name, input.Caption, input.Alt);
+            this.Name = input.Name;   
+            this.Caption = input.Caption;          
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
+            this.LastUpdate = input.LastUpdate;
+
         }
         public void Delete()
         {
@@ -69,37 +69,37 @@ namespace Domain.StorageAggregate
         private void validations(string Name, string Caption, string Alt)
         {
 
-            if (Name.Length < 2 && Name.Length > 50)
+            if (Name.Length < 2 || Name.Length > 50)
             {
-                throw new SpatiumException("File Name Must in Range 2 to 50 char ");
+                throw new SpatiumException("File Name Must be in the Range of 2 to 50 characters.");
             }
-            if (Caption.Length < 20 && Caption.Length > 200)
+             if (Caption.Length < 20 || Caption.Length > 200)
             {
-                throw new SpatiumException("File Description Must in Range 20 to 200 char ");
+                throw new SpatiumException("File Description Must be in the Range of 20 to 200 characters.");
             }
-            if (Alt.Length < 5 && Alt.Length > 60)
+            if (Alt.Length < 5 || Alt.Length > 60)
             {
-                throw new SpatiumException("File Alt Must in Range 5 to 60 char ");
+                throw new SpatiumException("File Alt Must be in the Range of 5 to 60 characters.");
             }
         }
 
-        private void ExtensionValidations(string Extension)
-        {
-            //var VideoExtensions = new List<string> { "mp4", "3g2", "3gp", "wmv", "webm", "m4v" };
-            //var RecordExtensions = new List<string> { "mp3", "mpa", "wma", "wma", "aif", "cda" };
-            //var ImageExtensions = new List<string> { "jpg", "png", "webp", "gif", "bin" };
-            //var DocumentExtensions = new List<string> { "csv", "xlsx", "xls", "doc", "docs", "pdf", "txt", "xml" };
-            var cleanExtension = Extension.ToLower();
-            var extentions = new List<string> { "mp4", "3g2", "3gp", "wmv", "webm", 
-                "m4v", "mp3", "mpa", "wma", "wma", "aif", "cda",
-            "jpg", "png", "webp", "gif", "bin" ,
-            "csv", "xlsx", "xls", "doc", "docs", "pdf", "txt", "xml"};
-            var flag = extentions.Any(x=>x.Equals(Extension));
-            if (!flag)
-            {
-                throw new SpatiumException("Invalid Extentions");
-            }
-        }
+        //private void ExtensionValidations(string Extension)
+        //{
+        //    //var VideoExtensions = new List<string> { "mp4", "3g2", "3gp", "wmv", "webm", "m4v" };
+        //    //var RecordExtensions = new List<string> { "mp3", "mpa", "wma", "wma", "aif", "cda" };
+        //    //var ImageExtensions = new List<string> { "jpg", "png", "webp", "gif", "bin" };
+        //    //var DocumentExtensions = new List<string> { "csv", "xlsx", "xls", "doc", "docs", "pdf", "txt", "xml" };
+        //    var cleanExtension = Extension.ToLower();
+        //    var extentions = new List<string> { "mp4", "3g2", "3gp", "wmv", "webm", 
+        //        "m4v", "mp3", "mpa", "wma", "wma", "aif", "cda",
+        //        "jpg", "png", "webp", "gif", "bin" ,
+        //        "csv", "xlsx", "xls", "doc", "docs", "pdf", "txt", "xml"};
+        //    var flag = extentions.Any(x=>x.Equals(Extension));
+        //    if (!flag)
+        //    {
+        //        throw new SpatiumException("Invalid Extentions");
+        //    }
+        //}
         #endregion
     }
 }
