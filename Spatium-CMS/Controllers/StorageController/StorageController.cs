@@ -13,6 +13,8 @@ using Infrastructure.Extensions;
 using Utilities.Exceptions;
 using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
+using Spatium_CMS.AttachmentService;
+using Domain.Base;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -24,6 +26,8 @@ namespace Spatium_CMS.Controllers.StorageController
         public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger, userManager)
         {
         }
+
+        #region FolderApis
         [HttpGet]
         [Route("DeleteFolders")]
         [Authorize(Roles = "Super Admin")]
@@ -36,16 +40,17 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-                var folder =await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
-                if(folder == null)
+                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+                if (folder == null)
                 {
                     throw new SpatiumException($"Invalid Folder Id ");
                 }
-                var deleteResponse = new DeleteResponse() { 
-                    Id= folder.Id,
-                    FolderName  = folder.Name,
+                var deleteResponse = new DeleteResponse()
+                {
+                    Id = folder.Id,
+                    FolderName = folder.Name,
                     FileCount = folder.Files.Count()
-                
+
                 };
                 return Ok(deleteResponse);
             });
@@ -77,17 +82,17 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("ShowAllFolders")]
         [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.ReadMedia)]
-        public  Task<IActionResult> ShowAllFolders([FromQuery] int? FolderId)
+        public Task<IActionResult> ShowAllFolders([FromQuery] int? FolderId)
         {
             return TryCatchLogAsync(async () =>
             {
-                var userId= GetUserId();
-                var blogId=GetBlogId();
-                var user = await userManager.FindUserInBlogAsync(blogId,userId)??throw new SpatiumException(ResponseMessages.UserNotFound);
-                var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId)??throw new  SpatiumException("Invalid Blog Id");
-               
-                List<ViewFolderResponse> respone =  new List<ViewFolderResponse>();
-                foreach (var folder in storage.Folders.Where(f=> f.ParentId == FolderId && f.IsDeleted == false))
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException("Invalid Blog Id");
+
+                List<ViewFolderResponse> respone = new List<ViewFolderResponse>();
+                foreach (var folder in storage.Folders.Where(f => f.ParentId == FolderId && f.IsDeleted == false))
                 {
                     ViewFolderResponse responseitem = new ViewFolderResponse()
                     {
@@ -98,9 +103,9 @@ namespace Spatium_CMS.Controllers.StorageController
                     };
                     responseitem.NumberOfFolders = folder.Folders.Count();
                     responseitem.NumberOfFiles = folder.Files.Count();
-                    respone.Add(responseitem); 
+                    respone.Add(responseitem);
                 }
-                if( respone.Count == 0 )
+                if (respone.Count == 0)
                 {
                     throw new SpatiumException("There Is No Folder Here ");
                 }
@@ -164,7 +169,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                     if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.NewName.ToLower()))
                     {
-                       
+
                         throw new SpatiumException($"Name {Request.NewName} Already Exist!");
                     }
                     var folder = await unitOfWork.StorageRepository.GetFolderByName(Request.OldName.ToLower(), blogId, Request.ParentId);
@@ -176,9 +181,9 @@ namespace Spatium_CMS.Controllers.StorageController
                     folder.Rename(Request.NewName);
                     await unitOfWork.SaveChangesAsync();
 
-                    var response =  new SpatiumResponse()
+                    var response = new SpatiumResponse()
                     {
-                        Message = $"F older Renamed Successfuly from {Request.OldName} To {folder.Name} ",
+                        Message = $"Folder Renamed Successfuly from {Request.OldName} To {folder.Name} ",
                         Success = true
                     };
                     return Ok(response);
@@ -188,5 +193,22 @@ namespace Spatium_CMS.Controllers.StorageController
             });
 
         }
+        #endregion
+
+        #region FileApis
+        [HttpGet]
+        [Route("GetAllFiles")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public  Task<IActionResult> GetAllFiles([FromQuery]GetEntitiyParams entityParams,int folderId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                var files =await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId,folderId) ?? throw new SpatiumException("There are not files");
+                return Ok(mapper.Map<List<ViewFile>>(files));
+            });
+        }
+        #endregion
     }
 }

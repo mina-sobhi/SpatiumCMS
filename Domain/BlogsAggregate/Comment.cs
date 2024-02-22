@@ -47,9 +47,11 @@ namespace Domain.BlogsAggregate
         public void Delete()
         {
             IsDeleted = true;
-            StatusId = (int)CommentStatusEnum.Trash;
         }
-        
+
+        public void ChangeStatus(CommentStatusEnum status) {
+            StatusId = (int)status;
+        }
       
     }
 }
