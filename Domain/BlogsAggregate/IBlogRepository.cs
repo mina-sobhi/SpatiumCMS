@@ -16,7 +16,7 @@ namespace Domain.BlogsAggregate
 
         #region Comment
         Task<Comment> GetCommentByIdAsync(int id);
-        Task<IEnumerable<Comment>> GetCommentsAsync();
+        Task<IEnumerable<Comment>> GetCommentsAsync(int postId, int blogId, string FilterColumn, string FilterValue);
         Task CreateCommentAsync(Comment comment);
         Task UpdateCommentAsync(Comment comment);
         Task DeleteCommentAsync(int id);

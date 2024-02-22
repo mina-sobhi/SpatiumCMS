@@ -133,5 +133,10 @@ namespace Domain.BlogsAggregate
             this.UnPublishDate= unPublishedDate;
             this.StatusId = (int)PostStatusEnum.Scheduled;
         }
+
+        public void ChangeAllowedComments(bool isAllowed)
+        {
+            this.CommentsAllowed = isAllowed;
+        }
     }
 }
