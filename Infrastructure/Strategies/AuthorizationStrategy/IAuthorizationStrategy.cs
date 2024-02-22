@@ -7,5 +7,6 @@ namespace Infrastructure.Strategies.AuthorizationStrategy
     {
         public Expression<Func<Post, bool>> GetUpdatePostExpression();
         public Expression<Func<Post, bool>> GetDeletePostExpression();
+        public Expression<Func<Post, bool>> GetPublishPostSelectExpression();
     }
 }

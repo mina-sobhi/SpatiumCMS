@@ -155,6 +155,8 @@ namespace Migrations.Migrations
                     GO
                     INSERT [dbo].[RolePermission] ([UserRoleId], [UserPermissionId]) VALUES (N'10def0fc-dbe7-4807-b01c-9d75dfdc67de', 7)
                     GO
+                    INSERT [dbo].[RolePermission] ([UserRoleId], [UserPermissionId]) VALUES (N'8a3f1c05-9db4-447a-989c-d4db082fb6ca', 7)
+                    GO
                     INSERT [dbo].[RolePermission] ([UserRoleId], [UserPermissionId]) VALUES (N'10def0fc-dbe7-4807-b01c-9d75dfdc67de', 8)
                     GO
                     INSERT [dbo].[RolePermission] ([UserRoleId], [UserPermissionId]) VALUES (N'10def0fc-dbe7-4807-b01c-9d75dfdc67de', 100)

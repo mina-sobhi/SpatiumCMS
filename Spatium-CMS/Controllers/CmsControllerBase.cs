@@ -31,18 +31,6 @@ namespace Spatium_CMS.Controllers
         {
             try
             {
-                var email = User?.FindFirstValue(ClaimTypes.Email);
-                if (email != null)
-                {
-                    var user = await userManager.FindUserByEmailIgnoreFilter(email);
-                    if (user.RoleId != GetRoleId() || !user.IsAccountActive)
-                        throw new SpatiumException(ResponseMessages.UnauthorizedAccessLoginFirst);
-                    var tokenPermisons = User.Claims.Where(x => x.Type.Equals("Permissions")).Select(x => Convert.ToInt32(x.Value)).ToList();
-                    if (!tokenPermisons.SequenceEqual(user.Role.RolePermission.Select(p => p.UserPermissionId).ToList()))
-                    {                   
-                        throw new SpatiumException(ResponseMessages.UnauthorizedAccessLoginFirst);
-                    }
-                }
                 return await func.Invoke();
             }
             catch (SpatiumException spatException)

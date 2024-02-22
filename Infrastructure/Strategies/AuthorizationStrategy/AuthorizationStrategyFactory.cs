@@ -25,5 +25,14 @@ namespace Infrastructure.Strategies.AuthorizationStrategy
                 _ => new AllPostAuthorizationStrategy(blogId,postId),
             };
         }
+
+        public IAuthorizationStrategy GetSelectStrategy(UserRole role, int blogId, string userId, int postId)
+        {
+            return role.Name switch
+            {
+                "Article Creator" => new OwnPostAuthorizationStrategy(userId, blogId, postId),
+                _ => new AllPostAuthorizationStrategy(blogId, postId),
+            };
+        }
     }
 }
