@@ -132,9 +132,13 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Roles.Include(x => x.RolePermission).Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
         }
 
-        public void DeleteRolePermission(RolePermission rolePermission)
+        public async Task UpdateRolePermission(List<int> permissionIds,string userRoleId)
         {
-            SpatiumDbContent.RolePermissions.Remove(rolePermission);
+            foreach (var PermissionId in permissionIds)
+            {
+                var rolepermission = await SpatiumDbContent.RolePermissions.FirstOrDefaultAsync(pr => pr.UserPermissionId == PermissionId && pr.UserRoleId == userRoleId);
+                if (rolepermission.IsDeleted) rolepermission.IsDeleted=false;
+            }
         }
 
         public async Task<List<ApplicationUser>> GetUsersInRoleAsync(string roleId)

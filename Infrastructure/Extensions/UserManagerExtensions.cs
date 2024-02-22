@@ -18,5 +18,9 @@ namespace Infrastructure.Extensions
                                           .IgnoreQueryFilters()
                                           .FirstOrDefaultAsync(x => x.Email == email);
         }
+        public static async Task<ApplicationUser> FindUserByIdInBlogIgnoreFilterAsync(this UserManager<ApplicationUser> userManager, int blogId, string userId)
+        {
+            return await userManager.Users.IgnoreQueryFilters().Where(x => x.BlogId == blogId && x.Id == userId).FirstOrDefaultAsync();
+        }
     }
 }

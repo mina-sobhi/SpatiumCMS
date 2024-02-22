@@ -5,7 +5,6 @@ using Domian.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.IdentityModel.Tokens;
 using Spatium_CMS.Controllers.UserRoleController.Converter;
 using Spatium_CMS.Controllers.UserRoleController.Request;
@@ -132,7 +131,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
 
         [HttpGet]
         [Route("GetRoleById")]
-        [Authorize]
+        
         public Task<IActionResult> GetById(string roleId)
         {
             return TryCatchLogAsync(async () =>
@@ -219,13 +218,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 {
                     var converter = new RoleConverter(mapper);
                     var updateRoleInput = mapper.Map<UpdateUserRoleInput>(request);
-                    //foreach (var rp in role.RolePermission)
-                    //{
-                    //    unitOfWork.RoleRepository.DeleteRolePermission(rp);
-                    //}
-                    await unitOfWork.SaveChangesAsync();
                     role.UpdateData(updateRoleInput);
-                    role.AddPermissions(request.PermissionIds);
                     await unitOfWork.SaveChangesAsync();
                     return Ok(new RoleResponse()
                     {
@@ -259,6 +252,7 @@ namespace Spatium_CMS.Controllers.UserRoleController
                 });
             });
         }
+        
         [HttpGet]
         [Route("GetRoleIcons")]
         public Task<IActionResult> GetRoleIcons()
