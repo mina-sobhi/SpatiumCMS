@@ -7,7 +7,14 @@ namespace Infrastructure.Database.Repository.StorageRepository
     {
         public StorageRepository(SpatiumDbContent SpatiumDbContent) : base(SpatiumDbContent)
         {}
+        #region Storage
+       public async Task<Storage> GetStorageByBlogId(int blogId)
+        {
+            return  await SpatiumDbContent.Storages.Where(s=> s.BlogId == blogId).Include(s=>s.Folders).ThenInclude(f=>f.Files).FirstOrDefaultAsync();
+        }
+        #endregion
         #region Folder 
+
         public async Task CreateFolderAsync(Folder folder)
         {
             await SpatiumDbContent.Folders.AddAsync(folder);
@@ -31,6 +38,12 @@ namespace Infrastructure.Database.Repository.StorageRepository
             return await SpatiumDbContent.Folders.FindAsync(id);
 
         }
+        public async Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId)
+        {
+            return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.StorageId == storageId && f.Id == folderId);
+          
+        }
+
         public void UpdateFolder(Folder folder)
         {
             SpatiumDbContent.Folders.Update(folder);

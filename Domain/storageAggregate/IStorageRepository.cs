@@ -3,9 +3,13 @@ namespace Domain.StorageAggregate
 {
     public interface IStorageRepository
     {
+        #region Storage
+        Task<Storage> GetStorageByBlogId(int blogId);
+        #endregion
         #region Folder
         Task<IEnumerable<Folder>> GetAllFoldersAsync();
         Task<Folder> GetFolderAsync(int id);
+        Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId);
         Task CreateFolderAsync(Folder folder);
         Task DeleteFolderAsync(int folderId);
         void UpdateFolder(Folder folder);
