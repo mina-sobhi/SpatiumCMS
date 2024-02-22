@@ -20,7 +20,7 @@ namespace Domain.StorageAggregate
         #endregion
 
         #region Files
-        Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId,int FolderID);
+        Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId);
         Task<StaticFile> GetFileAsync(int id);
         Task CreateFileAsync(StaticFile File);
         Task DeleteFileAsync(int FileId);

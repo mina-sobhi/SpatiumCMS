@@ -200,12 +200,12 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("GetAllFiles")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.ReadMedia)]
-        public  Task<IActionResult> GetAllFiles([FromQuery]GetEntitiyParams entityParams,int folderId)
+        public  Task<IActionResult> GetAllFiles([FromQuery]GetEntitiyParams entityParams)
         {
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var files =await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId,folderId) ?? throw new SpatiumException("There are not files");
+                var files =await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId) ?? throw new SpatiumException("There are not files");
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }

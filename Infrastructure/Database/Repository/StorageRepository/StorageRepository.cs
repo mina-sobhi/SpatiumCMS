@@ -1,5 +1,4 @@
 ﻿using Domain.Base;
-using Domain.BlogsAggregate;
 using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
@@ -80,9 +79,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
                 SpatiumDbContent.Files.Remove(file);
             }
         }
-        public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId,int FolderId)
+        public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
-            var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId&&f.FolderId==FolderId).AsQueryable();
+            var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
 
             if (!string.IsNullOrEmpty(fileParams.FilterColumn) && !string.IsNullOrEmpty(fileParams.FilterValue))
             {
