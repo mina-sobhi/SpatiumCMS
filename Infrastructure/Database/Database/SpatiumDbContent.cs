@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.BlogsAggregate;
+using Domain.LookupsAggregate;
 using Domain.StorageAggregate;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +15,8 @@ namespace Infrastructure.Database.Database
         #region Application user Aggregate
         public DbSet<UserModule> UserModules { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
-        public DbSet<RolePermission> RolePermissions { get; set; }
-        public DbSet<RoleIcon> RoleIcons { get; set; }
-
+        public DbSet<RolePermission> RolePermission { get; set; }
+        
         #endregion
 
         #region Blog Aggregate
@@ -25,7 +25,6 @@ namespace Infrastructure.Database.Database
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<TableOfContent> TableOfContents { get; set; }
-
         #endregion
 
         #region Storage Aggregate
@@ -33,6 +32,13 @@ namespace Infrastructure.Database.Database
         public DbSet<Folder> Folders { get; set; }
         public DbSet<StaticFile> Files { get; set; }
         #endregion
+
+        #region Lookups
+        public DbSet<RoleIcon> RoleIcons { get; set; }
+        public DbSet<CommentStatus> CommentStatuses { get; set; }
+        public DbSet<PostStatus> PostStatuses { get; set; }
+        #endregion
+
 
         #endregion
 

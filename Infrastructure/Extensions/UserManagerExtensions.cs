@@ -22,5 +22,9 @@ namespace Infrastructure.Extensions
         {
             return await userManager.Users.IgnoreQueryFilters().Where(x => x.BlogId == blogId && x.Id == userId).FirstOrDefaultAsync();
         }
+        public static async Task<ApplicationUser> FindUserInBlogByIdIncludingRole(this UserManager<ApplicationUser> userManager, int blogId, string userId)
+        {
+            return await userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId && x.Id == userId).FirstOrDefaultAsync();
+        }
     }
 }

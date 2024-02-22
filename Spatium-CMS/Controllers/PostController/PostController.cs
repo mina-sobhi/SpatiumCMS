@@ -102,8 +102,7 @@ namespace Spatium_CMS.Controllers.PostController
                     await unitOfWork.SaveChangesAsync();
                     return Ok(mapper.Map<PostRespone>(post));
                 }
-                return BadRequest("Invalid Schedual DateTime in PublishDateTime or UnpublishDateTime ");
-
+                throw new SpatiumException("Invalid Schedual DateTime in PublishDateTime or UnpublishDateTime ");
             });
         }
 
@@ -126,7 +125,7 @@ namespace Spatium_CMS.Controllers.PostController
                 var postStatusStrategy = postStatusFactory.GetStrategy(roleId);
                 var postStatus = postStatusStrategy.GetPostStatus();
                 if (post.StatusId == (int)postStatus)
-                    throw new SpatiumException($"Post is already {postStatus.ToString()}");
+                    throw new SpatiumException($"Post is already {postStatus}");
                 post.ChangePostStatus(postStatus);
                 await unitOfWork.SaveChangesAsync();
                 return Ok(mapper.Map<PostRespone>(post));

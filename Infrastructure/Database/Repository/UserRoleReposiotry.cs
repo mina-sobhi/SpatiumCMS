@@ -66,7 +66,7 @@ namespace Infrastructure.Database.Repository
         }
         public Task<List<int>> GetRolePermissionIds(string roleId)
         {
-            return SpatiumDbContent.RolePermissions.Where(r => r.UserRoleId == roleId).Select(r => r.UserPermissionId).ToListAsync();
+            return SpatiumDbContent.RolePermission.Where(r => r.UserRoleId == roleId).Select(r => r.UserPermissionId).ToListAsync();
         }
         #endregion
 
@@ -91,7 +91,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task<List<RolePermission>> GetRolePermissionsAsync(string roleId)
         {
-            return await SpatiumDbContent.RolePermissions.Where(rp => rp.UserRoleId == roleId).ToListAsync();
+            return await SpatiumDbContent.RolePermission.Where(rp => rp.UserRoleId == roleId).ToListAsync();
 
         }
         #endregion
@@ -136,7 +136,7 @@ namespace Infrastructure.Database.Repository
         {
             foreach (var PermissionId in permissionIds)
             {
-                var rolepermission = await SpatiumDbContent.RolePermissions.FirstOrDefaultAsync(pr => pr.UserPermissionId == PermissionId && pr.UserRoleId == userRoleId);
+                var rolepermission = await SpatiumDbContent.RolePermission.FirstOrDefaultAsync(pr => pr.UserPermissionId == PermissionId && pr.UserRoleId == userRoleId);
                 if (rolepermission.IsDeleted) rolepermission.IsDeleted=false;
             }
         }

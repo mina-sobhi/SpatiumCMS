@@ -33,6 +33,8 @@ namespace Spatium_CMS.Controllers.PostController.Request
         [Required(ErrorMessage = "Author Id is Required")]
         public string AuthorId { get; set; }
 
+        public bool CommentsAllowed { get; set; } = true;
+
         public List<TableOfContentRequest> TableOfContentRequests { get; set; } = new List<TableOfContentRequest>();
     }
 }
