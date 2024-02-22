@@ -24,6 +24,7 @@
         public const string CannotChangeStatus = "User is already in this state!";
         public const string UserUnassignedSuccessfully = "User unassigned Successfully";
         public const string UserAssignedSuccessfully = "User Assigned Successfully";
+        public const string UserUpdatedSuccessfully = "User Data Updated Successfully";
 
 
         #endregion
@@ -41,6 +42,10 @@
 
         #region Roles
         public const string InvalidRole = "Role is Invalid";
+        public const string RoleIconsNotFound = "Role Icons not found!";
+        public const string RoleCreatedSuccessfully = "Role Created Successfully!";
+        public const string InvalidRoleModule = "Invalid Role Module!";
+        public const string RoleUpdatedSuccessfully = "Role Updated Successfully!";
 
         #endregion
 

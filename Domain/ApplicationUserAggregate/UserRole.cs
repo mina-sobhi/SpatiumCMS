@@ -15,7 +15,7 @@ namespace Domain.ApplicationUserAggregate
         public string RoleOwnerId { get; private set; }
         public int Priority { get; private set; }
         public bool IsDeleted { get; private set; }
-        public string? Color { get; private set; } 
+        public string Color { get; private set; } 
         public int? BlogId { get; private set; }
         public int? RoleIconId { get; private set; }
 
