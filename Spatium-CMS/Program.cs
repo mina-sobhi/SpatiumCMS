@@ -1,6 +1,10 @@
 using Domain.ApplicationUserAggregate;
 using Infrastructure.Services.AuthinticationService;
 using Microsoft.AspNetCore.Identity;
+
+using Infrastructure.Database.Database;
+using Infrastructure.Services.AuthinticationService;
+using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.AutoMapperProfiles;
 using Spatium_CMS.Extensions;
 using Spatium_CMS.Middlewares;
@@ -28,6 +32,26 @@ if(authConfig != null)
 
 var app = builder.Build();
 
+#region Auto Migration
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+
+        var ILoggerFactory = services.GetRequiredService<ILoggerFactory>();
+        try
+        {
+            var dbcontext = services.GetRequiredService<SpatiumDbContent>();
+            await dbcontext.Database.MigrateAsync();
+            await DataSeedingService.Dataseeding(dbcontext);
+        }
+        catch (Exception ex)
+        {
+            var logger = ILoggerFactory.CreateLogger<Program>();
+            logger.LogError(ex, "there is some thing wrong.....");
+        }
+    }
+#endregion
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -39,7 +63,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
