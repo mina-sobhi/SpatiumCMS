@@ -53,7 +53,7 @@ namespace Spatium_CMS.Controllers.PostController
         {
             return TryCatchLogAsync(async () =>
             {
-                var blogId=GetBlogId();
+                var blogId = GetBlogId();
                 var post = await unitOfWork.BlogRepository.GetPostByIdAsync(id, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
                 var result = mapper.Map<PostSnippetPreviewResponse>(post);
                 return Ok(result);
@@ -116,7 +116,7 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var roleId=GetRoleId();
+                var roleId = GetRoleId();
                 var userId = GetUserId();
                 var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
                 var postStrategy = authorizationStrategyFactory.GetSelectStrategy(role, blogId, userId, postId);
@@ -199,9 +199,9 @@ namespace Spatium_CMS.Controllers.PostController
                     var blogId = GetBlogId();
                     var roleId = GetRoleId();
 
-                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId)??throw new SpatiumException(ResponseMessages.InvalidRole);
-                    var author= await userManager.FindUserInBlogAsync(blogId, userId)?? throw new SpatiumException(ResponseMessages.AuthorNotFound);
-                    var user = await userManager.FindUserInBlogAsync(blogId,userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
+                    var author = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.AuthorNotFound);
+                    var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
 
                     var strategy = authorizationStrategyFactory.GetEditStrategy(role, blogId, userId, updatePostRequest.Id);
                     var expression = strategy.GetUpdatePostExpression();
@@ -241,7 +241,7 @@ namespace Spatium_CMS.Controllers.PostController
                     var roleId = GetRoleId();
                     var userId = GetUserId();
 
-                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId)?? throw new SpatiumException(ResponseMessages.InvalidRole);
+                    var role = await unitOfWork.RoleRepository.GetRoleByIdAsync(roleId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
 
                     var strategy = authorizationStrategyFactory.GetDeleteStartegy(role, blogId, userId, id);
                     var expression = strategy.GetDeletePostExpression();
@@ -256,7 +256,30 @@ namespace Spatium_CMS.Controllers.PostController
                 }
                 return BadRequest(ModelState);
             });
+        }
 
+        [HttpPut]
+        [Route("ChangeCommentsAllowed")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.CreatePost)]
+        public Task<IActionResult> ChangeCommentsAllowed(int PostId, bool IsAllowed)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var blogId = GetBlogId();
+                    var post = await unitOfWork.BlogRepository.GetPostByIdAsync(PostId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                    post.ChangeAllowedComments(IsAllowed);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok(new SpatiumResponse()
+                    {
+                        Message = $"Post {post.Title} Comments Allowed Is Changed Successfuly!",
+                        Success = true
+                    });
+                }
+                return BadRequest(ModelState);
+            });
         }
     }
 }
