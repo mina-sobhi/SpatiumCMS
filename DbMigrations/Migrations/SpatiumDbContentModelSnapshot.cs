@@ -556,8 +556,6 @@ namespace Migrations.Migrations
                         .HasColumnType("bit");
 
 
-                    b.Property<DateTime>("LastUpdate")
-
                     b.Property<DateTime?>("LastUpdated")
 
                         .HasColumnType("datetime2");

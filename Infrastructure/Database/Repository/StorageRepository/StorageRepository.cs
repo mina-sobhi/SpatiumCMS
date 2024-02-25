@@ -82,28 +82,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
                 File.Delete(uploadPath);
             }
       }
-      
-        public async Task CreateFileAsync(StaticFile File)
-        {
-            await SpatiumDbContent.Files.AddAsync(File);
-        }
-        public async Task DeleteFileAsync(int FileId)
-        {
-            var file = await GetFileAsync(FileId);
 
-            if (file is not null)
-            {
-                SpatiumDbContent.Files.Remove(file);
-            }
-
-
-
-
-        }
-
-        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
-
-        }
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();

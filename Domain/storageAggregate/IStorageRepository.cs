@@ -8,6 +8,7 @@ namespace Domain.StorageAggregate
         #region Storage
         Task<Storage> GetStorageByBlogId(int blogId);
         #endregion
+
         #region Folder
         Task<IEnumerable<Folder>> GetAllFoldersAsync();
         Task<Folder> GetFolderAsync(int id);
