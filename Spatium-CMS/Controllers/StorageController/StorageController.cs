@@ -17,6 +17,7 @@ using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
 
+
 namespace Spatium_CMS.Controllers.StorageController
 {
     [Route("api/[controller]")]
@@ -70,6 +71,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException(ResponseMessages.StorageNotFound);
                 var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId) ?? throw new SpatiumException($"Invalid Folder Id ");
                 folder.Delete();
+                foreach (var file in folder.Files)
+                {
+                    await unitOfWork.StorageRepository.DeleteFileAsync(file.Id);
+                }
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
                 {
@@ -273,6 +278,40 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
+
+        [HttpPut]
+        [Route("UpdateFile")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+
+        public Task<IActionResult> UpdateFile(UpdateFileRequest Request)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id);
+                    if (OldFile != null)
+                    {
+                        var UserId = GetUserId();
+                        var UpdateFile = mapper.Map<UpdateFileInput>(Request);
+                        UpdateFile.LastUpdate = DateTime.Now;
+                        UpdateFile.Createdby = UserId;
+                        OldFile.Update(UpdateFile);
+                        await unitOfWork.SaveChangesAsync();
+                        var response = new SpatiumResponse()
+                        {
+                            Message = ResponseMessages.FileUpdatedSuccessfully,
+                            Success = true,
+                        };
+                        return Ok(response);
+                    }
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+
         [HttpPut]
         [Route("RenameFolder")]
         [Authorize]
@@ -379,7 +418,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
 
         [HttpDelete]
-        [Route("Delete")]
+        [Route("DeleteFile")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
         public Task<IActionResult> DeleteFile(int Id)
@@ -400,6 +439,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 return BadRequest(ModelState);
             });
         }
+       
         #endregion
     }
 }

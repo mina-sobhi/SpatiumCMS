@@ -81,7 +81,12 @@ namespace Infrastructure.Database.Repository.StorageRepository
             {
                 File.Delete(uploadPath);
             }
-      }
+
+            if (file is not null)
+            {
+                SpatiumDbContent.Files.Remove(file);
+            }
+        }
 
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
