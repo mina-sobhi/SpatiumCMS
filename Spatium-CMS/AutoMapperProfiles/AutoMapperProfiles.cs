@@ -107,6 +107,11 @@ namespace Spatium_CMS.AutoMapperProfiles
 
                 #endregion
 
+
+
+                CreateMap<FileInput, AddFileRequest>().ReverseMap();
+                CreateMap<UpdateFileInput,UpdateFileRequest>().ReverseMap();
+
                 #region Storage
                 CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();
                 CreateMap<StaticFile, ViewFile>().

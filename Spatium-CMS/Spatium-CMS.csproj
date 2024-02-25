@@ -24,6 +24,7 @@
   <ItemGroup>
     <Folder Include="Controllers\UserManagmentController\Response\" />
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\1\" />
   </ItemGroup>
 
 </Project>

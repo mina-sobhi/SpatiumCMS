@@ -67,6 +67,22 @@ namespace Infrastructure.Database.Repository.StorageRepository
         #endregion
 
         #region File
+
+            public async Task CreateFileAsync(StaticFile File)
+            {
+                await SpatiumDbContent.Files.AddAsync(File);
+            }
+        public async Task DeleteFileAsync(int FileId)
+        {
+            var file = await GetFileAsync(FileId);
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.BlogId.ToString(), file.Name + file.Extention);
+
+            if (File.Exists(uploadPath))
+            {
+                File.Delete(uploadPath);
+            }
+      }
+      
         public async Task CreateFileAsync(StaticFile File)
         {
             await SpatiumDbContent.Files.AddAsync(File);
@@ -74,10 +90,19 @@ namespace Infrastructure.Database.Repository.StorageRepository
         public async Task DeleteFileAsync(int FileId)
         {
             var file = await GetFileAsync(FileId);
+
             if (file is not null)
             {
                 SpatiumDbContent.Files.Remove(file);
             }
+
+
+
+
+        }
+
+        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
+
         }
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
