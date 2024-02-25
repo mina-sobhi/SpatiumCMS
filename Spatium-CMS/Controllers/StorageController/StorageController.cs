@@ -7,6 +7,12 @@ using Spatium_CMS.Controllers.StorageController.Request;
 using Domain.StorageAggregate.Input;
 using Domain.StorageAggregate;
 using Microsoft.AspNetCore.Authorization;
+
+using Microsoft.EntityFrameworkCore;
+using Spatium_CMS.AttachmentService;
+using Domain.BlogsAggregate;
+using Microsoft.AspNetCore.Hosting;
+
 using Spatium_CMS.Filters;
 using Utilities.Enums;
 using Infrastructure.Extensions;
@@ -19,6 +25,7 @@ using System.IO;
 using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.StaticFiles;
 
+
 namespace Spatium_CMS.Controllers.StorageController
 {
     [Route("api/[controller]")]
@@ -26,8 +33,20 @@ namespace Spatium_CMS.Controllers.StorageController
     public class StorageController : CmsControllerBase
     {
 
-        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager) : base(unitOfWork, mapper, logger, userManager)
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<StorageController> logger;
+        private readonly IAttachmentService _attachmentService;
+        private readonly IConfiguration _configration;
+        private readonly IStorageRepository storageRepository;
+
+
+
+        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration, IStorageRepository storageRepository) : base(unitOfWork, mapper, logger)
         {
+            this.userManager = userManager;
+            _attachmentService = attachmentService;
+            _configration = configration;
+            this.storageRepository = storageRepository;
         }
 
         #region FolderApis
@@ -194,11 +213,14 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 return Ok(respone);
             });
+
         }
 
         [HttpPost]
         [Authorize(Roles = "Super Admin")]
+
         [PermissionFilter(PermissionsEnum.CreateMedia)]
+
         public Task<IActionResult> Create(CreateFolderRequest Request)
         {
             return TryCatchLogAsync(async () =>
@@ -206,6 +228,9 @@ namespace Spatium_CMS.Controllers.StorageController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
+
+                    var user = await userManager.FindByIdAsync(userId);
+
                     var blogId = GetBlogId();
                     var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound); ;
                     if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.Name.ToLower()))
@@ -220,6 +245,72 @@ namespace Spatium_CMS.Controllers.StorageController
 
                     await unitOfWork.StorageRepository.CreateFolderAsync(folder);
                     await unitOfWork.SaveChangesAsync();
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+
+        [HttpPost]
+        [Route("CreateFile")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> CreateFile(AddFileRequest FileRequest)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var blogId = GetBlogId();
+                    var UserId = GetUserId();
+                    string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
+
+
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+                    _attachmentService.CheckFileExtension(FileRequest.file);
+                    string fileName = FileRequest.Name;
+                    string filesize = FileRequest.file.Length.ToString();
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        return BadRequest("File name is empty or null.");
+                    }
+                    string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
+                    _attachmentService.ValidateFileSize(FileRequest.file);
+                    string fullfilePath = Path.Combine(uploadPath, newFileName);
+                    using (var stream = new FileStream(fullfilePath, FileMode.Create))
+                    {
+                        await FileRequest.file.CopyToAsync(stream);
+                    }
+
+                    string baseUrl = _configration["ApiBaseUrl"];
+
+                    if (string.IsNullOrEmpty(baseUrl))
+                    {
+                        return StatusCode(500, "Base URL is not configured.");
+                    }
+
+                    string imageUrl = $"{baseUrl}/{blogId}/{newFileName}";
+                    var InputFile = mapper.Map<FileInput>(FileRequest);
+                    InputFile.CreatedById = UserId;
+                    InputFile.BlogId = blogId;
+                    InputFile.UrlPath = imageUrl;
+                    InputFile.FileSize = filesize;
+                    InputFile.Extention = _attachmentService.GetFileExtention(FileRequest.file);
+                    var file = new StaticFile(InputFile);
+                    await unitOfWork.StorageRepository.CreateFileAsync(file);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("File Added Successfully");
+                }
+                return BadRequest(ModelState);
+            });
+        }
+
+        [HttpPut]
+        [Route("UpdateFile")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> UpdateFile(UpdateFileRequest Request)
 
                     var response = new SpatiumResponse()
                     {
@@ -239,11 +330,24 @@ namespace Spatium_CMS.Controllers.StorageController
         [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.EditMediaMetaInformation)]
         public Task<IActionResult> RenameFolder(RenameFolderRequest Request)
+
         {
             return TryCatchLogAsync(async () =>
             {
                 if (ModelState.IsValid)
                 {
+
+                    var OldFile = await storageRepository.GetFileAsync(Request.Id);
+                    if (OldFile != null)
+                    {
+                        var UserId = GetUserId();
+                        var UpdateFile = mapper.Map<UpdateFileInput>(Request);
+                        UpdateFile.LastUpdate = DateTime.Now;
+                        UpdateFile.Createdby = UserId;
+                        OldFile.Update(UpdateFile);
+                        await unitOfWork.SaveChangesAsync();
+                        return Ok("UPdated");
+                    }
 
                     var userId = GetUserId();
                     var blogId = GetBlogId();
@@ -269,6 +373,7 @@ namespace Spatium_CMS.Controllers.StorageController
                         Success = true
                     };
                     return Ok(response);
+
 
                 }
                 return BadRequest(ModelState);
@@ -340,6 +445,25 @@ namespace Spatium_CMS.Controllers.StorageController
             return File(bytes, contentType, Path.GetFileName(path));
         }
 
+
+        [HttpDelete]
+        [Route("Delete")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> DeleteFile(int Id)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    await storageRepository.DeleteFileAsync(Id);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("Deleted");
+                }
+                return BadRequest(ModelState);
+            });
+        }
+
         #endregion
-    }
+
+}
 }
