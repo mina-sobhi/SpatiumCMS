@@ -24,6 +24,8 @@ using Org.BouncyCastle.Utilities;
 using System.IO;
 using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.StaticFiles;
+using Org.BouncyCastle.Asn1.X509;
+using System.IO.Compression;
 
 
 namespace Spatium_CMS.Controllers.StorageController
@@ -34,10 +36,13 @@ namespace Spatium_CMS.Controllers.StorageController
     {
         private readonly IAttachmentService _attachmentService;
         private readonly IConfiguration _configration;
-        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration, IStorageRepository storageRepository) : base(unitOfWork, mapper, logger,userManager)
+        private readonly IWebHostEnvironment environment;
+
+        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration,IWebHostEnvironment environment) : base(unitOfWork, mapper, logger,userManager)
         {
             _attachmentService = attachmentService;
-            _configration = configration;  
+            _configration = configration;
+            this.environment = environment;
         }
 
         #region FolderApis
@@ -260,14 +265,14 @@ namespace Spatium_CMS.Controllers.StorageController
                         await FileRequest.file.CopyToAsync(stream);
                     }
 
-                    string baseUrl = _configration["ApiBaseUrl"];
+                    //string baseUrl = _configration["ApiBaseUrl"];
 
-                    if (string.IsNullOrEmpty(baseUrl))
-                    {
-                        return StatusCode(500, "Base URL is not configured.");
-                    }
+                    //if (string.IsNullOrEmpty(baseUrl))
+                    //{
+                    //    return StatusCode(500, "Base URL is not configured.");
+                    //}
 
-                    string imageUrl = $"{baseUrl}/{blogId}/{newFileName}";
+                    string imageUrl = $"{blogId}/{newFileName}";
                     var InputFile = mapper.Map<FileInput>(FileRequest);
                     InputFile.CreatedById = UserId;
                     InputFile.BlogId = blogId;
@@ -407,7 +412,27 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
+        [HttpGet]
+        [Route("ExtractFiles")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.ExportMedia)]
+        public Task<IActionResult> ExtractFiles(int? folderId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
+
+                var filesToZip = _attachmentService.FilesToExtract(files);
+                var Identifire = new Random();
+                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t")  +".zip");
+                await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
+
+                var fileStreamToReturn = new FileStream(zipArchivePath, FileMode.Open);
+                return File(fileStreamToReturn, "application/zip", "Spatium_Cms_" + DateTime.Now.ToString("M") +"_" + DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString()+".zip");
+            });
+        }
         #endregion
 
-}
+    }
 }

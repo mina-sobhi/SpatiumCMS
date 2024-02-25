@@ -26,6 +26,8 @@ namespace Domain.StorageAggregate
         Task CreateFileAsync(StaticFile File);
         Task DeleteFileAsync(int FileId);
         void UpdateFile(StaticFile File);
+        Task<Folder> GetFilesToExtract(int bloId,int? folderId);
+
         #endregion
     }
 }
