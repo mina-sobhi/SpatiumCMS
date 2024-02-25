@@ -23,16 +23,15 @@ namespace Spatium_CMS.Controllers.CommentController
         {
         }
 
-
         [HttpGet]
-        [Route("GetCommentById")]
+        [Route("{commentId}")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.ReadComment)]
-        public Task<IActionResult> GetCommentById(int CommentId)
+        public Task<IActionResult> GetCommentById(int commentId)
         {
             return TryCatchLogAsync(async () =>
             {
-                var Comment = await unitOfWork.BlogRepository.GetCommentByIdAsync(CommentId)??
+                var Comment = await unitOfWork.BlogRepository.GetCommentByIdAsync(commentId) ??
                         throw new SpatiumException("Comment Not Found");  
                 
                 var result = mapper.Map<CommentResponse>(Comment);
@@ -40,9 +39,7 @@ namespace Spatium_CMS.Controllers.CommentController
             });
         }
 
-
         [HttpGet]
-        [Route("GetPostComments")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.ReadComment)]
         public Task<IActionResult> GetPostComments(int postId,string FilterColumn=null, string FilterValue = null)
@@ -64,7 +61,6 @@ namespace Spatium_CMS.Controllers.CommentController
         }
 
         [HttpPost]
-        [Route("CreateComment")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.CreateComment)]
         public Task<IActionResult> CreateComment(CommentRequest commentRequest)
@@ -92,9 +88,7 @@ namespace Spatium_CMS.Controllers.CommentController
 
         }
 
-
         [HttpPut]
-        [Route("UpdateComment")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateComment)]
         public Task<IActionResult> UpdateComment(UpdateCommentRequest updateCommentRequest)
@@ -121,9 +115,7 @@ namespace Spatium_CMS.Controllers.CommentController
             });
         }
 
-
         [HttpDelete]
-        [Route("DeleteComment")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteComment)]
         public Task<IActionResult> DeleteComment(int Id)

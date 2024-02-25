@@ -10,7 +10,6 @@ namespace Domain.StorageAggregate
         #region Properts
         public string Name { get; private set; }
         public string Extention { get; private set; }
-        //test
         public string UrlPath { get; private set; }
         public string Caption { get; private set; }
         public string FileSize { get; private set; }
@@ -19,6 +18,7 @@ namespace Domain.StorageAggregate
         public string CreatedById { get; private set; }
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
+        public DateTime? LastUpdated { get; private set; }
         #endregion
 
         #region NavigationProperty
@@ -56,6 +56,7 @@ namespace Domain.StorageAggregate
             this.FileSize = input.FileSize;
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
+            this.LastUpdated= DateTime.UtcNow;
         }
         public void Delete()
         {
