@@ -1,5 +1,7 @@
-﻿using Domain.StorageAggregate;
+﻿using Domain.Base;
+using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Database.Repository.StorageRepository
 {
@@ -63,6 +65,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
            return await SpatiumDbContent.Folders.SingleOrDefaultAsync(f => f.Name == FolderName&& f.BlogId == blogId && f.ParentId == ParentId);
         }
         #endregion
+
         #region File
         public async Task CreateFileAsync(StaticFile File)
         {
@@ -76,9 +79,27 @@ namespace Infrastructure.Database.Repository.StorageRepository
                 SpatiumDbContent.Files.Remove(file);
             }
         }
-        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
+        public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
-            return await SpatiumDbContent.Files.ToListAsync();
+            var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
+
+            if (!string.IsNullOrEmpty(fileParams.FilterColumn) && !string.IsNullOrEmpty(fileParams.FilterValue))
+            {
+                query = query.ApplyFilter(fileParams.FilterColumn, fileParams.FilterValue);
+            }
+
+            if (!string.IsNullOrEmpty(fileParams.SortColumn))
+            {
+                query = query.ApplySort(fileParams.SortColumn, fileParams.IsDescending);
+            }
+
+            if (!string.IsNullOrEmpty(fileParams.SearchColumn) && !string.IsNullOrEmpty(fileParams.SearchValue))
+            {
+                query = query.ApplySearch(fileParams.SearchColumn, fileParams.SearchValue);
+            }
+
+            var paginatedQuery = query.Skip((fileParams.Page - 1) * fileParams.PageSize).Take(fileParams.PageSize);
+            return paginatedQuery.ToList();
         }
         public async Task<StaticFile> GetFileAsync(int id)
         {
@@ -88,9 +109,6 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             SpatiumDbContent.Files.Update(File);
         }
-
-       
-
         #endregion
     }
 }
