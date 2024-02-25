@@ -451,7 +451,6 @@ namespace Migrations.Migrations
                     b.ToTable("PostStatus", "Lookup");
                 });
 
-
             modelBuilder.Entity("Domain.LookupsAggregate.RoleIcon", b =>
                 {
                     b.Property<int>("Id")
@@ -470,7 +469,6 @@ namespace Migrations.Migrations
 
                     b.ToTable("RoleIcon", "Lookup");
                 });
-
 
             modelBuilder.Entity("Domain.StorageAggregate.Folder", b =>
                 {
@@ -555,9 +553,7 @@ namespace Migrations.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-
-                    b.Property<DateTime?>("LastUpdated")
-
+                    b.Property<DateTime?>("LastUpdate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
