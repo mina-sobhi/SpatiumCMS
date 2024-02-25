@@ -108,8 +108,6 @@ namespace Domain.StorageAggregate
         {
             this.FolderId = FoldrId;
         }
-        private void validations(string Name, string Description)
-        {}
 
         #endregion
     }

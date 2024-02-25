@@ -35,14 +35,10 @@ namespace Spatium_CMS.Controllers.StorageController
     public class StorageController : CmsControllerBase
     {
         private readonly IAttachmentService _attachmentService;
-        private readonly IConfiguration _configration;
-        private readonly IWebHostEnvironment environment;
 
-        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration,IWebHostEnvironment environment) : base(unitOfWork, mapper, logger,userManager)
+        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService) : base(unitOfWork, mapper, logger,userManager)
         {
             _attachmentService = attachmentService;
-            _configration = configration;
-            this.environment = environment;
         }
 
         #region FolderApis
@@ -94,10 +90,10 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
         [HttpDelete]
-        [Route("DeleteBullk")]
+        [Route("DeleteFolderBullk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> DeleteBullk(DeleteBulkRequest deleteBulk)
+        public Task<IActionResult> DeleteFolderBullk(DeleteBulkRequest deleteBulk)
         {
             return TryCatchLogAsync(async () =>
             {
@@ -123,10 +119,10 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
         [HttpPut]
-        [Route("MoveBullk")]
+        [Route("MoveFolderBullk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> MoveBullk(MoveBulkRequest moveBulk)
+        public Task<IActionResult> MoveFolderBullk(MoveBulkRequest moveBulk)
         {
             return TryCatchLogAsync(async () =>
             {
@@ -200,6 +196,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
         [HttpPost]
         [Authorize]
+        [Route("CreateFolder")]
         [PermissionFilter(PermissionsEnum.CreateMedia)]
         public Task<IActionResult> Create(CreateFolderRequest Request)
         {
@@ -230,6 +227,51 @@ namespace Spatium_CMS.Controllers.StorageController
             });
 
         }
+
+
+        [HttpPut]
+        [Route("RenameFolder")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> RenameFolder(RenameFolderRequest Request)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+
+                    var userId = GetUserId();
+                    var blogId = GetBlogId();
+                    var user = await userManager.FindUserInBlogAsync(blogId, userId);
+
+                    if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.NewName.ToLower()))
+                    {
+                        throw new SpatiumException($"Name {Request.NewName} Already Exist!");
+                    }
+                    var folder = await unitOfWork.StorageRepository.GetFolderByName(Request.OldName.ToLower(), blogId, Request.ParentId);
+                    if (folder is null)
+                    {
+                        throw new SpatiumException($"folder {Request.OldName} Not Exist!");
+                    }
+
+                    folder.Rename(Request.NewName);
+                    await unitOfWork.SaveChangesAsync();
+
+                    var response = new SpatiumResponse()
+                    {
+                        Message = $"F older Renamed Successfuly from {Request.OldName} To {folder.Name} ",
+                        Success = true
+                    };
+                    return Ok(response);
+
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+        #endregion
+
+        #region FileApis
 
         [HttpPost]
         [Route("CreateFile")]
@@ -288,49 +330,63 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
-        [HttpPut]
-        [Route("RenameFolder")]
+        [HttpDelete]
+        [Route("Delete")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.UpdateMedia)]
-        public Task<IActionResult> RenameFolder(RenameFolderRequest Request)
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> DeleteFile(int Id)
         {
             return TryCatchLogAsync(async () =>
             {
                 if (ModelState.IsValid)
                 {
-
-                    var userId = GetUserId();
-                    var blogId = GetBlogId();
-                    var user = await userManager.FindUserInBlogAsync(blogId, userId);
-
-                    if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.NewName.ToLower()))
-                    {
-                        throw new SpatiumException($"Name {Request.NewName} Already Exist!");
-                    }
-                    var folder = await unitOfWork.StorageRepository.GetFolderByName(Request.OldName.ToLower(), blogId, Request.ParentId);
-                    if (folder is null)
-                    {
-                        throw new SpatiumException($"folder {Request.OldName} Not Exist!");
-                    }
-
-                    folder.Rename(Request.NewName);
+                    await unitOfWork.StorageRepository.DeleteFileAsync(Id);
                     await unitOfWork.SaveChangesAsync();
-
-                    var response = new SpatiumResponse()
-                    {
-                        Message = $"F older Renamed Successfuly from {Request.OldName} To {folder.Name} ",
-                        Success = true
-                    };
-                    return Ok(response);
-
+                    return Ok("Deleted");
                 }
                 return BadRequest(ModelState);
             });
-
         }
-        #endregion
 
-        #region FileApis
+
+        [HttpPut]
+        [Route("MoveFilesBulk")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> MoveFilesBulk(List<int> filesIds,int folderIdDestination) {
+           return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+
+                foreach (var file in filesIds)
+                {
+                    var fileToMove= await unitOfWork.StorageRepository.GetFileAsync(file)??throw new SpatiumException("File Not Existed To Move");
+                     fileToMove.MoveToFolderId(folderIdDestination);
+                    await unitOfWork.SaveChangesAsync();
+                }
+                return Ok("Files Moved Succsseded...");
+            });
+        }
+
+        [HttpDelete]
+        [Route("DeleteFilesBulk")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> DeleteFilesBulk(List<int> filesIds)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                foreach (var file in filesIds)
+                {
+                    var fileToDelete = await unitOfWork.StorageRepository.GetFileAsync(file) ?? throw new SpatiumException("File Not Existed To Deleted");
+                    await DeleteFile(fileToDelete.Id);
+                }
+                return Ok("Files Moved Succsseded...");
+            });
+        }
+
+
         [HttpGet]
         [Route("GetAllFiles")]
         [Authorize]
@@ -391,25 +447,6 @@ namespace Spatium_CMS.Controllers.StorageController
                 contentType = "application/octet-stream";
             }
             return File(bytes, contentType, Path.GetFileName(path));
-        }
-
-
-        [HttpDelete]
-        [Route("Delete")]
-        [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> DeleteFile(int Id)
-        {
-            return TryCatchLogAsync(async () =>
-            {
-                if (ModelState.IsValid)
-                {
-                    await unitOfWork.StorageRepository.DeleteFileAsync(Id);
-                    await unitOfWork.SaveChangesAsync();
-                    return Ok("Deleted");
-                }
-                return BadRequest(ModelState);
-            });
         }
 
         [HttpGet]
