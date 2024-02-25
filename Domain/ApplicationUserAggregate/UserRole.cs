@@ -2,6 +2,7 @@
 using Domain.BlogsAggregate;
 using Domain.LookupsAggregate;
 using Microsoft.AspNetCore.Identity;
+using System.Security;
 using Utilities.Exceptions;
 using Utilities.Results;
 
@@ -70,8 +71,18 @@ namespace Domain.ApplicationUserAggregate
         }
         public void UpdateData(UpdateUserRoleInput updateInput)
         {
+            RoleIconId=updateInput.RoleIconId;
+            Color=updateInput.Color;
             Description = updateInput.Description;
-             
+
+            //if the role permissions is empty delete the current permissions
+            if (updateInput.PermissionIds is null)
+            {
+                foreach (var permission in _rolePermission)
+                {
+                    permission.Delete();
+                }
+            }
             //change the state of old permission 
             var oldPermissions = _rolePermission.Select(x => x.UserPermissionId).Except(updateInput.PermissionIds);
             foreach (var perm in oldPermissions)
@@ -88,7 +99,8 @@ namespace Domain.ApplicationUserAggregate
                 //reset the deleted permissions
                 var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
                 if (permission.IsDeleted)
-                    permission.Delete();
+                    //permission.Delete();
+                    permission.IsDeleted = false;
             }
             //add new permissions 
             var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));
