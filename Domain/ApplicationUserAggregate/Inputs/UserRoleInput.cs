@@ -9,7 +9,7 @@
         public int RoleOwnerPriority { get; set; }
         public int? BlogId { get; set; }
         public int RoleIconId { get; set; }
-        public string? Color { get; set; }
+        public string Color { get; set; }
         public ICollection<int> UserPermissionId { get; set; } = new List<int>();
     }
 }

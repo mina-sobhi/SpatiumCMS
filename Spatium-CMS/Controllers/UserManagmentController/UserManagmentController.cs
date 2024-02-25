@@ -25,10 +25,9 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     public class UserManagmentController : CmsControllerBase
     {
         private readonly ISendMailService sendMailService;
-        private readonly IAuthenticationService authenticationService;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger, IAuthenticationService authenticationService)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger)
             : base(unitOfWork, maper,logger, userManager)
         {
             this.sendMailService = sendMailService;

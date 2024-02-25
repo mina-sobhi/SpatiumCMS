@@ -46,6 +46,7 @@
         public const string RoleCreatedSuccessfully = "Role Created Successfully!";
         public const string InvalidRoleModule = "Invalid Role Module!";
         public const string RoleUpdatedSuccessfully = "Role Updated Successfully!";
+        public const string RoleNameIsRequired = "Role Name is Required!";
 
         #endregion
 

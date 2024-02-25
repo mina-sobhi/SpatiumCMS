@@ -46,7 +46,7 @@ namespace Domain.ApplicationUserAggregate
             IsActive = userRoleInput.IsActive;
             RoleOwnerId = userRoleInput.RoleOwnerId;
             Priority = ++userRoleInput.RoleOwnerPriority;
-            //RoleIconId = userRoleInput.RoleIconId;
+            RoleIconId = userRoleInput.RoleIconId;
             Color = userRoleInput.Color;
             this.IsDeleted = false;
             BlogId = userRoleInput.BlogId ?? throw new SpatiumException(ResponseMessages.BlogIdCannotBeNull);
@@ -57,6 +57,7 @@ namespace Domain.ApplicationUserAggregate
             }
         }
         #endregion
+
         public void Delete()
         {
             this.IsDeleted = true;
@@ -78,7 +79,7 @@ namespace Domain.ApplicationUserAggregate
                 //reset the old permissions to be deleted 
                 var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
                 if (!permission.IsDeleted)
-                    permission.IsDeleted = true;
+                    permission.Delete();
             }
             //change the state of current permission
             var CommonPermissions = _rolePermission.Select(x => x.UserPermissionId).Intersect(updateInput.PermissionIds);
@@ -86,8 +87,8 @@ namespace Domain.ApplicationUserAggregate
             {
                 //reset the deleted permissions
                 var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
-                if (permission.IsDeleted) 
-                    permission.IsDeleted = false;
+                if (permission.IsDeleted)
+                    permission.Delete();
             }
             //add new permissions 
             var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));
@@ -95,9 +96,6 @@ namespace Domain.ApplicationUserAggregate
             {
                 _rolePermission.Add(new RolePermission(Id, newPermissionId));
             }
-
         }
-
-
     }
 }
