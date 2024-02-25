@@ -140,5 +140,17 @@ namespace Spatium_CMS.AttachmentService
                 throw new SpatiumException("This Extention is Not Supported");
             }
         }
+
+        public string GetFileExtention(IFormFile file)
+        {
+            var originalFileName = file.FileName;
+            var fileExtension = Path.GetExtension(originalFileName);
+            return fileExtension;
+        }
+      
+
+
+
+
     }
 }

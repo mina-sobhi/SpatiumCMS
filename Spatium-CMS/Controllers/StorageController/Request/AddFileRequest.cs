@@ -1,4 +1,6 @@
-﻿namespace Spatium_CMS.Controllers.StorageController.Request
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Spatium_CMS.Controllers.StorageController.Request
 {
     public class AddFileRequest
     {
@@ -7,6 +9,9 @@
         public string Alt { get; set; }
         public string Dimension { get; set; }
         public int? FolderId { get; set; }
-        public IFormFile file { get; set; } = null;
+        [Required(ErrorMessage = "You Must Upload The File")]
+        public IFormFile file { get; set; } 
     }
+
+    
 }

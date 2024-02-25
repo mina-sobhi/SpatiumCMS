@@ -10,6 +10,7 @@ namespace Spatium_CMS.AttachmentService
         string GetDesireFileName(IFormFile file, string desiredFileName);
         void ValidateFileSize(IFormFile file);
         void CheckFileExtension(IFormFile file);
+        string GetFileExtention(IFormFile file);
 
     }
 }

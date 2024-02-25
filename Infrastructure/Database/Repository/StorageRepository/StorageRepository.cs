@@ -41,15 +41,27 @@ namespace Infrastructure.Database.Repository.StorageRepository
             {
                 await SpatiumDbContent.Files.AddAsync(File);
             }
-            public async Task DeleteFileAsync(int FileId)
+        public async Task DeleteFileAsync(int FileId)
+        {
+            var file = await GetFileAsync(FileId);
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.BlogId.ToString(), file.Name + file.Extention);
+
+            if (File.Exists(uploadPath))
             {
-                var file = await GetFileAsync(FileId);
-                if (file is not null)
-                {
-                    SpatiumDbContent.Files.Remove(file);
-                }
+                File.Delete(uploadPath);
             }
-            public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
+
+
+            if (file is not null)
+            {
+                SpatiumDbContent.Files.Remove(file);
+            }
+
+
+
+        }
+
+        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
             {
                 return await SpatiumDbContent.Files.ToListAsync();
             }

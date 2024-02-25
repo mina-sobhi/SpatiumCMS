@@ -9,6 +9,8 @@ using Domain.StorageAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.AttachmentService;
+using Domain.BlogsAggregate;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -33,7 +35,7 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
         [HttpPost]
-        [Authorize(Roles ="Super Admin")]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> Create(CreateFolderRequest Request)
         {
             return TryCatchLogAsync(async () =>
@@ -74,12 +76,12 @@ namespace Spatium_CMS.Controllers.StorageController
                     }
                     _attachmentService.CheckFileExtension(FileRequest.file);
                     string fileName = FileRequest.Name;
-                    string filesize=FileRequest.file.Length.ToString();
+                    string filesize = FileRequest.file.Length.ToString();
                     if (string.IsNullOrEmpty(fileName))
                     {
                         return BadRequest("File name is empty or null.");
                     }
-                  string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
+                    string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
                     using (var stream = new FileStream(fullfilePath, FileMode.Create))
@@ -100,6 +102,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     InputFile.BlogId = blogId;
                     InputFile.UrlPath = imageUrl;
                     InputFile.FileSize = filesize;
+                    InputFile.Extention = _attachmentService.GetFileExtention(FileRequest.file);
                     var file = new StaticFile(InputFile);
                     await unitOfWork.StorageRepository.CreateFileAsync(file);
                     await unitOfWork.SaveChangesAsync();
@@ -109,7 +112,6 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
-
         [HttpPut]
         [Route("UpdateFile")]
         [Authorize(Roles = "Super Admin")]
@@ -117,12 +119,12 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             return TryCatchLogAsync(async () =>
             {
-              if (ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     var OldFile = await storageRepository.GetFileAsync(Request.Id);
-                    if (OldFile!=null)
+                    if (OldFile != null)
                     {
-                       var UserId=GetUserId();                                           
+                        var UserId = GetUserId();
                         var UpdateFile = mapper.Map<UpdateFileInput>(Request);
                         UpdateFile.LastUpdate = DateTime.Now;
                         UpdateFile.Createdby = UserId;
@@ -130,8 +132,8 @@ namespace Spatium_CMS.Controllers.StorageController
                         await unitOfWork.SaveChangesAsync();
                         return Ok("UPdated");
                     }
-                }             
-               return BadRequest(ModelState);
+                }
+                return BadRequest(ModelState);
             });
 
         }
@@ -145,13 +147,9 @@ namespace Spatium_CMS.Controllers.StorageController
             {
                 if (ModelState.IsValid)
                 {
-                    var DeleteFile = await storageRepository.GetFileAsync(Id);
-                    if (DeleteFile != null)
-                    { 
-                        DeleteFile.Delete();
-                        await unitOfWork.SaveChangesAsync();
-                        return Ok("Deleted");
-                    }
+                    await storageRepository.DeleteFileAsync(Id);
+                    await unitOfWork.SaveChangesAsync();
+                    return Ok("Deleted");
                 }
                 return BadRequest(ModelState);
             });
