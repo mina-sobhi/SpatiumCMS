@@ -46,7 +46,7 @@ namespace Domain.ApplicationUserAggregate
             IsActive = userRoleInput.IsActive;
             RoleOwnerId = userRoleInput.RoleOwnerId;
             Priority = ++userRoleInput.RoleOwnerPriority;
-            //RoleIconId = userRoleInput.RoleIconId;
+            RoleIconId = userRoleInput.RoleIconId;
             Color = userRoleInput.Color;
             this.IsDeleted = false;
             BlogId = userRoleInput.BlogId ?? throw new SpatiumException(ResponseMessages.BlogIdCannotBeNull);
