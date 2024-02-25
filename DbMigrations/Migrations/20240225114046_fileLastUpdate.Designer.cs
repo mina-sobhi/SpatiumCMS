@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240225084325_FileLastUpdate")]
-    partial class FileLastUpdate
+    [Migration("20240225114046_fileLastUpdate")]
+    partial class fileLastUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
