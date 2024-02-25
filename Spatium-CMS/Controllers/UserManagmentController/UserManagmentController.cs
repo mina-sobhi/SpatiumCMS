@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
+using Spatium_CMS.Controllers.UserManagmentController.Response;
 using Spatium_CMS.Filters;
 using System.Net;
 using Utilities.Enums;
@@ -24,14 +25,27 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     [ApiController]
     public class UserManagmentController : CmsControllerBase
     {
+        private readonly IUnitOfWork unitOfWork;
+        private readonly IMapper maper;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly ISendMailService sendMailService;
+        private readonly ILogger<UserManagmentController> logger;
+        private readonly IAuthenticationService authenticationService1;
+        private readonly IConfiguration configuration;
         private readonly IAuthenticationService authenticationService;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger, IAuthenticationService authenticationService)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger,
+            IAuthenticationService authenticationService ,IConfiguration configuration)
             : base(unitOfWork, maper,logger, userManager)
         {
+            this.unitOfWork = unitOfWork;
+            this.maper = maper;
+            this.userManager = userManager;
             this.sendMailService = sendMailService;
+            this.logger = logger;
+            authenticationService1 = authenticationService;
+            this.configuration = configuration;
         }
 
         [HttpPost]
@@ -178,6 +192,29 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 var currentuser = await userManager.FindUserInBlogByIdIncludingRole(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var detailesResult = mapper.Map<ViewUserProfileResult>(currentuser);
                 return Ok(detailesResult);
+            });
+        }
+
+        [HttpGet]
+        [Route("GetUserActivity")]
+        [Authorize]
+        public Task<IActionResult> GetUserActivity()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var activity = await unitOfWork.RoleRepository.GetActivityLog(userId);
+                var response = new List<ActivityResponse>();
+                foreach (var item in activity)
+                {
+                    response.Add(new ActivityResponse()
+                    {
+                        Content = item.Content,
+                        IconPath = configuration.GetSection("ApiBaseUrl").Value +"/" + item.LogIcon.Path,
+                        Date = item.CreationDate
+                    });
+                }
+                return Ok(response);
             });
         }
     }

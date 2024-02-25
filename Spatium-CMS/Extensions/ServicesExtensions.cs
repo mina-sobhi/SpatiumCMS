@@ -111,6 +111,7 @@ namespace Spatium_CMS.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthorizationStrategyFactory, AuthorizationStrategyFactory>();
             services.AddScoped<IPostStatusFactory, PostStatusFactory>();
+            //services.AddScoped<IuserService, UserService>();
 
         }
         #endregion
