@@ -83,6 +83,14 @@ namespace Domain.StorageAggregate
         {
             this.Name = Name.Length < 2 && Name.Length > 200 ? throw new SpatiumException("Folder Name Must in Range 2 to 200 char ") : newName  ;
         }
+        public void MoveTo(int? DestinationId)
+        {
+            this.ParentId= DestinationId;
+            foreach (var file in this._files)
+            {
+                file.MoveToFolderId(this.Id);
+            }
+        }
         private void validations(string Name , string Description)
         {
            

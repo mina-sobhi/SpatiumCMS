@@ -71,15 +71,94 @@ namespace Spatium_CMS.Controllers.StorageController
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
                 var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+               
                 if (folder == null)
                 {
                     throw new SpatiumException($"Invalid Folder Id ");
                 }
                 folder.Delete();
                 await unitOfWork.SaveChangesAsync();
+
                 return Ok($"Folder {folder.Name} Deleted Successfuly");
             });
         }
+
+        [HttpDelete]
+        [Route("DeleteBullk")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> DeleteBullk(DeleteBulkRequest deleteBulk)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+
+                foreach (var folderId in deleteBulk.FolderIds)
+                {
+                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+
+                    if (folder == null)
+                    {
+                        throw new SpatiumException($"Invalid Folder Id ");
+                    }
+                    folder.Delete();
+                }
+                foreach (var fileId in deleteBulk.FilesIds)
+                {
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId);
+                    if (file == null)
+                    {
+                        throw new SpatiumException($"Invalid File Id ");
+                    }
+                    file.Delete();
+                }
+                await unitOfWork.SaveChangesAsync();
+
+                return Ok($"Folders and Files  Deleted Successfuly");
+            });
+        }
+
+        [HttpPut]
+        [Route("MoveBullk")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> MoveBullk(MoveBulkRequest moveBulk)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+
+                foreach (var folderId in moveBulk.FolderIds)
+                {
+                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId);
+
+                    if (folder == null)
+                    {
+                        throw new SpatiumException($"Invalid Folder Id ");
+                    }
+                    folder.MoveTo(moveBulk.DestinationId);
+                }
+                foreach (var fileId in moveBulk.FilesIds)
+                {
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId);
+                    if (file == null)
+                    {
+                        throw new SpatiumException($"Invalid File Id ");
+                    }
+                    file.MoveToFolderId(moveBulk.DestinationId);
+                }
+                await unitOfWork.SaveChangesAsync();
+
+                return Ok($"Folders and Files  moved Successfuly");
+            });
+        }
+
 
         [HttpGet()]
         [Route("ShowAllFolders")]
