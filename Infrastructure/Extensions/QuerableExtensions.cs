@@ -1,5 +1,4 @@
-﻿using Domain.BlogsAggregate;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Infrastructure.Extensions
@@ -28,25 +27,25 @@ namespace Infrastructure.Extensions
         #endregion
 
         #region ApplySort
-        public static IQueryable<Post> ApplySort(this IQueryable<Post> query, string columnName, bool isDescending)
+        public static IQueryable<TEntity> ApplySort<TEntity>(this IQueryable<TEntity> query, string columnName, bool isDescending=false) where TEntity : class
         {
             columnName = columnName.ToLower();
-            var actualColumnName = typeof(Post).GetProperties().FirstOrDefault(p => p.Name.ToLower() == columnName)?.Name;
+            var actualColumnName = typeof(TEntity).GetProperties().FirstOrDefault(p => p.Name.ToLower() == columnName)?.Name;
 
             if (actualColumnName == null)
             {
                 throw new ArgumentException($"Column '{columnName}' does not exist.");
             }
             string methodName = isDescending ? "OrderByDescending" : "OrderBy";
-            var parameter = Expression.Parameter(typeof(Post), "x");
-            var property = typeof(Post).GetProperty(actualColumnName);
+            var parameter = Expression.Parameter(typeof(TEntity), "x");
+            var property = typeof(TEntity).GetProperty(actualColumnName);
             var propertyAccess = Expression.MakeMemberAccess(parameter, property);
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
             var resultExp = Expression.Call(typeof(Queryable), methodName,
-                new Type[] { typeof(Post), property.PropertyType },
+                new Type[] { typeof(TEntity), property.PropertyType },
                 query.Expression, Expression.Quote(orderByExp));
 
-            return query.Provider.CreateQuery<Post>(resultExp);
+            return query.Provider.CreateQuery<TEntity>(resultExp);
         }
         #endregion
 
@@ -69,7 +68,10 @@ namespace Infrastructure.Extensions
             var containsMethodExp = Expression.Call(propertyExp, method, someValue);
 
             return query.Where(Expression.Lambda<Func<TEntity, bool>>(containsMethodExp, parameterExp));
-        } 
+        }
         #endregion
     }
+
+
+
 }

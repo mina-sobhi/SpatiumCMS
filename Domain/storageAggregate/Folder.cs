@@ -65,11 +65,31 @@ namespace Domain.StorageAggregate
         }
         public void Delete()
         {
-           this.IsDeleted = true;
+            this.IsDeleted = true;
+            foreach (var file in this._files)
+            {
+                file.Delete();
+            }
+            foreach (var subFolder in this._folders)
+            {
+                subFolder.Delete();
+                foreach (var file in subFolder.Files)
+                {
+                    file.Delete();
+                }
+            }
         }
         public void Rename(string newName)
         {
             this.Name = Name.Length < 2 && Name.Length > 200 ? throw new SpatiumException("Folder Name Must in Range 2 to 200 char ") : newName  ;
+        }
+        public void MoveTo(int? DestinationId)
+        {
+            this.ParentId= DestinationId;
+            foreach (var file in this._files)
+            {
+                file.MoveToFolderId(this.Id);
+            }
         }
         private void validations(string Name , string Description)
         {

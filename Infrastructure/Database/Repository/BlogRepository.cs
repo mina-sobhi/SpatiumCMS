@@ -61,20 +61,29 @@ namespace Infrastructure.Database.Repository
             SpatiumDbContent.Comments.Remove(await GetCommentByIdAsync(id));
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsAsync()
+        public async Task<IEnumerable<Comment>> GetCommentsAsync(int postId,int blogId, string FilterColumn = null, string FilterValue = null)
         {
-            return await SpatiumDbContent.Comments.ToListAsync();
+
+            var Post = await SpatiumDbContent.Posts.FirstOrDefaultAsync(p => p.BlogId == blogId && p.Id == postId);
+            var query = Post.Comments.AsQueryable();
+
+            if (!string.IsNullOrEmpty(FilterColumn) && !string.IsNullOrEmpty(FilterValue))
+            {
+                query = query.ApplyFilter(FilterColumn, FilterValue);
+            }
+            return query.ToList();
         }
 
-        public async Task<Comment> GetCommentByIdAsync(int id)
+        public async Task<Comment> GetCommentByIdAsync(int commentId)
         {
-            return await SpatiumDbContent.Comments.FindAsync(id);
+            return await SpatiumDbContent.Comments.FindAsync(commentId);
         }
 
         public async Task UpdateCommentAsync(Comment comment)
         {
             SpatiumDbContent.Comments.Update(comment);
         }
+
         #endregion
 
         #region Post

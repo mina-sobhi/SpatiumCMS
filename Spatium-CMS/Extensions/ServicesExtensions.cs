@@ -8,6 +8,7 @@ using Infrastructure.Database.Repository.StorageRepository;
 using Infrastructure.Services.AuthinticationService;
 using Infrastructure.Services.MailSettinService;
 using Infrastructure.Strategies.AuthorizationStrategy;
+using Infrastructure.Strategies.PostStatusStrategy.Factory;
 using Infrastructure.UOW;
 using MailKit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -112,8 +113,12 @@ namespace Spatium_CMS.Extensions
             services.AddScoped<IUserRoleRepository, UserRoleReposiotry>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthorizationStrategyFactory, AuthorizationStrategyFactory>();
+
             services.AddScoped<IAttachmentService, AttachmmentService>();
             services.AddScoped<IStorageRepository,StorageRepository>();
+
+            services.AddScoped<IPostStatusFactory, PostStatusFactory>();
+
 
         }
         #endregion

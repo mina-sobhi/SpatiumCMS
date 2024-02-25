@@ -1,6 +1,7 @@
 ﻿using Domain.Base;
 using Domain.BlogsAggregate.Input;
 using Domain.LookupsAggregate;
+using Utilities.Enums;
 
 namespace Domain.BlogsAggregate
 {
@@ -42,14 +43,15 @@ namespace Domain.BlogsAggregate
         {
             this.Content = commentInput.Content;
             this.StatusId = commentInput.StatusId;
-           
         }
-
         public void Delete()
         {
             IsDeleted = true;
         }
-        
+
+        public void ChangeStatus(CommentStatusEnum status) {
+            StatusId = (int)status;
+        }
       
     }
 }

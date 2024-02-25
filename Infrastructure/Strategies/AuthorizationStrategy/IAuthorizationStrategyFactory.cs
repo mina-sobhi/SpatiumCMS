@@ -6,5 +6,6 @@ namespace Infrastructure.Strategies.AuthorizationStrategy
     {
         public IAuthorizationStrategy GetEditStrategy(UserRole role, int blogId, string userId, int postId);
         public IAuthorizationStrategy GetDeleteStartegy(UserRole role, int blogId, string userId, int postId);
+        public IAuthorizationStrategy GetSelectStrategy(UserRole role, int blogId, string userId, int postId);
     }
 }

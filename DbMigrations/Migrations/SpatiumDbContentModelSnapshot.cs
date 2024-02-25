@@ -192,14 +192,14 @@ namespace Migrations.Migrations
                     b.Property<int?>("BlogId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IconPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -219,6 +219,9 @@ namespace Migrations.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RoleIconId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RoleOwnerId")
                         .HasColumnType("nvarchar(450)");
 
@@ -230,6 +233,8 @@ namespace Migrations.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.HasIndex("RoleIconId");
 
                     b.HasIndex("RoleOwnerId");
 
@@ -446,6 +451,27 @@ namespace Migrations.Migrations
                     b.ToTable("PostStatus", "Lookup");
                 });
 
+
+            modelBuilder.Entity("Domain.LookupsAggregate.RoleIcon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("IconPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoleIcon", "Lookup");
+                });
+
+
             modelBuilder.Entity("Domain.StorageAggregate.Folder", b =>
                 {
                     b.Property<int>("Id")
@@ -529,7 +555,11 @@ namespace Migrations.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+
                     b.Property<DateTime>("LastUpdate")
+
+                    b.Property<DateTime?>("LastUpdated")
+
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
@@ -749,12 +779,19 @@ namespace Migrations.Migrations
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Domain.LookupsAggregate.RoleIcon", "RoleIcon")
+                        .WithMany()
+                        .HasForeignKey("RoleIconId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "RoleOwner")
                         .WithMany("OwnedRoles")
                         .HasForeignKey("RoleOwnerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Blog");
+
+                    b.Navigation("RoleIcon");
 
                     b.Navigation("RoleOwner");
                 });

@@ -120,12 +120,23 @@ namespace Domain.BlogsAggregate
                 this.PublishDate = null;
                 this.StatusId = (int)PostStatusEnum.Unpublished;
             }
+            else if(postStatus == PostStatusEnum.Pending)
+            {
+                this.PublishDate = null;
+                this.UnPublishDate = null;
+                this.StatusId = (int)PostStatusEnum.Pending;
+            }
         }
 
         public void SchedualedPost(DateTime publishDate,DateTime unPublishedDate) {
             this.PublishDate = publishDate;
             this.UnPublishDate= unPublishedDate;
             this.StatusId = (int)PostStatusEnum.Scheduled;
+        }
+
+        public void ChangeAllowedComments(bool isAllowed)
+        {
+            this.CommentsAllowed = isAllowed;
         }
     }
 }

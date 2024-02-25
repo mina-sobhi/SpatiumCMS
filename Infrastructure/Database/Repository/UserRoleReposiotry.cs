@@ -3,6 +3,7 @@ using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using Domain.ApplicationUserAggregate.Inputs;
 using Infrastructure.Extensions;
+using Domain.LookupsAggregate;
 
 namespace Infrastructure.Database.Repository
 {
@@ -21,7 +22,7 @@ namespace Infrastructure.Database.Repository
 
         }
 
-        public async Task<IReadOnlyList<UserRole>> GetDefaultRoles(int blogId)
+        public async Task<List<UserRole>> GetDefaultRoles(int blogId)
         {
             return await SpatiumDbContent.Roles.Include(x => x.ApplicationUsers.Where(y => y.BlogId == blogId)).Where(r => r.RoleOwnerId == null).ToListAsync();
         }
@@ -65,7 +66,7 @@ namespace Infrastructure.Database.Repository
         }
         public Task<List<int>> GetRolePermissionIds(string roleId)
         {
-            return SpatiumDbContent.RolePermissions.Where(r => r.UserRoleId == roleId).Select(r => r.UserPermissionId).ToListAsync();
+            return SpatiumDbContent.RolePermission.Where(r => r.UserRoleId == roleId).Select(r => r.UserPermissionId).ToListAsync();
         }
         #endregion
 
@@ -90,7 +91,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task<List<RolePermission>> GetRolePermissionsAsync(string roleId)
         {
-            return await SpatiumDbContent.RolePermissions.Where(rp => rp.UserRoleId == roleId).ToListAsync();
+            return await SpatiumDbContent.RolePermission.Where(rp => rp.UserRoleId == roleId).ToListAsync();
 
         }
         #endregion
@@ -131,9 +132,13 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Roles.Include(x => x.RolePermission).Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
         }
 
-        public void DeleteRolePermission(RolePermission rolePermission)
+        public async Task UpdateRolePermission(List<int> permissionIds,string userRoleId)
         {
-            SpatiumDbContent.RolePermissions.Remove(rolePermission);
+            foreach (var PermissionId in permissionIds)
+            {
+                var rolepermission = await SpatiumDbContent.RolePermission.FirstOrDefaultAsync(pr => pr.UserPermissionId == PermissionId && pr.UserRoleId == userRoleId);
+                if (rolepermission.IsDeleted) rolepermission.IsDeleted=false;
+            }
         }
 
         public async Task<List<ApplicationUser>> GetUsersInRoleAsync(string roleId)
@@ -141,14 +146,15 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Users.Where(ur => ur.RoleId == roleId).ToListAsync();
         }
 
-        Task<List<UserRole>> IUserRoleRepository.GetDefaultRoles(int blogId)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<UserRole> GetAssignRoleById(int blogId, string roleId)
         {
             return await SpatiumDbContent.Roles.FirstOrDefaultAsync(x => x.Priority>1 && (x.BlogId == blogId ||x.Blog==null) && x.Id == roleId);
+        }
+
+        public async Task<List<RoleIcon>> GetRoleIconsAsync()
+        {
+            return await SpatiumDbContent.RoleIcons.ToListAsync();
         }
     }
 }

@@ -3,9 +3,12 @@ using Domain.ApplicationUserAggregate;
 using Domain.ApplicationUserAggregate.Inputs;
 using Domain.Interfaces;
 using Domian.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Filters;
 using System.Net;
@@ -21,17 +24,13 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     [ApiController]
     public class UserManagmentController : CmsControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<UserRole> roleManager;
         private readonly ISendMailService sendMailService;
+        private readonly IAuthenticationService authenticationService;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, RoleManager<UserRole> roleManager
-            , ISendMailService sendMailService, ILogger<UserManagmentController> logger)
-            : base(unitOfWork, maper,logger)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger, IAuthenticationService authenticationService)
+            : base(unitOfWork, maper,logger, userManager)
         {
-            this.userManager = userManager;
-            this.roleManager = roleManager;
             this.sendMailService = sendMailService;
         }
 
@@ -79,13 +78,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                         };
                         return Ok(response);
                     }
-                    var errorResponse = new SpatiumErrorResponse()
-                    {
-                        Message = string.Join(System.Environment.NewLine, identityResult.Errors.Select(x => x.Description)),
-                        Path = Request.Path,
-                    };
-                    return BadRequest(errorResponse);
-;
+                    throw new SpatiumException(identityResult.Errors.Select(x => x.Description).ToArray());
                 }
                 return BadRequest(ModelState);
             });
@@ -105,7 +98,12 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     var userUpdateInput = mapper.Map<ApplicationUserUpdateInput>(updateUserRequest);
                     user.Update(userUpdateInput);
                     await unitOfWork.SaveChangesAsync();
-                    return Ok("Update Successfuly");
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.UserUpdatedSuccessfully,
+                        Success = true
+                    };
+                    return Ok(response);
                 }
                 return BadRequest(ModelState);
             });
@@ -130,12 +128,56 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     if(result.Succeeded)
                     {
                         await unitOfWork.SaveChangesAsync();
-                        return Ok("Password Updated Successfuly");
+                        var response = new SpatiumResponse()
+                        {
+                            Message = ResponseMessages.PasswordChangedSuccessfully,
+                            Success = true
+                        };
+                        return Ok(response);
                     }
-
-                    return BadRequest(result.Errors.FirstOrDefault());
+                    throw new SpatiumException(result.Errors.Select(x=>x.Description).ToArray());
                 }
                 return BadRequest(ModelState);
+            });
+        }
+
+
+        [HttpGet]
+        [Route("ChangeUserActivation/{userId}")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdateUser)]
+        public Task<IActionResult> ChangeUserActivation(string userId, bool activeStatus = true)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var parentUserId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                if (user.IsAccountActive == activeStatus)
+                    throw new SpatiumException(ResponseMessages.CannotChangeStatus);
+                user.ChangeActivation(activeStatus);
+                await unitOfWork.SaveChangesAsync();
+                var response = new SpatiumResponse()
+                {
+                    Message = ResponseMessages.UserStatusChanged,
+                    Success = true,
+                };
+                return Ok(response);
+            });
+        }
+
+        [HttpGet]
+        [Route("GetUserDetails")]
+        [Authorize]
+        public Task<IActionResult> GetUserDetails()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var currentuser = await userManager.FindUserInBlogByIdIncludingRole(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                var detailesResult = mapper.Map<ViewUserProfileResult>(currentuser);
+                return Ok(detailesResult);
             });
         }
     }

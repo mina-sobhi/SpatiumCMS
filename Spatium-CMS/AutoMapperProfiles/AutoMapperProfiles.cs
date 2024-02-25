@@ -16,6 +16,10 @@ using Spatium_CMS.Controllers.UserRoleController.Request;
 using Spatium_CMS.Controllers.PostController.Response;
 using Domain.StorageAggregate.Input;
 using Spatium_CMS.Controllers.StorageController.Request;
+using Domain.LookupsAggregate;
+using Spatium_CMS.Extensions;
+using Domain.StorageAggregate;
+using Spatium_CMS.Controllers.StorageController.Response;
 
 namespace Spatium_CMS.AutoMapperProfiles
 {
@@ -58,13 +62,15 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<ApplicationUser, UserResponse>();
                 CreateMap<UserRole, RoleResult>();
 
-
                 CreateMap<UserRole, ViewRoles>()
                       .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Id))
                       .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Name))
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                      .ForMember(dest => dest.IconPath, opt => opt.MapFrom(src => src.IconPath))
+                      .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));
+
+                CreateMap<RoleIcon, RoleIconRespones>().
+                    ForMember(dest => dest.IconPath, otp => otp.MapFrom<IconUrlResolver>());
 
                 CreateMap<UpdateUserRoleInput, UpdateUserRoleRequest>().ReverseMap();
               
@@ -73,7 +79,8 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<UserModule, ViewModule>();
                 CreateMap<UserPermission,UserModulePermissions>()
                     .ForMember(dest => dest.Id,otp=>otp.MapFrom(src => src.Id))
-                    .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));    
+                    .ForMember(dest=>dest.Name,otp=>otp.MapFrom(src => src.Name));  
+
                 #endregion
 
                 #region ApplicationUser
@@ -97,12 +104,19 @@ namespace Spatium_CMS.AutoMapperProfiles
 
                 CreateMap<Post, PostSnippetPreviewResponse>();
 
-          
+
                 #endregion
 
-                CreateMap<AddFolderInput,CreateFolderRequest>().ReverseMap();
+
+
                 CreateMap<FileInput, AddFileRequest>().ReverseMap();
                 CreateMap<UpdateFileInput,UpdateFileRequest>().ReverseMap();
+
+                #region Storage
+                CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();
+                CreateMap<StaticFile, ViewFile>().
+                    ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>());
+                #endregion
             }
         }
     }

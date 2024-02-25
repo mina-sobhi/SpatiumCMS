@@ -11,7 +11,6 @@ namespace Domain.StorageAggregate
         #region Properts
         public string Name { get; private set; }
         public string Extention { get; private set; }
-        //test
         public string UrlPath { get; private set; }
         public string Caption { get; private set; }
         public string FileSize { get; private set; }
@@ -20,7 +19,9 @@ namespace Domain.StorageAggregate
         public string CreatedById { get; private set; }
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
-        public DateTime LastUpdate { get; private set; }
+
+        public DateTime? LastUpdated { get; private set; }
+
         #endregion
 
         #region NavigationProperty
@@ -59,13 +60,14 @@ namespace Domain.StorageAggregate
             this.Caption = input.Caption;          
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
-            this.LastUpdate = input.LastUpdate;
 
+            this.LastUpdated= DateTime.UtcNow;
         }
         public void Delete()
         {
             this.IsDeleted = true;
         }
+
         private void validations(string Name, string Caption, string Alt)
         {
 
@@ -100,6 +102,15 @@ namespace Domain.StorageAggregate
         //        throw new SpatiumException("Invalid Extentions");
         //    }
         //}
+
+
+        public void MoveToFolderId(int? FoldrId)
+        {
+            this.FolderId = FoldrId;
+        }
+        private void validations(string Name, string Description)
+        {}
+
         #endregion
     }
 }

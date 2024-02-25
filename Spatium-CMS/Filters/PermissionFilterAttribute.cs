@@ -22,7 +22,7 @@ namespace Spatium_CMS.Filters
         public override Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var identityClaims=context.HttpContext.User.Identity as ClaimsIdentity;
-            var claimsList = identityClaims.Claims.Where(x=>x.Type.Equals(ClaimTypes.Role)).ToList();
+            var claimsList = identityClaims.Claims.Where(x=>x.Type.Equals("Permissions")).ToList();
             if(identityClaims !=null)
             {
                 if(!claimsList.Any(x=>x.Value==PermissionValue.ToString() || x.Value==PermissionValue2.ToString())) {
