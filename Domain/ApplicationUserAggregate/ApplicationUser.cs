@@ -31,6 +31,7 @@ namespace Domain.ApplicationUserAggregate
                     Name = FullName,
                     OwnerId = this.Id
                 });
+                
             }
             CreatedAt = DateTime.UtcNow;
         }

@@ -8,6 +8,7 @@ using Infrastructure.Database.Helper;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text;
 
@@ -70,6 +71,7 @@ namespace Infrastructure.Database.Database
 
             modelBuilder.Entity<Post>().HasMany(x => x.TableOfContents).WithOne(x => x.Post).HasForeignKey(x => x.PostId);
             modelBuilder.Entity<TableOfContent>().HasMany(x => x.ChildTableOfContents).WithOne(x => x.ParentTableOfContent).HasForeignKey(x => x.ParentTableOfContentId);
+            modelBuilder.Entity<Blog>().HasOne(a => a.Storage).WithOne(s => s.Blog).HasForeignKey<Storage>(c => c.BlogId);
 
             #region Global Filter
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
