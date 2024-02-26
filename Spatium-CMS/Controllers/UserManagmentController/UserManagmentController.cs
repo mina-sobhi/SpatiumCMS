@@ -7,7 +7,6 @@ using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Controllers.UserManagmentController.Response;
@@ -26,19 +25,15 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     public class UserManagmentController : CmsControllerBase
     {
         private readonly ISendMailService sendMailService;
-
         private readonly IConfiguration configuration;
         private readonly IAuthenticationService authenticationService;
 
-
-
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger)
-            : base(unitOfWork, maper,logger, userManager)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger, IAuthenticationService authenticationService)
+            : base(unitOfWork, maper, logger, userManager)
         {
             this.sendMailService = sendMailService;
-            authenticationService = authenticationService;
-            this.configuration = configuration;
+            this.authenticationService = authenticationService;
         }
 
         [HttpPost]

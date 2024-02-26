@@ -6,13 +6,20 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddActiveLogEntityAndActiveLogIconEntity : Migration
+    public partial class ActivityLog : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<DateTime>(
+                name: "LastUpdate",
+                table: "Files",
+                type: "datetime2",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "LogIcons",
+                schema: "Lookup",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -49,6 +56,7 @@ namespace Migrations.Migrations
                     table.ForeignKey(
                         name: "FK_ActivityLogs_LogIcons_LogIconId",
                         column: x => x.LogIconId,
+                        principalSchema: "Lookup",
                         principalTable: "LogIcons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -72,7 +80,12 @@ namespace Migrations.Migrations
                 name: "ActivityLogs");
 
             migrationBuilder.DropTable(
-                name: "LogIcons");
+                name: "LogIcons",
+                schema: "Lookup");
+
+            migrationBuilder.DropColumn(
+                name: "LastUpdate",
+                table: "Files");
         }
     }
 }

@@ -5,18 +5,18 @@
 namespace Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedActivityLogIcon : Migration
+    public partial class LogIconsDataSeeding : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"USE [SpatiumCMS]
                     GO
-                    INSERT [dbo].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/assigned.svg','Assinge')
+                    INSERT [Lookup].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/assigned.svg','Assinge')
                     GO
-                    INSERT [dbo].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/comment.svg','Comment')
+                    INSERT [Lookup].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/comment.svg','Comment')
                     GO
-                    INSERT [dbo].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/new.svg','New')
+                    INSERT [Lookup].[LogIcons] ( [Path],[Name]) VALUES ('ActivityLog/new.svg','New')
                     GO
               ");
         }

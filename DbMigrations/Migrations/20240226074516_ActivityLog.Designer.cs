@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240222121921_AddActiveLogEntityAndActiveLogIconEntity")]
-    partial class AddActiveLogEntityAndActiveLogIconEntity
+    [Migration("20240226074516_ActivityLog")]
+    partial class ActivityLog
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -486,7 +486,7 @@ namespace Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogIcons");
+                    b.ToTable("LogIcons", "Lookup");
                 });
 
             modelBuilder.Entity("Domain.LookupsAggregate.PostStatus", b =>
@@ -606,6 +606,9 @@ namespace Migrations.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
