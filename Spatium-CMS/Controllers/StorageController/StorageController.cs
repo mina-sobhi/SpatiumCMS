@@ -306,6 +306,10 @@ namespace Spatium_CMS.Controllers.StorageController
                         };
                         return Ok(response);
                     }
+                    else
+                    {
+                        throw new SpatiumException("File Not Found");
+                    }
                 }
                 return BadRequest(ModelState);
             });
