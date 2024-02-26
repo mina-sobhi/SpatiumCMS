@@ -3,6 +3,8 @@ using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Utilities.Exceptions;
 namespace Infrastructure.Database.Repository.StorageRepository
 {
     public class StorageRepository :RepositoryBase,  IStorageRepository
@@ -76,17 +78,23 @@ namespace Infrastructure.Database.Repository.StorageRepository
         public async Task DeleteFileAsync(int FileId)
         {
             var file = await GetFileAsync(FileId);
-            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.BlogId.ToString(), file.Name + file.Extention);
 
-            if (File.Exists(uploadPath))
-            {
-                File.Delete(uploadPath);
-            }
+          
             if (file is not null)
             {
+                string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.BlogId.ToString(), file.Name + file.Extention);
+
+                if (File.Exists(uploadPath))
+                {
+                    File.Delete(uploadPath);
+                }
+
                 SpatiumDbContent.Files.Remove(file);
             }
+            throw new SpatiumException($"File  NOT Exist!");
+
         }
+        
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();

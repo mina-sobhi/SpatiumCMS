@@ -110,6 +110,7 @@ namespace Spatium_CMS.AutoMapperProfiles
 
 
 
+
                 #region Storage
                 CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();
                 CreateMap<FileInput, AddFileRequest>().ReverseMap();
