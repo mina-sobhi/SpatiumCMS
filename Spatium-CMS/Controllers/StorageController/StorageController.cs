@@ -195,6 +195,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     var userId = GetUserId();
                     var blogId = GetBlogId();
                     var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                    var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
                     if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.Name.ToLower()))
                     {
                         throw new SpatiumException($"{Request.Name} Already Exist!");
@@ -202,18 +203,20 @@ namespace Spatium_CMS.Controllers.StorageController
                     var input = mapper.Map<AddFolderInput>(Request);
                     input.CreatedById = userId;
                     input.BlogId = blogId;
+                    input.StorageId = storage.Id;
 
                     var folder = new Folder(input);
 
                     await unitOfWork.StorageRepository.CreateFolderAsync(folder);
-             
                     await unitOfWork.SaveChangesAsync();
+
                     var response = new SpatiumResponse()
                     {
                         Message = ResponseMessages.FolderCreatedSuccessfully,
                         Success = true,
                     };
-                    return Ok(folder);
+
+                    return Ok(response);
                 }
 
                 return BadRequest(ModelState);
