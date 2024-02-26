@@ -24,6 +24,7 @@ namespace Spatium_CMS.Controllers.StorageController
     public class StorageController : CmsControllerBase
     {
         private readonly IAttachmentService _attachmentService;
+
         private readonly IConfiguration _configration;
         public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration, IStorageRepository storageRepository) : base(unitOfWork, mapper, logger, userManager)
         {
@@ -81,10 +82,10 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
         [HttpDelete]
-        [Route("DeleteBullk")]
+        [Route("DeleteFolderBullk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> DeleteBullk(DeleteBulkRequest deleteBulk)
+        public Task<IActionResult> DeleteFolderBullk(DeleteBulkRequest deleteBulk)
         {
             return TryCatchLogAsync(async () =>
             {
@@ -114,10 +115,10 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
         [HttpPut]
-        [Route("MoveBullk")]
+        [Route("MoveFolderBullk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> MoveBullk(MoveBulkRequest moveBulk)
+        public Task<IActionResult> MoveFolderBullk(MoveBulkRequest moveBulk)
         {
             return TryCatchLogAsync(async () =>
             {
@@ -179,6 +180,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
         [HttpPost("Folder")]
         [Authorize]
+        [Route("CreateFolder")]
         [PermissionFilter(PermissionsEnum.CreateMedia)]
         public Task<IActionResult> Create(CreateFolderRequest Request)
         {
@@ -213,6 +215,51 @@ namespace Spatium_CMS.Controllers.StorageController
 
         }
 
+
+        [HttpPut]
+        [Route("RenameFolder")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> RenameFolder(RenameFolderRequest Request)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+
+                    var userId = GetUserId();
+                    var blogId = GetBlogId();
+                    var user = await userManager.FindUserInBlogAsync(blogId, userId);
+
+                    if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.NewName.ToLower()))
+                    {
+                        throw new SpatiumException($"Name {Request.NewName} Already Exist!");
+                    }
+                    var folder = await unitOfWork.StorageRepository.GetFolderByName(Request.OldName.ToLower(), blogId, Request.ParentId);
+                    if (folder is null)
+                    {
+                        throw new SpatiumException($"folder {Request.OldName} Not Exist!");
+                    }
+
+                    folder.Rename(Request.NewName);
+                    await unitOfWork.SaveChangesAsync();
+
+                    var response = new SpatiumResponse()
+                    {
+                        Message = $"F older Renamed Successfuly from {Request.OldName} To {folder.Name} ",
+                        Success = true
+                    };
+                    return Ok(response);
+
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+        #endregion
+
+        #region FileApis
+
         [HttpPost]
         [Route("CreateFile")]
         [Authorize]
@@ -245,14 +292,14 @@ namespace Spatium_CMS.Controllers.StorageController
                         await FileRequest.file.CopyToAsync(stream);
                     }
 
-                    string baseUrl = _configration["ApiBaseUrl"];
+                    //string baseUrl = _configration["ApiBaseUrl"];
 
-                    if (string.IsNullOrEmpty(baseUrl))
-                    {
-                        return StatusCode(500, "Base URL is not configured.");
-                    }
+                    //if (string.IsNullOrEmpty(baseUrl))
+                    //{
+                    //    return StatusCode(500, "Base URL is not configured.");
+                    //}
 
-                    string imageUrl = $"{baseUrl}/{blogId}/{newFileName}";
+                    string imageUrl = $"{blogId}/{newFileName}";
                     var InputFile = mapper.Map<FileInput>(FileRequest);
                     InputFile.CreatedById = UserId;
                     InputFile.BlogId = blogId;
@@ -273,48 +320,69 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
-        [HttpPut]
-        [Route("RenameFolder")]
+        [HttpDelete]
+        [Route("Delete")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.UpdateMedia)]
-        public Task<IActionResult> RenameFolder(RenameFolderRequest Request)
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> DeleteFile(int Id)
         {
             return TryCatchLogAsync(async () =>
             {
                 if (ModelState.IsValid)
                 {
-                    var userId = GetUserId();
-                    var blogId = GetBlogId();
-                    var user = await userManager.FindUserInBlogAsync(blogId, userId);
-
-                    if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.NewName.ToLower()))
-                    {
-                        throw new SpatiumException($"Name {Request.NewName} Already Exist!");
-                    }
-                    var folder = await unitOfWork.StorageRepository.GetFolderByName(Request.OldName.ToLower(), blogId, Request.ParentId);
-                    if (folder is null)
-                    {
-                        throw new SpatiumException($"folder {Request.OldName} Not Exist!");
-                    }
-
-                    folder.Rename(Request.NewName);
+                    await unitOfWork.StorageRepository.DeleteFileAsync(Id);
                     await unitOfWork.SaveChangesAsync();
+                    return Ok("Deleted");
+                }
+                return BadRequest(ModelState);
+            });
+        }
 
+
+        [HttpPut]
+        [Route("MoveFilesBulk")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> MoveFilesBulk(List<int> filesIds,int folderIdDestination) {
+           return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+
+                foreach (var file in filesIds)
+                {
+                    var fileToMove= await unitOfWork.StorageRepository.GetFileAsync(file)??throw new SpatiumException("File Not Existed To Move");
+                     fileToMove.MoveToFolderId(folderIdDestination);
+                    await unitOfWork.SaveChangesAsync();
                     var response = new SpatiumResponse()
                     {
                         Message = $"Folder Renamed Successfuly from {Request.OldName} To {folder.Name} ",
                         Success = true
                     };
                     return Ok(response);
-
                 }
-                return BadRequest(ModelState);
+                return Ok("Files Moved Succsseded...");
             });
-
         }
-        #endregion
 
-        #region FileApis
+        [HttpDelete]
+        [Route("DeleteFilesBulk")]
+        [Authorize]
+        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        public Task<IActionResult> DeleteFilesBulk(List<int> filesIds)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                foreach (var file in filesIds)
+                {
+                    var fileToDelete = await unitOfWork.StorageRepository.GetFileAsync(file) ?? throw new SpatiumException("File Not Existed To Deleted");
+                    await DeleteFile(fileToDelete.Id);
+                }
+                return Ok("Files Moved Succsseded...");
+            });
+        }
+
+
         [HttpGet]
         [Route("GetAllFiles")]
         [Authorize]
@@ -377,29 +445,29 @@ namespace Spatium_CMS.Controllers.StorageController
             return File(bytes, contentType, Path.GetFileName(path));
         }
 
-
-        [HttpDelete]
-        [Route("Delete")]
+        [HttpGet]
+        [Route("ExtractFiles")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
-        public Task<IActionResult> DeleteFile(int Id)
+        [PermissionFilter(PermissionsEnum.ExportMedia)]
+        public Task<IActionResult> ExtractFiles(int? folderId)
         {
             return TryCatchLogAsync(async () =>
             {
-                if (ModelState.IsValid)
-                {
-                    await unitOfWork.StorageRepository.DeleteFileAsync(Id);
-                    await unitOfWork.SaveChangesAsync();
-                    var response = new SpatiumResponse()
-                    {
-                        Message = ResponseMessages.FileDeletedSuccessfully,
-                        Success = true
-                    };
-                    return Ok(response);
-                }
-                return BadRequest(ModelState);
+
+                var blogId = GetBlogId();
+                var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
+
+                var filesToZip = _attachmentService.FilesToExtract(files);
+                var Identifire = new Random();
+                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t")  +".zip");
+                await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
+
+                var fileStreamToReturn = new FileStream(zipArchivePath, FileMode.Open);
+                return File(fileStreamToReturn, "application/zip", "Spatium_Cms_" + DateTime.Now.ToString("M") +"_" + DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString()+".zip");
             });
         }
+        #endregion
+   
         #endregion
     }
 }

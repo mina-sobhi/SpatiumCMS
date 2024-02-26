@@ -109,13 +109,13 @@ namespace Spatium_CMS.AutoMapperProfiles
 
 
 
-                CreateMap<FileInput, AddFileRequest>().ReverseMap();
-                CreateMap<UpdateFileInput,UpdateFileRequest>().ReverseMap();
 
                 #region Storage
                 CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();
-                CreateMap<StaticFile, ViewFile>().
-                    ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>());
+                CreateMap<FileInput, AddFileRequest>().ReverseMap();
+                CreateMap<UpdateFileInput, UpdateFileRequest>().ReverseMap();
+                CreateMap<StaticFile, ViewFile>()
+                    .ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>());
                 #endregion
             }
         }
