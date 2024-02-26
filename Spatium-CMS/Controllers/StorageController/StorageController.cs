@@ -180,7 +180,6 @@ namespace Spatium_CMS.Controllers.StorageController
 
         [HttpPost("Folder")]
         [Authorize]
-        [Route("CreateFolder")]
         [PermissionFilter(PermissionsEnum.CreateMedia)]
         public Task<IActionResult> Create(CreateFolderRequest Request)
         {
@@ -339,30 +338,30 @@ namespace Spatium_CMS.Controllers.StorageController
         }
 
 
-        [HttpPut]
-        [Route("MoveFilesBulk")]
-        [Authorize]
-        [PermissionFilter(PermissionsEnum.UpdateMedia)]
-        public Task<IActionResult> MoveFilesBulk(List<int> filesIds,int folderIdDestination) {
-           return TryCatchLogAsync(async () =>
-            {
-                var blogId = GetBlogId();
+        //[HttpPut]
+        //[Route("MoveFilesBulk")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.UpdateMedia)]
+        //public Task<IActionResult> MoveFilesBulk(List<int> filesIds,int folderIdDestination) {
+        //   return TryCatchLogAsync(async () =>
+        //    {
+        //        var blogId = GetBlogId();
 
-                foreach (var file in filesIds)
-                {
-                    var fileToMove= await unitOfWork.StorageRepository.GetFileAsync(file)??throw new SpatiumException("File Not Existed To Move");
-                     fileToMove.MoveToFolderId(folderIdDestination);
-                    await unitOfWork.SaveChangesAsync();
-                    var response = new SpatiumResponse()
-                    {
-                        Message = $"Folder Renamed Successfuly from {Request.OldName} To {folder.Name} ",
-                        Success = true
-                    };
-                    return Ok(response);
-                }
-                return Ok("Files Moved Succsseded...");
-            });
-        }
+        //        foreach (var file in filesIds)
+        //        {
+        //            var fileToMove= await unitOfWork.StorageRepository.GetFileAsync(file)??throw new SpatiumException("File Not Existed To Move");
+        //             fileToMove.MoveToFolderId(folderIdDestination);
+        //            await unitOfWork.SaveChangesAsync();
+        //            var response = new SpatiumResponse()
+        //            {
+        //                Message = $"Folder Renamed Successfuly from {Request.OldName} To {folder.Name} ",
+        //                Success = true
+        //            };
+        //            return Ok(response);
+        //        }
+        //        return Ok("Files Moved Succsseded...");
+        //    });
+        //}
 
         [HttpDelete]
         [Route("DeleteFilesBulk")]
@@ -466,8 +465,6 @@ namespace Spatium_CMS.Controllers.StorageController
                 return File(fileStreamToReturn, "application/zip", "Spatium_Cms_" + DateTime.Now.ToString("M") +"_" + DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString()+".zip");
             });
         }
-        #endregion
-   
         #endregion
     }
 }
