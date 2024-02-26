@@ -75,6 +75,8 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
+            modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);
             #endregion
 
             #region Idintity-Configration Seeding-Data

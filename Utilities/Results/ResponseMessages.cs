@@ -26,6 +26,7 @@
         public const string UserAssignedSuccessfully = "User Assigned Successfully";
         public const string UserUpdatedSuccessfully = "User Data Updated Successfully";
 
+        public const string FileNotFound = "File not Found!";
 
         #endregion
 
@@ -46,7 +47,19 @@
         public const string RoleCreatedSuccessfully = "Role Created Successfully!";
         public const string InvalidRoleModule = "Invalid Role Module!";
         public const string RoleUpdatedSuccessfully = "Role Updated Successfully!";
+        public const string RoleNameIsRequired = "Role Name is Required!";
 
+        #endregion
+
+        #region Media
+        public const string InvalidFolder = "Invalid folder!";
+        public const string StorageNotFound = "No storage for this blog!";
+        public const string InvalidFileName = "Invalid File Name";
+        public const string FileDeletedSuccessfully = "File Deleted Successfully";
+        public const string FolderCreatedSuccessfully = "Folder Created Successfully";
+        public const string FoldersAndFilesMovedSuccessfully = "Selected folders and files are Moved Successfully!";
+        public const string FoldersAndFilesDeletedSuccessfully = "Selected folders and files are Deleted Successfully!";
+        public const string FileAddedSuccessfully = "File Added Successfully!";
         #endregion
 
         #region Other

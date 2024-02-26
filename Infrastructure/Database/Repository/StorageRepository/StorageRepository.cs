@@ -1,5 +1,7 @@
-﻿using Domain.StorageAggregate;
+﻿using Domain.Base;
+using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Database.Repository.StorageRepository
 {
@@ -13,6 +15,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
             return  await SpatiumDbContent.Storages.Where(s=> s.BlogId == blogId).Include(s=>s.Folders).ThenInclude(f=>f.Files).FirstOrDefaultAsync();
         }
         #endregion
+
         #region Folder 
 
         public async Task CreateFolderAsync(Folder folder)
@@ -63,7 +66,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
            return await SpatiumDbContent.Folders.SingleOrDefaultAsync(f => f.Name == FolderName&& f.BlogId == blogId && f.ParentId == ParentId);
         }
         #endregion
+
         #region File
+
         public async Task CreateFileAsync(StaticFile File)
         {
             await SpatiumDbContent.Files.AddAsync(File);
@@ -71,14 +76,38 @@ namespace Infrastructure.Database.Repository.StorageRepository
         public async Task DeleteFileAsync(int FileId)
         {
             var file = await GetFileAsync(FileId);
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.BlogId.ToString(), file.Name + file.Extention);
+
+            if (File.Exists(uploadPath))
+            {
+                File.Delete(uploadPath);
+            }
             if (file is not null)
             {
                 SpatiumDbContent.Files.Remove(file);
             }
         }
-        public async Task<IEnumerable<StaticFile>> GetAllFilesAsync()
+        public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
-            return await SpatiumDbContent.Files.ToListAsync();
+            var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
+
+            if (!string.IsNullOrEmpty(fileParams.FilterColumn) && !string.IsNullOrEmpty(fileParams.FilterValue))
+            {
+                query = query.ApplyFilter(fileParams.FilterColumn, fileParams.FilterValue);
+            }
+
+            if (!string.IsNullOrEmpty(fileParams.SortColumn))
+            {
+                query = query.ApplySort(fileParams.SortColumn, fileParams.IsDescending);
+            }
+
+            if (!string.IsNullOrEmpty(fileParams.SearchColumn) && !string.IsNullOrEmpty(fileParams.SearchValue))
+            {
+                query = query.ApplySearch(fileParams.SearchColumn, fileParams.SearchValue);
+            }
+
+            var paginatedQuery = query.Skip((fileParams.Page - 1) * fileParams.PageSize).Take(fileParams.PageSize);
+            return paginatedQuery.ToList();
         }
         public async Task<StaticFile> GetFileAsync(int id)
         {
@@ -88,9 +117,13 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             SpatiumDbContent.Files.Update(File);
         }
-
-       
-
+        public async Task<Folder> GetFilesToExtract(int blogId, int? folderId)
+        {
+            if (folderId == null)
+                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId);
+            else
+                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id==folderId);
+        }
         #endregion
     }
 }

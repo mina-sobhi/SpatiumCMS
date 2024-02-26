@@ -18,8 +18,8 @@ using Domain.StorageAggregate.Input;
 using Spatium_CMS.Controllers.StorageController.Request;
 using Domain.LookupsAggregate;
 using Spatium_CMS.Extensions;
-using Spatium_CMS.Extensions;
-using Domain.LookupsAggregate;
+using Domain.StorageAggregate;
+using Spatium_CMS.Controllers.StorageController.Response;
 
 namespace Spatium_CMS.AutoMapperProfiles
 {
@@ -104,10 +104,19 @@ namespace Spatium_CMS.AutoMapperProfiles
 
                 CreateMap<Post, PostSnippetPreviewResponse>();
 
-          
+
                 #endregion
 
-                CreateMap<AddFolderInput,CreateFolderRequest>().ReverseMap();
+
+
+
+                #region Storage
+                CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();
+                CreateMap<FileInput, AddFileRequest>().ReverseMap();
+                CreateMap<UpdateFileInput, UpdateFileRequest>().ReverseMap();
+                CreateMap<StaticFile, ViewFile>()
+                    .ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>());
+                #endregion
             }
         }
     }

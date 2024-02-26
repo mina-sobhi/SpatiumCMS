@@ -156,7 +156,6 @@ namespace Spatium_CMS.Controllers.UserRoleController
         {
             return TryCatchLogAsync(async () =>
             {
-
                 var userId = GetUserId();
                 var blogId = GetBlogId();
                 var currentUser = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);

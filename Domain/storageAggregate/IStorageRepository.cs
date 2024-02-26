@@ -1,4 +1,6 @@
 ﻿
+using Domain.Base;
+
 namespace Domain.StorageAggregate
 {
     public interface IStorageRepository
@@ -6,6 +8,7 @@ namespace Domain.StorageAggregate
         #region Storage
         Task<Storage> GetStorageByBlogId(int blogId);
         #endregion
+
         #region Folder
         Task<IEnumerable<Folder>> GetAllFoldersAsync();
         Task<Folder> GetFolderAsync(int id);
@@ -18,11 +21,13 @@ namespace Domain.StorageAggregate
         #endregion
 
         #region Files
-        Task<IEnumerable<StaticFile>> GetAllFilesAsync();
+        Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId);
         Task<StaticFile> GetFileAsync(int id);
         Task CreateFileAsync(StaticFile File);
         Task DeleteFileAsync(int FileId);
         void UpdateFile(StaticFile File);
+        Task<Folder> GetFilesToExtract(int bloId,int? folderId);
+
         #endregion
     }
 }

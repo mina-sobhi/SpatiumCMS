@@ -21,7 +21,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerConfigs();
 
 var authConfig = builder.Configuration.GetSection("AuthConfig").Get<AuthConfig>();
-if(authConfig != null)
+if (authConfig != null)
 {
     builder.Services.AddSingleton(authConfig);
     builder.Services.ConfigureAuthentication(authConfig);
@@ -59,6 +59,7 @@ if (app.Environment.IsDevelopment())
         c.EnableDeepLinking();
     });
 }
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -69,3 +70,4 @@ app.UseAuthorization();
 app.UseMiddleware<ValidateTokenMiddleware>();
 app.MapControllers();
 app.Run();
+

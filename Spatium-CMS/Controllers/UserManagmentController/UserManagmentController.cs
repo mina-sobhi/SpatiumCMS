@@ -25,26 +25,19 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     [ApiController]
     public class UserManagmentController : CmsControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
-        private readonly IMapper maper;
-        private readonly UserManager<ApplicationUser> userManager;
         private readonly ISendMailService sendMailService;
-        private readonly ILogger<UserManagmentController> logger;
-        private readonly IAuthenticationService authenticationService1;
+
         private readonly IConfiguration configuration;
         private readonly IAuthenticationService authenticationService;
 
+
+
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger,
-            IAuthenticationService authenticationService ,IConfiguration configuration)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger)
             : base(unitOfWork, maper,logger, userManager)
         {
-            this.unitOfWork = unitOfWork;
-            this.maper = maper;
-            this.userManager = userManager;
             this.sendMailService = sendMailService;
-            this.logger = logger;
-            authenticationService1 = authenticationService;
+            authenticationService = authenticationService;
             this.configuration = configuration;
         }
 
