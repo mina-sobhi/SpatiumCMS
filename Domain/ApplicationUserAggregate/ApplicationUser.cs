@@ -46,7 +46,6 @@ namespace Domain.ApplicationUserAggregate
         public DateTime CreatedAt { get; private set; }
         public string OTP { get; private set; }
         public DateTime? OTPGeneratedAt { get; private set; }
-
         public int BlogId { get; private set; }
         #endregion
 

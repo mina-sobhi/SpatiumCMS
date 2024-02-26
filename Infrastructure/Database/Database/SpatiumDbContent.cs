@@ -1,10 +1,14 @@
 ﻿using Domain.ApplicationUserAggregate;
+using Domain.ApplicationUserAggregate.Inputs;
 using Domain.BlogsAggregate;
 using Domain.LookupsAggregate;
 using Domain.StorageAggregate;
+using Infrastructure.Database.Helper;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Reflection;
+using System.Text;
 
 namespace Infrastructure.Database.Database
 {
@@ -16,6 +20,8 @@ namespace Infrastructure.Database.Database
         public DbSet<UserModule> UserModules { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<RolePermission> RolePermission { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
+
         
         #endregion
 
@@ -37,6 +43,8 @@ namespace Infrastructure.Database.Database
         public DbSet<RoleIcon> RoleIcons { get; set; }
         public DbSet<CommentStatus> CommentStatuses { get; set; }
         public DbSet<PostStatus> PostStatuses { get; set; }
+        public DbSet<LogIcon> LogIcons { get; set; }
+
         #endregion
 
 
@@ -82,6 +90,48 @@ namespace Infrastructure.Database.Database
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
             #endregion
+        }
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var ModifiedEntity = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added || e.State == EntityState.Deleted)
+                .ToList();
+            foreach (var entry in ModifiedEntity)
+            {
+                var ActivityLogInput = new ActivityLogInput();
+                ActivityLogInput.UserId = entry.Property("CreatedById").CurrentValue != null ? entry.Property("CreatedById").CurrentValue.ToString() : "Null";
+                ActivityLogInput.Content = GetChanges(entry); 
+                ActivityLogInput.LogIconId = IconImageHelpers.GetIconId(entry);
+                ActivityLogs.Add(new ActivityLog(ActivityLogInput));
+            }
+           
+            return base.SaveChangesAsync(cancellationToken);
+        }
+        private static string GetChanges(EntityEntry entity)
+        {
+            var changes = new StringBuilder();
+            var tblName = entity.Entity.GetType(). Name;
+            switch (entity.State)
+            {
+                case EntityState.Deleted :
+                    changes.Append($"{tblName} Is Deleted");
+                    break;
+                case EntityState.Modified:
+                    if(Convert.ToBoolean(entity.Property("IsDeleted").CurrentValue) == true)
+                    {
+                        changes.Append($"{tblName} Is Deleted");
+                        break;
+                    }
+                    changes.Append($"{tblName} Is Modified");
+                    break;
+                case EntityState.Added:
+                    changes.Append($" New {tblName} Is Added ");
+                    break;
+                default:
+                    break;
+            }
+
+            return changes.ToString();
         }
     }
 }
