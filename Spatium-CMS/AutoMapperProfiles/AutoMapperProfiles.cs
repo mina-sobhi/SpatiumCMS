@@ -63,8 +63,8 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<UserRole, RoleResult>();
 
                 CreateMap<UserRole, ViewRoles>()
-                      .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Id))
-                      .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Name))
+                      .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                      .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                       .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                       .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color))
                       .ForMember(dest => dest.ApplicationUsers, otp => otp.MapFrom(src => src.ApplicationUsers));

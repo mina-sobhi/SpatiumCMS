@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Utilities.Exceptions;
+using Utilities.Results;
 
 namespace Infrastructure.Extensions
 {
@@ -52,6 +54,7 @@ namespace Infrastructure.Extensions
         #region ApplySearch
         public static IQueryable<TEntity> ApplySearch<TEntity>(this IQueryable<TEntity> query, string searchColumn, string searchValue) where TEntity : class
         {
+
             searchColumn = searchColumn.ToLower();
             var actualColumnName = typeof(TEntity).GetProperties().FirstOrDefault(p => p.Name.ToLower() == searchColumn)?.Name;
 

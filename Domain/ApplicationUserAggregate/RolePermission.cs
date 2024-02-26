@@ -5,8 +5,7 @@
         #region Prop 
         public string UserRoleId { get; private set; }
         public int UserPermissionId { get; private set; }
-
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; private set; }
 
         #endregion
 
@@ -28,6 +27,10 @@
         }
         #endregion
 
+        public void Restore()
+        {
+            IsDeleted = false;
+        }
         public void Delete()
         {
             this.IsDeleted = true;

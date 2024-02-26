@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.ApplicationUserAggregate.Inputs;
+using Domain.Base;
 using Domain.BlogsAggregate;
 using Domain.LookupsAggregate;
 using Domain.StorageAggregate;
@@ -76,34 +77,28 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
             modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<UserPermission>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);
             #endregion
 
-            #region Idintity-Configration Seeding-Data
-            //var roles = new UserRole[3];
-            //roles[0] = new UserRole() { Name = "SuperAdmin", NormalizedName = "SUPERADMIN",/* Description = "SuperAdmin Permission" */};
-            //roles[1] = new UserRole() { Name = "Admin", NormalizedName = "ADMIN",/* Description = "Admin Permission" */};
-            //roles[2] = new UserRole() { Name = "owner", NormalizedName = "OWNER", /*Description = "Owner Permission"*/ };
-
-            //modelBuilder.Entity<UserRole>().HasData(roles);
-
+            #region Idintity-Configration
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
             #endregion
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var ModifiedEntity = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added || e.State == EntityState.Deleted)
-                .ToList();
-            foreach (var entry in ModifiedEntity)
-            {
-                var ActivityLogInput = new ActivityLogInput();
-                ActivityLogInput.UserId = entry.Property("CreatedById").CurrentValue != null ? entry.Property("CreatedById").CurrentValue.ToString() : "Null";
-                ActivityLogInput.Content = GetChanges(entry); 
-                ActivityLogInput.LogIconId = IconImageHelpers.GetIconId(entry);
-                ActivityLogs.Add(new ActivityLog(ActivityLogInput));
-            }
+            //var ModifiedEntity = ChangeTracker.Entries<EntityBase>()
+            //    .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added || e.State == EntityState.Deleted)
+            //    .ToList();
+            //foreach (var entry in ModifiedEntity)
+            //{
+            //    var ActivityLogInput = new ActivityLogInput();
+            //    ActivityLogInput.UserId = entry.Property("CreatedById")?.CurrentValue != null ? entry.Property("CreatedById").CurrentValue.ToString() : "Null";
+            //    ActivityLogInput.Content = GetChanges(entry); 
+            //    ActivityLogInput.LogIconId = IconImageHelpers.GetIconId(entry);
+            //    ActivityLogs.Add(new ActivityLog(ActivityLogInput));
+            //}
            
             return base.SaveChangesAsync(cancellationToken);
         }

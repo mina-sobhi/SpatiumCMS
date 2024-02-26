@@ -13,6 +13,7 @@ using Infrastructure.Extensions;
 using Utilities.Exceptions;
 using System.Data;
 using Utilities.Results;
+using System.Buffers;
 
 namespace Spatium_CMS.Controllers.UserRoleController
 {
@@ -78,15 +79,13 @@ namespace Spatium_CMS.Controllers.UserRoleController
         [HttpGet]
         [Route("SearchInRole")]
         [Authorize(Roles = "Super Admin")]
-        public Task<IActionResult> SearchInRole(string CoulmnName, string Value)
+        public Task<IActionResult> SearchInRole(string column, string value)
         {
             return TryCatchLogAsync(async () =>
             {
-                var result = await unitOfWork.RoleRepository.SearchInRole(CoulmnName, Value);
-                //if (result.Count() <= 0)
-                //{
-                //    BadRequest("No Data");
-                //}
+                if (string.IsNullOrEmpty(column)) column = "Name";
+                if (string.IsNullOrEmpty(column)) value="";
+                var result = await unitOfWork.RoleRepository.SearchInRole(column, value);
                 var response = mapper.Map<List<ViewRoles>>(result);
                 return Ok(response);
             });

@@ -41,13 +41,14 @@ namespace Spatium_CMS.Middlewares
                     return;
                 }
                 var user = await userManager.FindUserByEmailIgnoreFilter(email);
-                if (user.RoleId != TokenRoleId || !user.IsAccountActive)
+       
+                if (user==null || user.RoleId != TokenRoleId || !user.IsAccountActive)
                 {
                     await ResponsBody(context);
                     return;
                 }
-                var tokenPermisons =context.User.Claims.Where(x => x.Type.Equals("Permissions")).Select(x => Convert.ToInt32(x.Value)).ToList();
-                if (!tokenPermisons.SequenceEqual(user.Role.RolePermission.Select(p => p.UserPermissionId).ToList()))
+                var tokenPermisons =context.User?.Claims.Where(x => x.Type.Equals("Permissions")).Select(x => Convert.ToInt32(x.Value)).ToList();
+                if (tokenPermisons ==null || !tokenPermisons.SequenceEqual(user.Role.RolePermission.Select(p => p.UserPermissionId).ToList()))
                 {
                    await ResponsBody(context);
                     return;

@@ -99,8 +99,7 @@ namespace Domain.ApplicationUserAggregate
                 //reset the deleted permissions
                 var permission = _rolePermission.FirstOrDefault(p => p.UserPermissionId == perm);
                 if (permission.IsDeleted)
-                    //permission.Delete();
-                    permission.IsDeleted = false;
+                    permission.Restore();
             }
             //add new permissions 
             var newPermissions = updateInput.PermissionIds.Except(_rolePermission.Select(x => x.UserPermissionId));

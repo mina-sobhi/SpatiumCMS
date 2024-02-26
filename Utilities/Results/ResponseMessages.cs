@@ -66,6 +66,8 @@
 
         #region Other
         public const string InvalidDateFormat = "Invalid Date Format";
+        public const string SearchColumn = "Search column cannot be empty";
+        public const string SearchWord = "Search word cannot be empty";
 
         #endregion
     }
