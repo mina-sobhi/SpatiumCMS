@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddlastUpdatedToFile : Migration
+    public partial class fileLastUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<DateTime>(
-                name: "LastUpdated",
+                name: "LastUpdate",
                 table: "Files",
                 type: "datetime2",
                 nullable: true);
@@ -22,7 +22,7 @@ namespace Migrations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "LastUpdated",
+                name: "LastUpdate",
                 table: "Files");
         }
     }

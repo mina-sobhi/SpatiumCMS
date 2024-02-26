@@ -19,8 +19,7 @@ namespace Domain.StorageAggregate
         public string CreatedById { get; private set; }
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
-
-        public DateTime? LastUpdated { get; private set; }
+        public DateTime? LastUpdate { get; private set; }
 
         #endregion
 
@@ -61,7 +60,7 @@ namespace Domain.StorageAggregate
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
 
-            this.LastUpdated= DateTime.UtcNow;
+            this.LastUpdate= DateTime.UtcNow;
         }
         public void Delete()
         {
@@ -77,7 +76,7 @@ namespace Domain.StorageAggregate
             }
              if (Caption.Length < 20 || Caption.Length > 200)
             {
-                throw new SpatiumException("File Description Must be in the Range of 20 to 200 characters.");
+                throw new SpatiumException("File Caption Must be in the Range of 20 to 200 characters.");
             }
             if (Alt.Length < 5 || Alt.Length > 60)
             {
