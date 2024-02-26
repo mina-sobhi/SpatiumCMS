@@ -17,6 +17,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
             return  await SpatiumDbContent.Storages.Where(s=> s.BlogId == blogId).Include(s=>s.Folders).ThenInclude(f=>f.Files).FirstOrDefaultAsync();
         }
         #endregion
+
         #region Folder 
 
         public async Task CreateFolderAsync(Folder folder)
@@ -70,10 +71,10 @@ namespace Infrastructure.Database.Repository.StorageRepository
 
         #region File
 
-            public async Task CreateFileAsync(StaticFile File)
-            {
-                await SpatiumDbContent.Files.AddAsync(File);
-            }
+        public async Task CreateFileAsync(StaticFile File)
+        {
+            await SpatiumDbContent.Files.AddAsync(File);
+        }
         public async Task DeleteFileAsync(int FileId)
         {
             var file = await GetFileAsync(FileId);
@@ -93,7 +94,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
             throw new SpatiumException($"File  NOT Exist!");
 
         }
-
+        
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
@@ -123,6 +124,13 @@ namespace Infrastructure.Database.Repository.StorageRepository
         public void UpdateFile(StaticFile File)
         {
             SpatiumDbContent.Files.Update(File);
+        }
+        public async Task<Folder> GetFilesToExtract(int blogId, int? folderId)
+        {
+            if (folderId == null)
+                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId);
+            else
+                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id==folderId);
         }
         #endregion
     }

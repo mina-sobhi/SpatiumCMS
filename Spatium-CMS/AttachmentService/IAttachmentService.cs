@@ -12,5 +12,11 @@ namespace Spatium_CMS.AttachmentService
         void CheckFileExtension(IFormFile file);
         string GetFileExtention(IFormFile file);
 
+        #region Extarct Files
+        Task CreateZipArchive(List<string> filesToZip, string zipArchivePath);
+        List<string>FilesToExtract(Folder folder); 
+        #endregion
+       
+
     }
 }

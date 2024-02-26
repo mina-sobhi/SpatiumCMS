@@ -156,5 +156,13 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.RoleIcons.ToListAsync();
         }
+
+        #region ActivityLog
+        public async Task<IEnumerable<ActivityLog>> GetActivityLog(string UserId)
+        {
+            return await SpatiumDbContent.ActivityLogs.Include(a => a.LogIcon).Where(a => a.UserId == UserId).ToListAsync();
+        }
+
+        #endregion
     }
 }

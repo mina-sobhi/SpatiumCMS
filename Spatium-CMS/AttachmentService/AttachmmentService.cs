@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.StorageAggregate;
+using System.IO.Compression;
 using Utilities.Exceptions;
 
 namespace Spatium_CMS.AttachmentService
@@ -7,14 +8,16 @@ namespace Spatium_CMS.AttachmentService
     public class AttachmmentService : IAttachmentService
     {
         private readonly IConfiguration configration;
+        private readonly IWebHostEnvironment environment;
 
         public AttachmmentService()
         {
 
         }
-        public AttachmmentService(IConfiguration configration)
+        public AttachmmentService(IConfiguration configration,IWebHostEnvironment environment)
         {
             this.configration = configration;
+            this.environment = environment;
         }
         public async Task<string> SaveAttachment(string dirctoryDestination, IFormFile formfile, string source,
             string imageName)
@@ -147,10 +150,45 @@ namespace Spatium_CMS.AttachmentService
             var fileExtension = Path.GetExtension(originalFileName);
             return fileExtension;
         }
-      
 
-
-
-
+        #region Extarct Files
+        public List<string> FilesToExtract(Folder folder)
+        {
+            var filesToExtract = new List<string>();
+            if (folder == null)
+            {
+                return filesToExtract;
+            }
+            foreach (var file in folder.Files)
+            {
+                filesToExtract.Add(Path.Combine(environment.WebRootPath, file.UrlPath));
+            }
+            if (folder.Folders != null)
+            {
+                foreach (var subfolder in folder.Folders)
+                {
+                    var subfolderFiles = FilesToExtract(subfolder);
+                    filesToExtract.AddRange(subfolderFiles);
+                }
+            }
+            return filesToExtract;
+        }
+        public async Task CreateZipArchive(List<string> filesToZip, string zipArchivePath)
+        {
+            using (var zipArchive = ZipFile.Open(zipArchivePath, ZipArchiveMode.Create))
+            {
+                foreach (var filePath in filesToZip)
+                {
+                    var entryName = Path.GetRelativePath(environment.WebRootPath, filePath);
+                    var entry = zipArchive.CreateEntry(entryName, CompressionLevel.Optimal);
+                    using (var fileStream = new FileStream(filePath, FileMode.Open))
+                    using (var entryStream = entry.Open())
+                    {
+                        await fileStream.CopyToAsync(entryStream);
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

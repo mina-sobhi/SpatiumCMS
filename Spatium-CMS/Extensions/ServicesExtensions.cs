@@ -118,6 +118,7 @@ namespace Spatium_CMS.Extensions
             services.AddScoped<IStorageRepository,StorageRepository>();
 
             services.AddScoped<IPostStatusFactory, PostStatusFactory>();
+            //services.AddScoped<IuserService, UserService>();
 
 
         }

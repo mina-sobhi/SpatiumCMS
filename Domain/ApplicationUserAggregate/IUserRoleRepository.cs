@@ -26,5 +26,7 @@ namespace Domain.ApplicationUserAggregate
         public Task<List<ApplicationUser>> GetUserInRoleAsync(string roleId);
         public Task<List<RoleIcon>> GetRoleIconsAsync();
 
+        public Task<IEnumerable<ActivityLog>> GetActivityLog(string UserId);
+
     }
 }
