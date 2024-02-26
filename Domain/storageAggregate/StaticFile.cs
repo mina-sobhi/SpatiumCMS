@@ -1,6 +1,7 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Base;
 using Domain.BlogsAggregate;
+
 using Domain.StorageAggregate.Input;
 using Utilities.Exceptions;
 
@@ -49,6 +50,7 @@ namespace Domain.StorageAggregate
             this.Dimension = input.Dimension;
             this.UrlPath = input.UrlPath;
         }
+      
         #endregion
 
         #region Method
@@ -102,6 +104,7 @@ namespace Domain.StorageAggregate
         //    }
         //}
 
+        
 
         public void MoveToFolderId(int? FoldrId)
         {

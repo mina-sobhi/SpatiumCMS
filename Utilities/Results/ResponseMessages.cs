@@ -60,6 +60,8 @@
         public const string FoldersAndFilesMovedSuccessfully = "Selected folders and files are Moved Successfully!";
         public const string FoldersAndFilesDeletedSuccessfully = "Selected folders and files are Deleted Successfully!";
         public const string FileAddedSuccessfully = "File Added Successfully!";
+        public const string FileUpdatedSuccessfully = "File Updated Successfully!";
+        public const string FileAltSuccessfully = "File Alt Added Successfully!";
         #endregion
 
         #region Other
