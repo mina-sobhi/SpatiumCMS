@@ -202,6 +202,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     var folder = new Folder(input);
 
                     await unitOfWork.StorageRepository.CreateFolderAsync(folder);
+             
                     await unitOfWork.SaveChangesAsync();
                     var response = new SpatiumResponse()
                     {
@@ -210,6 +211,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     };
                     return Ok(folder);
                 }
+
                 return BadRequest(ModelState);
             });
 

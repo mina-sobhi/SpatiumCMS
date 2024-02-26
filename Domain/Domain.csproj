@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Folder Include="NewFolder\" />
+    <Folder Include="UserActiveLogAggregate\" />
   </ItemGroup>
 
 </Project>

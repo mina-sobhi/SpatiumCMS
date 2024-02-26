@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
+using Spatium_CMS.Controllers.UserManagmentController.Response;
 using Spatium_CMS.Filters;
 using System.Net;
 using Utilities.Enums;
@@ -26,11 +27,18 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     {
         private readonly ISendMailService sendMailService;
 
+        private readonly IConfiguration configuration;
+        private readonly IAuthenticationService authenticationService;
+
+
+
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
             UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger)
             : base(unitOfWork, maper,logger, userManager)
         {
             this.sendMailService = sendMailService;
+            authenticationService = authenticationService;
+            this.configuration = configuration;
         }
 
         [HttpPost]
@@ -177,6 +185,29 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 var currentuser = await userManager.FindUserInBlogByIdIncludingRole(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var detailesResult = mapper.Map<ViewUserProfileResult>(currentuser);
                 return Ok(detailesResult);
+            });
+        }
+
+        [HttpGet]
+        [Route("GetUserActivity")]
+        [Authorize]
+        public Task<IActionResult> GetUserActivity()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var activity = await unitOfWork.RoleRepository.GetActivityLog(userId);
+                var response = new List<ActivityResponse>();
+                foreach (var item in activity)
+                {
+                    response.Add(new ActivityResponse()
+                    {
+                        Content = item.Content,
+                        IconPath = configuration.GetSection("ApiBaseUrl").Value +"/" + item.LogIcon.Path,
+                        Date = item.CreationDate
+                    });
+                }
+                return Ok(response);
             });
         }
     }

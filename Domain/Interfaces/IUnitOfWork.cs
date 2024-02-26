@@ -15,5 +15,7 @@ namespace Domian.Interfaces
         IStorageRepository StorageRepository { get; }
         #endregion
         Task SaveChangesAsync();
+        
+
     }
 }
