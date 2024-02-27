@@ -14,11 +14,6 @@ namespace Migrations.Migrations
                 name: "IX_Storages_BlogId",
                 table: "Storages");
 
-            migrationBuilder.RenameColumn(
-                name: "IsDelted",
-                table: "UserPermissions",
-                newName: "IsDeleted");
-
             migrationBuilder.AddColumn<int>(
                 name: "StorageId",
                 table: "Blogs",
@@ -43,11 +38,6 @@ namespace Migrations.Migrations
             migrationBuilder.DropColumn(
                 name: "StorageId",
                 table: "Blogs");
-
-            migrationBuilder.RenameColumn(
-                name: "IsDeleted",
-                table: "UserPermissions",
-                newName: "IsDelted");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Storages_BlogId",
