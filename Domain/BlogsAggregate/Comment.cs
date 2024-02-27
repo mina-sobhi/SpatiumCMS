@@ -1,4 +1,5 @@
-﻿using Domain.Base;
+﻿using Domain.ApplicationUserAggregate;
+using Domain.Base;
 using Domain.BlogsAggregate.Input;
 using Domain.LookupsAggregate;
 using Utilities.Enums;
@@ -11,10 +12,13 @@ namespace Domain.BlogsAggregate
         public int? ParentCommentId { get; private set; }
         public int PostId { get; private set; }
         public int StatusId { get; private set; }
+       
+        public string CreatedbyId { get; private set; }
 
         #region Navigational Properties
         public virtual Comment ParentComment { get; private set; }
         public virtual Post Post { get; private set; }
+        public virtual ApplicationUser Createdby { get; private set; }
         public virtual CommentStatus CommentStatus { get; private set; }
         #endregion
 

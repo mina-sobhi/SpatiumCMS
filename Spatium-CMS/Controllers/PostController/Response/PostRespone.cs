@@ -18,6 +18,8 @@
         public CreatedByResponse CreatedBy { get; set; }
         public DateTime CreationDate {  get; set; }
         public string AuthorId { get; set; }
+        public int LikeCount { get;  set; }
+        public int ShareCount { get;  set; }
 
     }
 }

@@ -72,7 +72,7 @@ namespace Domain.StorageAggregate
             }
             foreach (var subFolder in this._folders)
             {
-                subFolder.Delete();
+                subFolder.IsDeleted = true;
                 foreach (var file in subFolder.Files)
                 {
                     file.Delete();
@@ -81,7 +81,7 @@ namespace Domain.StorageAggregate
         }
         public void Rename(string newName)
         {
-            this.Name = Name.Length < 2 && Name.Length > 200 ? throw new SpatiumException("Folder Name Must in Range 2 to 200 char ") : newName  ;
+            this.Name = Name.Length < 2 || Name.Length > 200 ? throw new SpatiumException("Folder Name Must in Range 2 to 200 char ") : newName  ;
         }
         public void MoveTo(int? DestinationId)
         {
@@ -94,11 +94,11 @@ namespace Domain.StorageAggregate
         private void validations(string Name , string Description)
         {
            
-            if (Name.Length < 2 && Name.Length > 200)
+            if (Name.Length < 2 || Name.Length > 200)
             { 
                 throw new SpatiumException("Folder Name Must in Range 2 to 200 char "); 
             } 
-            if (Description.Length < 20  && Description.Length > 200)
+            if (Description.Length < 20  || Description.Length > 200)
             {
                 throw new SpatiumException("Folder Description Must in Range 20 to 200 char ");
             }

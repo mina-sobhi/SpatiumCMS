@@ -122,6 +122,7 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.Posts.Include(P => P.TableOfContents).FirstOrDefaultAsync(p => p.Id == id && p.BlogId == blogId);
         }
+
         public async Task<Post> PostSnippetPreview(int postId)
         {
             return await SpatiumDbContent.Posts.FindAsync(postId);
@@ -145,6 +146,19 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.Posts.Where(expression).FirstOrDefaultAsync();
         }
+        //public async Task<IEnumerable<Post>> GetTopLikePost(int blogId, int count)
+        //{
+        //    return await SpatiumDbContent.Posts.Where(p=>p.CommentsAllowed== true).OrderByDescending(p => p.LikeCount).Take(count).ToListAsync();
+        //}
+        //public async Task<IEnumerable<Post>> GetTopSharePost(int blogId, int count)
+        //{
+        //    return await SpatiumDbContent.Posts.OrderByDescending(p => p.ShareCount).Take(count).ToListAsync();
+        //}
+        public async  Task<IEnumerable<Post>> GetAllPostByBlogId(int blogId)
+        {
+            return await SpatiumDbContent.Posts.ToListAsync();
+        }
+
         #endregion
 
         #region TableOfContent
