@@ -7,6 +7,7 @@ namespace Domain.StorageAggregate
     {
         #region Storage
         Task<Storage> GetStorageByBlogId(int blogId);
+        Task AddStorage (Storage storage);
         #endregion
 
         #region Folder

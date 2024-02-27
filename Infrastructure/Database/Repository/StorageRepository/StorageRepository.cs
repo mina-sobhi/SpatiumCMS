@@ -7,7 +7,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 using Utilities.Exceptions;
 namespace Infrastructure.Database.Repository.StorageRepository
 {
-    public class StorageRepository :RepositoryBase,  IStorageRepository
+    public class StorageRepository : RepositoryBase, IStorageRepository
     {
         public StorageRepository(SpatiumDbContent SpatiumDbContent) : base(SpatiumDbContent)
         {}
@@ -131,6 +131,11 @@ namespace Infrastructure.Database.Repository.StorageRepository
                 return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId);
             else
                 return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id==folderId);
+        }
+
+        public async Task AddStorage(Storage storage)
+        {
+            await SpatiumDbContent.Storages.AddAsync(storage);
         }
         #endregion
     }

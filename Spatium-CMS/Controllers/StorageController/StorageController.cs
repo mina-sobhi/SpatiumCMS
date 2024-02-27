@@ -194,6 +194,8 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var userId = GetUserId();
                     var blogId = GetBlogId();
+                    if (Request.ParentId == 0)
+                        Request.ParentId = null;
                     var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                     var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
                     if (await unitOfWork.StorageRepository.ChechNameExists(blogId, Request.ParentId, Request.Name.ToLower()))
