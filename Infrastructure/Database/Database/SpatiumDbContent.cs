@@ -71,7 +71,6 @@ namespace Infrastructure.Database.Database
 
             modelBuilder.Entity<Post>().HasMany(x => x.TableOfContents).WithOne(x => x.Post).HasForeignKey(x => x.PostId);
             modelBuilder.Entity<TableOfContent>().HasMany(x => x.ChildTableOfContents).WithOne(x => x.ParentTableOfContent).HasForeignKey(x => x.ParentTableOfContentId);
-            modelBuilder.Entity<Blog>().HasOne(a => a.Storage).WithOne(s => s.Blog).HasForeignKey<Storage>(c => c.BlogId);
 
             #region Global Filter
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
@@ -81,6 +80,8 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<UserPermission>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Folder>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<StaticFile>().HasQueryFilter(x => !x.IsDeleted);
             #endregion
 
             #region Idintity-Configration

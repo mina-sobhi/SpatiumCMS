@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
 using Domain.Interfaces;
+using Domain.StorageAggregate;
+using Domain.StorageAggregate.Input;
 using Domian.Interfaces;
 using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +47,15 @@ namespace Spatium_CMS.Controllers.AuthenticationController
                 var result = await authenticationService.Register(newUser, request.Password);
                 if (result.Success)
                 {
+                    var stroageInput = new StorageInput()
+                    {
+                        ApplicationUserId = newUser.Id,
+                        BlogId = newUser.BlogId,
+                        Capacity = "100000000000000"
+                    };
+                    var storage=new Storage(stroageInput);
+                    await unitOfWork.StorageRepository.AddStorage(storage);
+                    await unitOfWork.SaveChangesAsync();
                     return Ok(new RegisterResponse()
                     {
                         Message = result.Message,
