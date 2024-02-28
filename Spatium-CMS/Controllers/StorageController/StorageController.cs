@@ -395,7 +395,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("MoveFilesBulk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateMedia)]
-        public Task<IActionResult> MoveFilesBulk(List<int> filesIds, int folderIdDestination)
+        public Task<IActionResult> MoveFilesBulk(List<int> filesIds, int? folderIdDestination=null)
         {
             return TryCatchLogAsync(async () =>
             {
