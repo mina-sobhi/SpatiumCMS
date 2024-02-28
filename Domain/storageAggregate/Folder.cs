@@ -93,7 +93,6 @@ namespace Domain.StorageAggregate
         }
         private void validations(string Name , string Description)
         {
-           
             if (Name.Length < 2 || Name.Length > 50)
             { 
                 throw new SpatiumException("Folder Name Must in Range 2 to 50 char "); 

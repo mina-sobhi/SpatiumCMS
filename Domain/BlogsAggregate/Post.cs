@@ -21,8 +21,8 @@ namespace Domain.BlogsAggregate
         public string Category { get; private set; }
         public string Tag { get; private set; }
         public DateTime? LastUpdate { get; private set; }
-        public int LikeCount { get; private set; }
-        public int ShareCount { get; private set; }
+        //public int LikeCount { get; private set; }
+        //public int ShareCount { get; private set; }
         public DateTime? PublishDate { get; private set; }
         public DateTime? UnPublishDate { get; private set; }
         public string CreatedById { get; private set; }
@@ -46,6 +46,12 @@ namespace Domain.BlogsAggregate
 
         private readonly List<TableOfContent> _tableOfContents = new List<TableOfContent>();
         public virtual IReadOnlyList<TableOfContent> TableOfContents => _tableOfContents.ToList();
+        
+        private readonly List<Like> _likes = new List<Like>();
+        public virtual IReadOnlyList<Like> Likes => _likes.ToList();
+
+        private readonly List<Share> _shares = new List<Share>();
+        public virtual IReadOnlyList<Share> Shares => _shares.ToList();
         #endregion
 
         #region CTOR
@@ -57,8 +63,8 @@ namespace Domain.BlogsAggregate
         {
             this.CreationDate = DateTime.UtcNow;
             this.IsDeleted = false;
-            this.LikeCount = 0;
-            this.ShareCount = 0;
+            //this.LikeCount = 0;
+            //this.ShareCount = 0;
             this.Title = postInput.Title;
             this.Slug = postInput.Slug;
             this.FeaturedImagePath = postInput.FeaturedImagePath;
@@ -138,5 +144,21 @@ namespace Domain.BlogsAggregate
         {
             this.CommentsAllowed = isAllowed;
         }
+        //public void IncrementLikeCount()
+        //{
+        //    this.LikeCount += 1;
+        //}
+        //public void DecrementLikeCount()
+        //{
+        //    this.LikeCount -= 1;
+        //}
+        //public void IncrementShareCount()
+        //{
+        //    this.ShareCount += 1;
+        //}
+        //public void DecrementShareCount()
+        //{
+        //    this.ShareCount -= 1;
+        //}
     }
 }

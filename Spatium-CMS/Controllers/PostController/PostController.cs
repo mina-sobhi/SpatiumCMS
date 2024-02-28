@@ -31,6 +31,170 @@ namespace Spatium_CMS.Controllers.PostController
             this.postStatusFactory = postStatusFactory;
         }
 
+
+        //[HttpGet]
+        //[Route("Like/{postId:int}")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> Like(int postId)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        var userId =  GetUserId();
+        //        var blogId = GetBlogId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId, userId);
+        //        if(user == null)
+        //        {
+        //            throw new SpatiumException("You Are Not In this Blog");
+        //        }
+        //        var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
+        //        if (post == null)
+        //        {
+        //            throw new SpatiumException("Invalid Post Id");
+        //        }
+        //        post.IncrementLikeCount();
+        //        await unitOfWork.SaveChangesAsync();
+        //        var response = new SpatiumResponse()
+        //        {
+        //            Message = "Like Done Successfuly",
+        //            Success = true
+        //        };
+        //        return Ok(response);
+        //    });
+        //}
+
+        //[HttpGet]
+        //[Route("DisLike/{postId:int}")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> DisLike(int postId)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        var userId = GetUserId();
+        //        var blogId = GetBlogId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId, userId);
+        //        if (user == null)
+        //        {
+        //            throw new SpatiumException("You Are Not In this Blog");
+        //        }
+        //        var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
+        //        if (post == null)
+        //        {
+        //            throw new SpatiumException("Invalid Post Id");
+        //        }
+        //        post.DecrementLikeCount();
+        //        await unitOfWork.SaveChangesAsync();
+        //        var response = new SpatiumResponse()
+        //        {
+        //            Message = "DisLike Done Successfuly",
+        //            Success = true
+        //        };
+        //        return Ok(response);
+        //    });
+        //}
+
+        //[HttpGet]
+        //[Route("Share/{postId:int}")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> Share(int postId)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        var userId = GetUserId();
+        //        var blogId = GetBlogId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId, userId);
+        //        if (user == null)
+        //        {
+        //            throw new SpatiumException("You Are Not In this Blog");
+        //        }
+        //        var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
+        //        if (post == null)
+        //        {
+        //            throw new SpatiumException("Invalid Post Id");
+        //        }
+        //        post.IncrementShareCount();
+        //        await unitOfWork.SaveChangesAsync();
+        //        var response = new SpatiumResponse()
+        //        {
+        //            Message = "Share Done Successfuly",
+        //            Success = true
+        //        };
+        //        return Ok(response);
+        //    });
+        //}
+        //[HttpGet]
+        //[Route("UnShare/{postId:int}")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> UnShare(int postId)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        var userId = GetUserId();
+        //        var blogId = GetBlogId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId, userId);
+        //        if (user == null)
+        //        {
+        //            throw new SpatiumException("You Are Not In this Blog");
+        //        }
+        //        var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId);
+        //        if (post == null)
+        //        {
+        //            throw new SpatiumException("Invalid Post Id");
+        //        }
+        //        post.DecrementShareCount();
+        //        await unitOfWork.SaveChangesAsync();
+        //        var response = new SpatiumResponse()
+        //        {
+        //            Message = "UnShare Done Successfuly",
+        //            Success = true
+        //        };
+        //        return Ok(response);
+        //    });
+        //}
+        //[HttpGet]
+        //[Route("GetTopLikePost")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> GetPostById([FromQuery]int blogId ,[FromQuery] int count=5)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        if (count <= 0)
+        //            throw new SpatiumException("Count Must Be Greater Than 0");
+        //        var userId = GetUserId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId , userId)?? throw new SpatiumException(ResponseMessages.PostNotFound);
+        //        var AllPosts = await unitOfWork.BlogRepository.GetAllPostByBlogId(blogId);
+        //        if (count > AllPosts.Count())
+        //            throw new SpatiumException("Count Must less Than Total Posts Number");
+        //        var posts = await unitOfWork.BlogRepository.GetTopLikePost(blogId, count);
+        //        var result = mapper.Map<IEnumerable<PostRespone>>(posts);
+        //        return Ok(result);
+        //    });
+        //}
+        //[HttpGet]
+        //[Route("GetTopSharePost")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        //public Task<IActionResult> GetTopSharePost([FromQuery] int blogId, [FromQuery] int count = 5)
+        //{
+        //    return TryCatchLogAsync(async () =>
+        //    {
+        //        if (count <= 0)
+        //            throw new SpatiumException("Count Must Be Greater Than 0");
+        //        var userId = GetUserId();
+        //        var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+        //        var AllPosts = await unitOfWork.BlogRepository.GetAllPostByBlogId(blogId);
+        //        if (count > AllPosts.Count())
+        //            throw new SpatiumException("Count Must less Than Total Posts Number");
+        //        var posts = await unitOfWork.BlogRepository.GetTopSharePost(blogId, count);
+        //        var result = mapper.Map<IEnumerable<PostRespone>>(posts);
+        //        return Ok(result);
+        //    });
+        //}
+
         [HttpGet("{Id:int}")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.ReadPost)]
@@ -79,6 +243,7 @@ namespace Spatium_CMS.Controllers.PostController
                 return Ok(postsResponse);
             });
         }
+
 
         [HttpPut]
         [Route("SchedulePost")]
