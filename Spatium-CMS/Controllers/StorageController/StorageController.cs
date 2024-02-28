@@ -16,6 +16,7 @@ using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
+using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
 namespace Spatium_CMS.Controllers.StorageController
@@ -297,6 +298,14 @@ namespace Spatium_CMS.Controllers.StorageController
                         throw new SpatiumException(ResponseMessages.InvalidFileName);
                     }
                     string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName))
+                    {
+                        throw new SpatiumException($"{fileName} Already Exist!");
+                    }
+                    if (await unitOfWork.StorageRepository.ChechFolderExists(FileRequest.FolderId))
+                    {
+                        throw new SpatiumException($"Folder Not Found");
+                    }
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
                     using (var stream = new FileStream(fullfilePath, FileMode.Create))
@@ -317,6 +326,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     InputFile.BlogId = blogId;
                     InputFile.UrlPath = imageUrl;
                     InputFile.FileSize = filesize;
+                    InputFile.FolderId = FileRequest.FolderId;
                     InputFile.Extention = _attachmentService.GetFileExtention(FileRequest.file);
                     var file = new StaticFile(InputFile);
                     await unitOfWork.StorageRepository.CreateFileAsync(file);
@@ -331,8 +341,6 @@ namespace Spatium_CMS.Controllers.StorageController
                 return BadRequest(ModelState);
             });
         }
-
-
         [HttpPut]
         [Route("UpdateFile")]
         [Authorize(Roles = "Super Admin")]
@@ -348,8 +356,34 @@ namespace Spatium_CMS.Controllers.StorageController
                     var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id,blogId);
                     if (OldFile != null)
                     {
+                        string fileName = Request.Name;
+                        if (string.IsNullOrEmpty(fileName))
+                        {
+                            throw new SpatiumException(ResponseMessages.InvalidFileName);
+                        }
+
+                        if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName))
+                        {
+                            throw new SpatiumException($"{fileName} Already Exist!");
+                        }
+                        string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
+                        string imageUrl = $"{blogId}/{fileName}";
+                        string fullFilePath = Path.Combine(uploadPath, fileName);
+
+                        
+                        if (!System.IO.File.Exists(fullFilePath))
+                        {
+                            throw new SpatiumException("File not found on the server.");
+                        }
+
+                        using (var stream = new FileStream(fullFilePath, FileMode.OpenOrCreate))
+                        {
+                            
+                            await Request.File.CopyToAsync(stream);
+                        }
                         var UserId = GetUserId();
                         var UpdateFile = mapper.Map<UpdateFileInput>(Request);
+                        UpdateFile.Url = imageUrl;
                         UpdateFile.LastUpdate = DateTime.Now;
                         UpdateFile.Createdby = UserId;
                         OldFile.Update(UpdateFile);
@@ -423,9 +457,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 foreach (var file in filesIds)
                 {
                     var fileToDelete = await unitOfWork.StorageRepository.GetFileAsync(file,blogId) ?? throw new SpatiumException("File Not Existed To Deleted");
-                    await DeleteFile(fileToDelete.Id);
+                    await unitOfWork.StorageRepository.DeleteFileAsync(fileToDelete.Id,blogId);
+                    await unitOfWork.SaveChangesAsync();
                 }
-                return Ok("Files Moved Succsseded...");
+                return Ok("Files Deleted Succsseded...");
             });
         }
 
