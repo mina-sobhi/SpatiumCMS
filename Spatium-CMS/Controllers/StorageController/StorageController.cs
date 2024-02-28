@@ -35,7 +35,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
         #region FolderApis
         [HttpGet]
-        [Route("DeleteFolders")]
+        [Route("FoldersAndFileCount")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.DeleteMedia)]
         public Task<IActionResult> Delete([FromQuery] int folderId)
@@ -46,7 +46,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException(ResponseMessages.StorageNotFound);
-                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                 var deleteResponse = new DeleteResponse()
                 {
                     Id = folder.Id,
@@ -70,11 +70,11 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException(ResponseMessages.StorageNotFound);
-                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId) ?? throw new SpatiumException($"Invalid Folder Id ");
+                var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException($"Invalid Folder Id ");
                 folder.Delete();
                 foreach (var file in folder.Files)
                 {
-                    await unitOfWork.StorageRepository.DeleteFileAsync(file.Id);
+                    await unitOfWork.StorageRepository.DeleteFileAsync(file.Id, blogId);
                 }
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
@@ -101,12 +101,12 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 foreach (var folderId in deleteBulk.FolderIds)
                 {
-                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                     folder.Delete();
                 }
                 foreach (var fileId in deleteBulk.FilesIds)
                 {
-                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
                     file.Delete();
                 }
                 await unitOfWork.SaveChangesAsync();
@@ -131,15 +131,17 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+                if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
 
                 foreach (var folderId in moveBulk.FolderIds)
                 {
-                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    if(folder.ParentId == null && moveBulk.DestinationId==null) throw new SpatiumException("Invalid Destination!");
                     folder.MoveTo(moveBulk.DestinationId);
                 }
                 foreach (var fileId in moveBulk.FilesIds)
                 {
-                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                     file.MoveToFolderId(moveBulk.DestinationId);
                 }
                 await unitOfWork.SaveChangesAsync();
@@ -237,7 +239,6 @@ namespace Spatium_CMS.Controllers.StorageController
             {
                 if (ModelState.IsValid)
                 {
-
                     var userId = GetUserId();
                     var blogId = GetBlogId();
                     var user = await userManager.FindUserInBlogAsync(blogId, userId);
@@ -257,7 +258,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                     var response = new SpatiumResponse()
                     {
-                        Message = $"F older Renamed Successfuly from {Request.OldName} To {folder.Name} ",
+                        Message = $"Folder Renamed Successfuly from {Request.OldName} To {folder.Name} ",
                         Success = true
                     };
                     return Ok(response);
@@ -343,7 +344,8 @@ namespace Spatium_CMS.Controllers.StorageController
             {
                 if (ModelState.IsValid)
                 {
-                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id);
+                    var blogId=GetBlogId();
+                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id,blogId);
                     if (OldFile != null)
                     {
                         var UserId = GetUserId();
@@ -379,7 +381,8 @@ namespace Spatium_CMS.Controllers.StorageController
             {
                 if (ModelState.IsValid)
                 {
-                    await unitOfWork.StorageRepository.DeleteFileAsync(Id);
+                    var blogId = GetBlogId();
+                    await unitOfWork.StorageRepository.DeleteFileAsync(Id,blogId);
                     await unitOfWork.SaveChangesAsync();
                     return Ok("Deleted");
                 }
@@ -400,7 +403,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 foreach (var file in filesIds)
                 {
-                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(file) ?? throw new SpatiumException("File Not Existed To Move");
+                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(file, blogId) ?? throw new SpatiumException("File Not Existed To Move");
                     fileToMove.MoveToFolderId(folderIdDestination);
                     await unitOfWork.SaveChangesAsync();
                 }
@@ -419,7 +422,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 foreach (var file in filesIds)
                 {
-                    var fileToDelete = await unitOfWork.StorageRepository.GetFileAsync(file) ?? throw new SpatiumException("File Not Existed To Deleted");
+                    var fileToDelete = await unitOfWork.StorageRepository.GetFileAsync(file,blogId) ?? throw new SpatiumException("File Not Existed To Deleted");
                     await DeleteFile(fileToDelete.Id);
                 }
                 return Ok("Files Moved Succsseded...");
@@ -449,7 +452,8 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             return TryCatchLogAsync(async () =>
             {
-                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+                var blogId= GetBlogId();
+                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
                 return Ok(mapper.Map<ViewFile>(file));
             });
         }
@@ -462,7 +466,8 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             return TryCatchLogAsync(async () =>
             {
-                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+                var blogId= GetBlogId();
+                var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
                 var resualt = mapper.Map<ViewFile>(file);
                 var fileUrl = resualt.UrlPath;
                 return Ok(fileUrl);
@@ -475,8 +480,9 @@ namespace Spatium_CMS.Controllers.StorageController
         [PermissionFilter(PermissionsEnum.ReadMedia)]
         public async Task<IActionResult> DownloadFile(int fileId)
         {
+            var blogId=GetBlogId();
             var currentDirectory = Directory.GetCurrentDirectory();
-            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
 
             var path = Path.Combine(currentDirectory, @"wwwroot\", file.UrlPath);
             var bytes = await System.IO.File.ReadAllBytesAsync(path);

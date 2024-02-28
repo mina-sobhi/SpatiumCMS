@@ -13,7 +13,7 @@ namespace Domain.StorageAggregate
         #region Folder
         Task<IEnumerable<Folder>> GetAllFoldersAsync();
         Task<Folder> GetFolderAsync(int id);
-        Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId);
+        Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId,int blogId);
         Task CreateFolderAsync(Folder folder);
         Task DeleteFolderAsync(int folderId);
         void UpdateFolder(Folder folder);
@@ -23,9 +23,9 @@ namespace Domain.StorageAggregate
 
         #region Files
         Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId);
-        Task<StaticFile> GetFileAsync(int id);
+        Task<StaticFile> GetFileAsync(int id,int blogId);
         Task CreateFileAsync(StaticFile File);
-        Task DeleteFileAsync(int FileId);
+        Task DeleteFileAsync(int FileId, int blogId);
         void UpdateFile(StaticFile File);
         Task<Folder> GetFilesToExtract(int bloId,int? folderId);
 

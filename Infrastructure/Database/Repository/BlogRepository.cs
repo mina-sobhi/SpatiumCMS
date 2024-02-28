@@ -4,7 +4,6 @@ using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Database.Repository
 {

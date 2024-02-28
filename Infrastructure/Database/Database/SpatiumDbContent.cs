@@ -80,6 +80,8 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<UserPermission>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Folder>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<StaticFile>().HasQueryFilter(x => !x.IsDeleted);
             #endregion
 
             #region Idintity-Configration
