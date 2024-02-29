@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Base;
+using Infrastructure.Extensions.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,18 +56,16 @@ namespace Infrastructure.Extensions
 
         public static async Task<UsersAnalytics> GetBlogUersAnalytics(this UserManager<ApplicationUser> userManager, int blogId)
         {
-            var allUsers=  await userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId).ToListAsync();
+            var allUsers=  userManager.Users.Where(x => x.BlogId == blogId);
             var TotalCount=allUsers.Count();
-            var ActivateUsers =allUsers.Where(u=>u.IsAccountActive==true).Count();
-            var DeActivateUsers =allUsers.Where(u=>u.IsAccountActive==true).Count();
+            var ActivateUsers =allUsers.Count();
+            var DeActivateUsers =allUsers.Count();
             return new UsersAnalytics()
             {
                 TotalCount = TotalCount,
                 ActivateUsers = ActivateUsers,
                 DeactivateUsers = DeActivateUsers
-
             };
-
         }
     }
 }

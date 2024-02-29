@@ -1,14 +1,9 @@
 ﻿using Domain.ApplicationUserAggregate;
-using Domain.ApplicationUserAggregate.Inputs;
 using Domain.BlogsAggregate;
 using Domain.StorageAggregate;
 using Domian.Interfaces;
 using Infrastructure.Database.Database;
 using Infrastructure.Database.Repository;
-using Infrastructure.Database.Repository.StorageRepository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace Infrastructure.UOW
 {
@@ -19,13 +14,6 @@ namespace Infrastructure.UOW
 
         public IBlogRepository BlogRepository { get; }
         public IStorageRepository StorageRepository { get; }
-
-        //public ITableOfContent TableOfContentRepository { get; }
-
-        //public IPostRepository PostRepository { get; }
-
-        //public ICommentRepository CommentRepository { get; }
-
         public IUserRoleRepository RoleRepository { get; }
 
         public UnitOfWork(SpatiumDbContent spatiumDbContent)
@@ -33,11 +21,7 @@ namespace Infrastructure.UOW
             _spatiumDbContent = spatiumDbContent;
 
             #region Repos
-            //Repo init goes Here
             BlogRepository= new BlogRepository(spatiumDbContent);
-            //PostRepository = new PostRepository(spatiumDbContent);
-            //TableOfContentRepository = new TableOfContentRepository(spatiumDbContent);
-            //CommentRepository = new CommentRepository(spatiumDbContent);
             RoleRepository = new UserRoleReposiotry(spatiumDbContent);
             StorageRepository = new StorageRepository(spatiumDbContent);
             #endregion
@@ -45,7 +29,6 @@ namespace Infrastructure.UOW
 
         public async Task SaveChangesAsync()
         {
-
             await _spatiumDbContent.SaveChangesAsync();
         }
 

@@ -4,7 +4,6 @@ using Domain.StorageAggregate;
 using Domian.Interfaces;
 using Infrastructure.Database.Database;
 using Infrastructure.Database.Repository;
-using Infrastructure.Database.Repository.StorageRepository;
 using Infrastructure.Services.AuthinticationService;
 using Infrastructure.Services.MailSettinService;
 using Infrastructure.Strategies.AuthorizationStrategy;
@@ -113,14 +112,8 @@ namespace Spatium_CMS.Extensions
             services.AddScoped<IUserRoleRepository, UserRoleReposiotry>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthorizationStrategyFactory, AuthorizationStrategyFactory>();
-
             services.AddScoped<IAttachmentService, AttachmmentService>();
-            services.AddScoped<IStorageRepository,StorageRepository>();
-
             services.AddScoped<IPostStatusFactory, PostStatusFactory>();
-            //services.AddScoped<IuserService, UserService>();
-
-
         }
         #endregion
 

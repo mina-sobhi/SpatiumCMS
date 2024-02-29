@@ -312,23 +312,13 @@ namespace Spatium_CMS.Controllers.StorageController
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
-                    if (await unitOfWork.StorageRepository.ChechFolderExists(FileRequest.FolderId))
-                    {
-                        throw new SpatiumException($"Folder Not Found");
-                    }
+                    var folder=await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
                     using (var stream = new FileStream(fullfilePath, FileMode.Create))
                     {
                         await FileRequest.file.CopyToAsync(stream);
                     }
-
-                    //string baseUrl = _configration["ApiBaseUrl"];
-
-                    //if (string.IsNullOrEmpty(baseUrl))
-                    //{
-                    //    return StatusCode(500, "Base URL is not configured.");
-                    //}
 
                     string imageUrl = $"{blogId}/{newFileName}";
                     var InputFile = mapper.Map<FileInput>(FileRequest);

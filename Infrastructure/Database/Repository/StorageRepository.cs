@@ -5,7 +5,7 @@ using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Utilities.Exceptions;
-namespace Infrastructure.Database.Repository.StorageRepository
+namespace Infrastructure.Database.Repository
 {
     public class StorageRepository : RepositoryBase, IStorageRepository
     {
@@ -25,9 +25,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
             await SpatiumDbContent.Folders.AddAsync(folder);
         }
 
-        public async Task DeleteFolderAsync(int folderId,int blogId)
+        public async Task DeleteFolderAsync(int folderId, int blogId)
         {
-            var folder = await GetFolderAsync(folderId,blogId);
+            var folder = await GetFolderAsync(folderId, blogId);
             if (folder == null)
             {
                 SpatiumDbContent.Folders.Remove(folder);
@@ -38,9 +38,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             return await SpatiumDbContent.Folders.ToListAsync();
         }
-        public async Task<Folder> GetFolderAsync(int id,int blogId)
+        public async Task<Folder> GetFolderAsync(int id, int blogId)
         {
-            return await SpatiumDbContent.Folders.Where(x=>x.Id==id && x.BlogId==blogId).FirstOrDefaultAsync();
+            return await SpatiumDbContent.Folders.Where(x => x.Id == id && x.BlogId == blogId).FirstOrDefaultAsync();
 
         }
         public async Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId, int blogId)
@@ -75,7 +75,7 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             await SpatiumDbContent.Files.AddAsync(File);
         }
-        public async Task DeleteFileAsync(int FileId,int blogId)
+        public async Task DeleteFileAsync(int FileId, int blogId)
         {
             var file = await GetFileAsync(FileId, blogId);
             if (file is not null)
@@ -89,29 +89,8 @@ namespace Infrastructure.Database.Repository.StorageRepository
 
                 SpatiumDbContent.Files.Remove(file);
             }
-            else
-            {
-                throw new SpatiumException($"File  NOT Exist!");
-            }
+            throw new SpatiumException($"File  NOT Exist!");
 
-        }
-
-        public async Task<bool> ChechFileNameExists(string FileName)
-        {
-
-            bool IsExist;
-            IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName) is not null ? true : false;
-            return IsExist;
-        }
-
-        public async Task<bool> ChechFolderExists(int? Id)
-        {
-
-            bool IsExist;
-            var folder = await SpatiumDbContent.Folders.FirstOrDefaultAsync(f => f.Id == Id);
-
-            IsExist = await SpatiumDbContent.Folders.FirstOrDefaultAsync(f => f.Id == Id) is  null ? true : false;
-            return IsExist;
         }
 
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
@@ -136,9 +115,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
             var paginatedQuery = query.Skip((fileParams.Page - 1) * fileParams.PageSize).Take(fileParams.PageSize);
             return paginatedQuery.ToList();
         }
-        public async Task<StaticFile> GetFileAsync(int id,int blogId)
+        public async Task<StaticFile> GetFileAsync(int id, int blogId)
         {
-            return await SpatiumDbContent.Files.Where(x=>x.BlogId==blogId && x.Id==id).FirstOrDefaultAsync();
+            return await SpatiumDbContent.Files.Where(x => x.BlogId == blogId && x.Id == id).FirstOrDefaultAsync();
         }
         public void UpdateFile(StaticFile File)
         {
@@ -155,6 +134,12 @@ namespace Infrastructure.Database.Repository.StorageRepository
         public async Task AddStorage(Storage storage)
         {
             await SpatiumDbContent.Storages.AddAsync(storage);
+        }
+
+        public async Task<bool> ChechFileNameExists(string FileName)
+        {
+            var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName) is not null ? true : false;
+            return IsExist;
         }
         #endregion
     }

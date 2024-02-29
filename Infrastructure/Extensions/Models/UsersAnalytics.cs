@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Extensions
+﻿namespace Infrastructure.Extensions.Models
 {
     public class UsersAnalytics
     {
