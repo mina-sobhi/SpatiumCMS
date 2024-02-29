@@ -62,6 +62,7 @@ namespace Domain.StorageAggregate
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
             this.LastUpdate= DateTime.UtcNow;
+            this.UrlPath = input.Url;
         }
         public void Delete()
         {

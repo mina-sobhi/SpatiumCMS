@@ -28,7 +28,7 @@ namespace Domain.StorageAggregate
         Task DeleteFileAsync(int FileId, int blogId);
         void UpdateFile(StaticFile File);
         Task<Folder> GetFilesToExtract(int bloId,int? folderId);
-        Task<bool> ChechFileNameExists(string FileName);
+        Task<bool> ChechFileNameExists(string FileName, int? folderid);
 
         #endregion
     }
