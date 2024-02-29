@@ -101,6 +101,8 @@ namespace Spatium_CMS.AttachmentService
                 case "jpeg":
                 case "png":
                 case "gif":
+                case "bin":
+                case "webp":
                     return "image";
                 case "mp4":
                 case "3g2":

@@ -89,8 +89,29 @@ namespace Infrastructure.Database.Repository.StorageRepository
 
                 SpatiumDbContent.Files.Remove(file);
             }
-            throw new SpatiumException($"File  NOT Exist!");
+            else
+            {
+                throw new SpatiumException($"File  NOT Exist!");
+            }
 
+        }
+
+        public async Task<bool> ChechFileNameExists(string FileName)
+        {
+
+            bool IsExist;
+            IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName) is not null ? true : false;
+            return IsExist;
+        }
+
+        public async Task<bool> ChechFolderExists(int? Id)
+        {
+
+            bool IsExist;
+            var folder = await SpatiumDbContent.Folders.FirstOrDefaultAsync(f => f.Id == Id);
+
+            IsExist = await SpatiumDbContent.Folders.FirstOrDefaultAsync(f => f.Id == Id) is  null ? true : false;
+            return IsExist;
         }
 
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)

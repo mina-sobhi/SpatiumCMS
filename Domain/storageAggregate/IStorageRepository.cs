@@ -28,6 +28,8 @@ namespace Domain.StorageAggregate
         Task DeleteFileAsync(int FileId, int blogId);
         void UpdateFile(StaticFile File);
         Task<Folder> GetFilesToExtract(int bloId,int? folderId);
+        Task<bool> ChechFileNameExists(string FileName);
+        Task<bool> ChechFolderExists(int? Id);
 
         #endregion
     }
