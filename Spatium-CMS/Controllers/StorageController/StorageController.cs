@@ -527,8 +527,11 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             var blogId=GetBlogId();
             var currentDirectory = Directory.GetCurrentDirectory();
-            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
 
+            if (file == null)
+                return BadRequest(ResponseMessages.FileNotFound);
+            
             var path = Path.Combine(currentDirectory, @"wwwroot\", file.UrlPath);
             var bytes = await System.IO.File.ReadAllBytesAsync(path);
             var provider = new FileExtensionContentTypeProvider();
