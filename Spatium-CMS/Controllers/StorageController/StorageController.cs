@@ -16,7 +16,6 @@ using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
-using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
 namespace Spatium_CMS.Controllers.StorageController
@@ -28,7 +27,10 @@ namespace Spatium_CMS.Controllers.StorageController
         private readonly IAttachmentService _attachmentService;
 
         private readonly IConfiguration _configration;
-        public StorageController(ILogger<StorageController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAttachmentService attachmentService, IConfiguration configration, IStorageRepository storageRepository) : base(unitOfWork, mapper, logger, userManager)
+        public StorageController(ILogger<StorageController> logger, IMapper mapper, 
+                                IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager,
+                                IAttachmentService attachmentService, IConfiguration configration)
+                                : base(unitOfWork, mapper, logger, userManager)
         {
             _attachmentService = attachmentService;
             _configration = configration;

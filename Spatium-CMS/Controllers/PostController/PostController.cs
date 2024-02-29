@@ -16,6 +16,7 @@ using Utilities.Results;
 using Utilities.Exceptions;
 using Infrastructure.Extensions;
 using Infrastructure.Strategies.PostStatusStrategy.Factory;
+using Microsoft.AspNetCore.OutputCaching;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
