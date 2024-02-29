@@ -20,6 +20,7 @@ using Domain.LookupsAggregate;
 using Spatium_CMS.Extensions;
 using Domain.StorageAggregate;
 using Spatium_CMS.Controllers.StorageController.Response;
+using Spatium_CMS.Controllers.UserManagmentController.Response;
 
 namespace Spatium_CMS.AutoMapperProfiles
 {
@@ -96,6 +97,15 @@ namespace Spatium_CMS.AutoMapperProfiles
                     .ForMember(dest=>dest.Id,otp=>otp.MapFrom(src=>src.Id))
                     .ForMember(dest=>dest.FullName,otp=>otp.MapFrom(src=>src.FullName))
                     .ForMember(dest=>dest.ProfileImagePath,otp=>otp.MapFrom(src=>src.ProfileImagePath));
+
+                CreateMap<ApplicationUser, ViewUsersResponse>()
+                   .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                   .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                   .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom(src => src.ProfileImagePath))
+                   .ForMember(dest => dest.IsAccountActive, otp => otp.MapFrom(src => src.IsAccountActive))
+                   .ForMember(dest => dest.Email, otp => otp.MapFrom(src => src.Email))
+                   .ForMember(dest => dest.RoleName, otp => otp.MapFrom(r => r.Role.Name))
+                   .ForMember(dest => dest.CreatedAt, otp => otp.MapFrom(r => r.CreatedAt));
                 #endregion
 
                 #region GetPosts

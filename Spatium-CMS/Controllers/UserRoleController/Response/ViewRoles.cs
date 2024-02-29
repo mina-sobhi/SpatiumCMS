@@ -1,4 +1,5 @@
 ﻿using Domain.ApplicationUserAggregate;
+using System.Text.Json.Serialization;
 
 namespace Spatium_CMS.Controllers.UserRoleController.Response
 {
@@ -11,7 +12,8 @@ namespace Spatium_CMS.Controllers.UserRoleController.Response
         public string Color { get; set; }
         public RoleIconRespones RoleIcon { get; set; }
 
-        public ICollection<UserResponse> ApplicationUsers { get; set; }=new List<UserResponse>();
+        [JsonIgnore]
+        public ICollection<ApplicationUser> ApplicationUsers { get; set; }=new List<ApplicationUser>();
         public int UsersCount { 
             get
             {

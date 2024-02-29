@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
 using Domain.ApplicationUserAggregate.Inputs;
+using Domain.Base;
 using Domain.Interfaces;
 using Domian.Interfaces;
 using Infrastructure.Extensions;
@@ -182,7 +183,31 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 return Ok(detailesResult);
             });
         }
-
+        [HttpGet]
+        [Route("GetUserAllUsers")]
+        [Authorize]
+        public Task<IActionResult> GetUserAllUsers([FromQuery]GetEntitiyParams entityParams)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                var users = await userManager.FindUsersInBlogIncludingRole(blogId, entityParams) ?? throw new SpatiumException("there are not users !!");
+                var detailesResult = mapper.Map<List<ViewUsersResponse>>(users);
+                return Ok(detailesResult);
+            });
+        }
+        [HttpGet]
+        [Route("GetUsersAnalytics")]
+        [Authorize]
+        public Task<IActionResult> GetUsersAnalytics()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+                var detailesResult = await userManager.GetBlogUersAnalytics(blogId) ?? throw new SpatiumException("there are not users !!");
+                return Ok(detailesResult);
+            });
+        }
         [HttpGet]
         [Route("GetUserActivity")]
         [Authorize]
