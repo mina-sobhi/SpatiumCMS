@@ -88,8 +88,10 @@ namespace Infrastructure.Database.Repository
                 }
 
                 SpatiumDbContent.Files.Remove(file);
+            }else
+            {
+                throw new SpatiumException($"File  NOT Exist!");
             }
-            throw new SpatiumException($"File  NOT Exist!");
 
         }
 
