@@ -1,5 +1,6 @@
 ﻿using Domain.ApplicationUserAggregate;
 using Domain.Base;
+using Domain.BlogsAggregate.Input;
 
 namespace Domain.BlogsAggregate
 {
@@ -13,10 +14,19 @@ namespace Domain.BlogsAggregate
         public virtual Post Post { get; private set; }
         #region Ctor
         public Share()
+        {}
+        public Share(ShareInput  input)
         {
-
+            this.IsShare = true;
+            this.CreatedbyId = input.CreatedbyId;
+            this.PostId = input.PostId;
+            this.CreationDate = DateTime.UtcNow;
+            this.IsDeleted = false;
         }
         #endregion
-
+        public void UnShare()
+        {
+            this.IsShare = false;
+        }
     }
 }

@@ -36,6 +36,7 @@ namespace Domain.BlogsAggregate
         {
             this.CreationDate = DateTime.UtcNow;
             this.IsDeleted = false;
+            this.CreatedbyId = commentInput.CreatedById;
             this.ParentCommentId = commentInput.ParentCommentId == null ? null : commentInput.ParentCommentId.Value;
             this.Content = commentInput.Content;
             this.PostId = commentInput.PostId;

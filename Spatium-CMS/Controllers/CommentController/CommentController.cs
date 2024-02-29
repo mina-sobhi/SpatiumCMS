@@ -48,8 +48,11 @@ namespace Spatium_CMS.Controllers.CommentController
             {
                 var blogId = GetBlogId();
 
-                var comments = await unitOfWork.BlogRepository.GetCommentsAsync(blogId, postId, FilterColumn, FilterValue)?? throw new SpatiumException("Post Dose Not Contain Comments");
+                var comments = await unitOfWork.BlogRepository
+                .GetCommentsAsync(blogId, postId, FilterColumn, FilterValue)?? throw new SpatiumException("Post Dose Not Contain Comments");
 
+                if(comments.Count() <=0 )
+                        return NoContent();
                 List<CommentResponse> commentResponses = new List<CommentResponse>();
                 foreach (var item in comments)
                 {
@@ -72,8 +75,9 @@ namespace Spatium_CMS.Controllers.CommentController
 
                 if (!post.CommentsAllowed)
                     throw new SpatiumException($"Post Dose not Allowed Comment");
-
+                var userId = GetUserId();
                 var commentinput = mapper.Map<CommentInput>(commentRequest);
+                commentinput.CreatedById = userId;
                 var comment = new Comment(commentinput);
 
                 await unitOfWork.BlogRepository.CreateCommentAsync(comment);

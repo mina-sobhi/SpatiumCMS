@@ -135,6 +135,11 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             await SpatiumDbContent.Storages.AddAsync(storage);
         }
+
+        public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
+        {
+            return await SpatiumDbContent.Files.Where(f=> f.FolderId == FolderId).ToListAsync();
+        }
         #endregion
     }
 }

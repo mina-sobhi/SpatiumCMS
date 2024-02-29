@@ -8,6 +8,7 @@ namespace Domain.BlogsAggregate.Input
 {
     public class CommentInput
     {
+        public string CreatedById { get; set; }
         public string Content { get;  set; }
         public int? ParentCommentId { get;  set; }
         public int PostId { get;  set; }

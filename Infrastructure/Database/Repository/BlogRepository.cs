@@ -60,7 +60,7 @@ namespace Infrastructure.Database.Repository
             SpatiumDbContent.Comments.Remove(await GetCommentByIdAsync(id));
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsAsync(int postId,int blogId, string FilterColumn = null, string FilterValue = null)
+        public async Task<IEnumerable<Comment>> GetCommentsAsync(int blogId, int postId, string FilterColumn = null, string FilterValue = null)
         {
 
             var Post = await SpatiumDbContent.Posts.FirstOrDefaultAsync(p => p.BlogId == blogId && p.Id == postId);
@@ -75,7 +75,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task<Comment> GetCommentByIdAsync(int commentId)
         {
-            return await SpatiumDbContent.Comments.FindAsync(commentId);
+            return await SpatiumDbContent.Comments.FirstOrDefaultAsync(c=>c.Id == commentId);
         }
 
         public async Task UpdateCommentAsync(Comment comment)
