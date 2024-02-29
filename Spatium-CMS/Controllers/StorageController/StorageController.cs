@@ -130,30 +130,21 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+                if (moveBulk.DestinationId != null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
 
-                var destinationfolder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, moveBulk.DestinationId.Value, blogId);
-                if (destinationfolder.IsDeleted == true)
-                    throw new SpatiumException("Invalid Destination");
-
-                if (moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) 
-                    throw new SpatiumException("Invalid Destination!");
-
+                var destinationfolder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, moveBulk.DestinationId.Value, blogId) ?? throw new SpatiumException("Invalid Destination Folder ");
 
                 foreach (var folderId in moveBulk.FolderIds)
                 {
-                    var folder = await unitOfWork.StorageRepository
-                    .GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
-
-                    folder.MoveTo(destinationfolder.Id);
+                    var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    if (folder.ParentId == null && moveBulk.DestinationId == null) throw new SpatiumException("Invalid Destination!");
+                    folder.MoveTo(moveBulk.DestinationId);
                 }
-
                 foreach (var fileId in moveBulk.FilesIds)
                 {
-                    var file = await unitOfWork.StorageRepository
-                    .GetFileAsync(fileId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                     file.MoveToFolderId(moveBulk.DestinationId);
                 }
-
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
                 {
