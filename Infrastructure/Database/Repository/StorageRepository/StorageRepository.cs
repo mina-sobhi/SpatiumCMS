@@ -25,9 +25,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
             await SpatiumDbContent.Folders.AddAsync(folder);
         }
 
-        public async Task DeleteFolderAsync(int folderId)
+        public async Task DeleteFolderAsync(int folderId,int blogId)
         {
-            var folder = await GetFolderAsync(folderId);
+            var folder = await GetFolderAsync(folderId,blogId);
             if (folder == null)
             {
                 SpatiumDbContent.Folders.Remove(folder);
@@ -38,9 +38,9 @@ namespace Infrastructure.Database.Repository.StorageRepository
         {
             return await SpatiumDbContent.Folders.ToListAsync();
         }
-        public async Task<Folder> GetFolderAsync(int id)
+        public async Task<Folder> GetFolderAsync(int id,int blogId)
         {
-            return await SpatiumDbContent.Folders.FindAsync(id);
+            return await SpatiumDbContent.Folders.Where(x=>x.Id==id && x.BlogId==blogId).FirstOrDefaultAsync();
 
         }
         public async Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId, int blogId)

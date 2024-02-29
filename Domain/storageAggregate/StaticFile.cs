@@ -61,7 +61,6 @@ namespace Domain.StorageAggregate
             this.Caption = input.Caption;          
             this.Alt = input.Alt;
             this.Dimension = input.Dimension;
-
             this.LastUpdate= DateTime.UtcNow;
         }
         public void Delete()
@@ -103,9 +102,6 @@ namespace Domain.StorageAggregate
         //        throw new SpatiumException("Invalid Extentions");
         //    }
         //}
-
-        
-
         public void MoveToFolderId(int? FoldrId)
         {
             this.FolderId = FoldrId;

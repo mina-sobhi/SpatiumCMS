@@ -51,8 +51,8 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     Id = folder.Id,
                     FolderName = folder.Name,
-                    FileCount = folder.Files.Count()
-
+                    FileCount = folder.Files.Count(),
+                    FoldersCount=folder.Folders.Count(),
                 };
                 return Ok(deleteResponse);
             });
@@ -168,7 +168,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException("Invalid Blog Id");
 
                 List<ViewFolderResponse> respone = new List<ViewFolderResponse>();
-                foreach (var folder in storage.Folders.Where(f => f.ParentId == FolderId && f.IsDeleted == false))
+                foreach (var folder in storage.Folders.Where(f => f.ParentId == FolderId))
                 {
                     ViewFolderResponse responseitem = new ViewFolderResponse()
                     {
@@ -181,6 +181,8 @@ namespace Spatium_CMS.Controllers.StorageController
                     responseitem.NumberOfFiles = folder.Files.Count();
                     respone.Add(responseitem);
                 }
+                if (respone.Count <= 0)
+                    throw new SpatiumException("No Content");
                 return Ok(respone);
             });
         }
@@ -196,7 +198,11 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var userId = GetUserId();
                     var blogId = GetBlogId();
-                    if (Request.ParentId == 0)
+                    if (Request.ParentId !=null && Request.ParentId > 0)
+                    {
+                        var fo = await unitOfWork.StorageRepository.GetFolderAsync(Request.ParentId.Value,blogId)?? throw new SpatiumException(ResponseMessages.InvalidFolder);
+                    }
+                    else
                         Request.ParentId = null;
                     var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                     var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
@@ -284,6 +290,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
+                    if(FileRequest.FolderId!=null && FileRequest.FolderId>0)
+                    {
+                        //Get folder by blog ID
+                    }
                     string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
                     if (!Directory.Exists(uploadPath))
                     {
@@ -317,6 +327,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     InputFile.BlogId = blogId;
                     InputFile.UrlPath = imageUrl;
                     InputFile.FileSize = filesize;
+                    InputFile.FolderId = FileRequest.FolderId;
                     InputFile.Extention = _attachmentService.GetFileExtention(FileRequest.file);
                     var file = new StaticFile(InputFile);
                     await unitOfWork.StorageRepository.CreateFileAsync(file);

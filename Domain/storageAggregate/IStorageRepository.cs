@@ -12,10 +12,10 @@ namespace Domain.StorageAggregate
 
         #region Folder
         Task<IEnumerable<Folder>> GetAllFoldersAsync();
-        Task<Folder> GetFolderAsync(int id);
+        Task<Folder> GetFolderAsync(int folderId, int blogId);
         Task<Folder> GetFolderAndFileByStorageIdAndFolderId(int storageId, int folderId,int blogId);
         Task CreateFolderAsync(Folder folder);
-        Task DeleteFolderAsync(int folderId);
+        Task DeleteFolderAsync(int id, int blogId);
         void UpdateFolder(Folder folder);
         Task<bool> ChechNameExists(int blogId, int? parenetId , string FolderName);
         Task<Folder> GetFolderByName(string FolderName , int blogId , int? ParentId);

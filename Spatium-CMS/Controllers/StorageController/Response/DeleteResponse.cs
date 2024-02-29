@@ -6,5 +6,6 @@
         public int Id { get; set; }
         public string FolderName  { get; set; }
         public int FileCount { get; set; }
+        public int FoldersCount { get; set; }
     }
 }

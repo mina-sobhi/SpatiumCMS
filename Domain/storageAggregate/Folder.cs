@@ -72,6 +72,7 @@ namespace Domain.StorageAggregate
             }
             foreach (var subFolder in this._folders)
             {
+                subFolder.Delete();
                 subFolder.IsDeleted=true;
                 foreach (var file in subFolder.Files)
                 {
