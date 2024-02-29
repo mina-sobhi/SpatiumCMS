@@ -8,5 +8,7 @@
         public string Caption { get; set; }
         public string Alt { get; set; }
         public string Dimension { get; set; }
+
+        public IFormFile File { get; set; }
     }
 }
