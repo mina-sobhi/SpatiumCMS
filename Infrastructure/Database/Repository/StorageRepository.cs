@@ -86,10 +86,10 @@ namespace Infrastructure.Database.Repository
                 {
                     File.Delete(uploadPath);
                 }
-
                 SpatiumDbContent.Files.Remove(file);
             }
-            throw new SpatiumException($"File  NOT Exist!");
+            else
+                throw new SpatiumException($"File  NOT Exist!");
 
         }
 

@@ -101,24 +101,30 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-
+                bool isApplied = false;
                 foreach (var folderId in deleteBulk.FolderIds)
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                     folder.Delete();
+                    isApplied = true;
                 }
                 foreach (var fileId in deleteBulk.FilesIds)
                 {
                     var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
                     file.Delete();
+                    isApplied = true;
                 }
-                await unitOfWork.SaveChangesAsync();
-                var response = new SpatiumResponse()
+                if (isApplied)
                 {
-                    Message = ResponseMessages.FoldersAndFilesDeletedSuccessfully,
-                    Success = true,
-                };
-                return Ok(response);
+                    await unitOfWork.SaveChangesAsync();
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.FoldersAndFilesDeletedSuccessfully,
+                        Success = true,
+                    };
+                    return Ok(response);
+                }
+                throw new SpatiumException("Empty List!");
             });
         }
 
@@ -293,10 +299,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
-                    if(FileRequest.FolderId!=null && FileRequest.FolderId>0)
-                    {
-                        //Get folder by blog ID
-                    }
+                    //if(FileRequest.FolderId!=null && FileRequest.FolderId>0)
+                    //{
+                    //    //Get folder by blog ID
+                    //}
                     string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
                     if (!Directory.Exists(uploadPath))
                     {
