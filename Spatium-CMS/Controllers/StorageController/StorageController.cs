@@ -558,7 +558,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 var filesToZip = _attachmentService.FilesToExtract(files);
                 var Identifire = new Random();
-                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t")  +".zip");
+                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString() + ".zip");
                 await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
 
                 var fileStreamToReturn = new FileStream(zipArchivePath, FileMode.Open);
