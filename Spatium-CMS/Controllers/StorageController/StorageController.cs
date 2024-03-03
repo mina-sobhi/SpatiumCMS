@@ -16,6 +16,7 @@ using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
+using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
 namespace Spatium_CMS.Controllers.StorageController
@@ -293,10 +294,12 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
-                    if(FileRequest.FolderId!=null && FileRequest.FolderId>0)
+
+                    if (FileRequest.FolderId!=null)
                     {
-                        //Get folder by blog ID
+                        var folder = await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                     }
+
                     string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
                     if (!Directory.Exists(uploadPath))
                     {
@@ -314,7 +317,8 @@ namespace Spatium_CMS.Controllers.StorageController
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
-                    var folder=await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
+                   
+
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
                     using (var stream = new FileStream(fullfilePath, FileMode.Create))
@@ -406,7 +410,6 @@ namespace Spatium_CMS.Controllers.StorageController
             });
 
         }
-
         [HttpDelete]
         [Route("Delete")]
         [Authorize]
@@ -436,6 +439,11 @@ namespace Spatium_CMS.Controllers.StorageController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
+
+                if (folderIdDestination != null)
+                {
+                    var folder = await unitOfWork.StorageRepository.GetFolderAsync(folderIdDestination.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
+                }
 
                 foreach (var file in filesIds)
                 {
@@ -519,8 +527,11 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             var blogId=GetBlogId();
             var currentDirectory = Directory.GetCurrentDirectory();
-            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
 
+            if (file == null)
+                return BadRequest(ResponseMessages.FileNotFound);
+            
             var path = Path.Combine(currentDirectory, @"wwwroot\", file.UrlPath);
             var bytes = await System.IO.File.ReadAllBytesAsync(path);
             var provider = new FileExtensionContentTypeProvider();
@@ -547,7 +558,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 var filesToZip = _attachmentService.FilesToExtract(files);
                 var Identifire = new Random();
-                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t")  +".zip");
+                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString() + ".zip");
                 await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
 
                 var fileStreamToReturn = new FileStream(zipArchivePath, FileMode.Open);
