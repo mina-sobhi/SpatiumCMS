@@ -12,7 +12,6 @@ namespace Domain.BlogsAggregate
         public int? ParentCommentId { get; private set; }
         public int PostId { get; private set; }
         public int StatusId { get; private set; }
-       
         public string CreatedbyId { get; private set; }
 
         #region Navigational Properties
