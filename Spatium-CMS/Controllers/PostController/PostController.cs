@@ -25,11 +25,12 @@ namespace Spatium_CMS.Controllers.PostController
     {
         private readonly IAuthorizationStrategyFactory authorizationStrategyFactory;
         private readonly IPostStatusFactory postStatusFactory;
-
-        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAuthorizationStrategyFactory authorizationStrategyFactory, IPostStatusFactory postStatusFactory) : base(unitOfWork, mapper, logger, userManager)
+        private readonly IConfiguration configuration;
+        public PostController(ILogger<PostController> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAuthorizationStrategyFactory authorizationStrategyFactory, IPostStatusFactory postStatusFactory, IConfiguration configuration) : base(unitOfWork, mapper, logger, userManager)
         {
             this.authorizationStrategyFactory = authorizationStrategyFactory;
             this.postStatusFactory = postStatusFactory;
+            this.configuration = configuration;
         }
 
 
@@ -197,15 +198,15 @@ namespace Spatium_CMS.Controllers.PostController
         //}
 
         [HttpGet("{Id:int}")]
-        [Authorize]
-        [PermissionFilter(PermissionsEnum.ReadPost)]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
         public Task<IActionResult> GetPostById(int Id)
         {
             return TryCatchLogAsync(async () =>
             {
-                var blogId = GetBlogId();
-                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(Id, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(Id) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
                 var result = mapper.Map<PostRespone>(post);
+                result.ShareCount = post.Shares.Count;
                 return Ok(result);
             });
         }
@@ -219,7 +220,7 @@ namespace Spatium_CMS.Controllers.PostController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(id, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(id,blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
                 var result = mapper.Map<PostSnippetPreviewResponse>(post);
                 return Ok(result);
             });
@@ -446,5 +447,79 @@ namespace Spatium_CMS.Controllers.PostController
                 return BadRequest(ModelState);
             });
         }
+
+        #region Like&Shaer
+        [HttpGet]
+        [Route("like/{postId}")]
+        //[Authorize]
+        //[PermissionFilter(PermissionsEnum.ReadPost)]
+        public Task<IActionResult> Like(int postId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var userId = GetUserId();
+                var blogId = GetBlogId();
+                var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException("Your Are not Allow To Make Like in This Blog");
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+
+                var likeModel = await unitOfWork.BlogRepository.GetLiketByPostIdAndCreatedByIdAsync(postId, userId);
+
+                if (likeModel is not null)
+                {
+                    await unitOfWork.BlogRepository.DeleteLiketAsync(likeModel);
+                    return Ok(new SpatiumResponse
+                    {
+                        Message = " DisLike Created Successfuly",
+                        Success = true,
+
+                    });
+                }
+
+                var LikeInput = new LikeInput()
+                {
+                    CreatedbyId = userId,
+                    PostId = postId,
+                };
+                var like = new Like(LikeInput);
+
+                await unitOfWork.BlogRepository.CreateLiketAsync(like);
+                await unitOfWork.SaveChangesAsync();
+
+                return Ok(new SpatiumResponse
+                {
+                    Message = " Like Created Successfuly",
+                    Success = true,
+
+                });
+
+            });
+        }
+
+        [HttpGet]
+        [Route("Share/{postId}")]
+        public Task<IActionResult> Share(int postId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(postId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
+               
+                var share = new Share(postId);
+                await unitOfWork.BlogRepository.CreateSharetAsync(share);
+                await unitOfWork.SaveChangesAsync();
+
+                var Url = configuration.GetSection("ApiBaseUrl").Value + $"/api/Post/{postId}";
+
+                return Ok(new SpatiumResponse()
+                {
+                    Message = $"{Url}",
+                    Success = true,
+                });
+            });
+        }
+
+
+        #endregion
+
+
     }
 }
