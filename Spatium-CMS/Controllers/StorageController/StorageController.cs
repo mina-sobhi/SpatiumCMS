@@ -17,6 +17,7 @@ using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
 using static System.Net.Mime.MediaTypeNames;
+using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
 namespace Spatium_CMS.Controllers.StorageController
@@ -359,23 +360,32 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
+                  
+
                     if (OldFile != null)
                     {
-
+                        
                         string fileName = Request.Name;
                         if (string.IsNullOrEmpty(fileName))
                         {
                             throw new SpatiumException(ResponseMessages.InvalidFileName);
                         }
+                        string newFileName = _attachmentService.GetDesireFileName(Request.File, fileName);
 
-                        
+                        if (await unitOfWork.StorageRepository.CheckFileName(Request.Name, Request.Id, OldFile.FolderId))
+                        {
+                            throw new SpatiumException($"{fileName} Already Exists in the same folder!");
+                        }
+
+
+
                         string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
 
                         if (System.IO.File.Exists(uploadPath))
                         {
                             System.IO.File.Delete(uploadPath);
                         }
-                        string imageUrl = $"{blogId}/{fileName}";
+                        string imageUrl = $"{blogId}/{newFileName}";
                      
                         var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
                         using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
@@ -387,7 +397,7 @@ namespace Spatium_CMS.Controllers.StorageController
                         var UpdateFile = mapper.Map<UpdateFileInput>(Request);
                         UpdateFile.Url = imageUrl;
                         UpdateFile.LastUpdate = DateTime.Now;
-                        UpdateFile.BlogId = blogId;
+                        UpdateFile.BlogId = blogId;              
                         UpdateFile.Createdby = UserId;
                         OldFile.Update(UpdateFile);
                         await unitOfWork.SaveChangesAsync();

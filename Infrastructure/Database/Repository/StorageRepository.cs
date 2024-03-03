@@ -145,6 +145,16 @@ namespace Infrastructure.Database.Repository
             var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName &&f.FolderId==folderid) is not null ? true : false;
             return IsExist;
         }
+
+      
+        public async Task<bool> CheckFileName(string FileName, int fileId, int? FolderId)
+        {
+            
+            var IsExist = await SpatiumDbContent.Files
+                .FirstOrDefaultAsync(f => f.FolderId == FolderId && f.Name == FileName && f.Id != fileId);
+            return IsExist != null;
+        }
+
         #endregion
     }
 }

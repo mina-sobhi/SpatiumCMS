@@ -29,6 +29,7 @@ namespace Domain.StorageAggregate
         void UpdateFile(StaticFile File);
         Task<Folder> GetFilesToExtract(int bloId,int? folderId);
         Task<bool> ChechFileNameExists(string FileName, int? folderid);
+        Task<bool> CheckFileName(string FileName, int fileId, int? FolderId);
 
         #endregion
     }
