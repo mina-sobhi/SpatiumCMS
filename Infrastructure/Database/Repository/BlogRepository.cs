@@ -42,7 +42,7 @@ namespace Infrastructure.Database.Repository
                     return await SpatiumDbContent.Blogs.FindAsync(id);
                 }
 
-                public async Task UpdateAsync(Blog blog)
+                public void UpdateAsync(Blog blog)
                 {
                     SpatiumDbContent.Update(blog);
                 }
@@ -78,7 +78,7 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Comments.FindAsync(commentId);
         }
 
-        public async Task UpdateCommentAsync(Comment comment)
+        public void UpdateCommentAsync(Comment comment)
         {
             SpatiumDbContent.Comments.Update(comment);
         }
@@ -115,7 +115,7 @@ namespace Infrastructure.Database.Repository
 
             var paginatedQuery = query.Skip((postParams.Page - 1) * postParams.PageSize).Take(postParams.PageSize);
 
-            return paginatedQuery.ToList();
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<Post> GetPostByIdAsync(int id, int blogId)
         {
@@ -131,7 +131,7 @@ namespace Infrastructure.Database.Repository
             await SpatiumDbContent.Posts.AddAsync(post);
         }
 
-        public async Task UpdatePostAsync(Post post)
+        public void UpdatePost(Post post)
         {
             SpatiumDbContent.Posts.Update(post);
         }
@@ -181,7 +181,7 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.TableOfContents.FindAsync(id);
         }
 
-        public async Task UpdateTableOfContentAsync(TableOfContent tableOfContent)
+        public void UpdateTableOfContent(TableOfContent tableOfContent)
         {
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }

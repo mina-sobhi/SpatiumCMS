@@ -28,7 +28,7 @@ namespace Domain.BlogsAggregate
         Task<Post> GetPostByOwnerId(string userId, int postId);
         Task<Post> PostSnippetPreview(int postId);
         Task CreatePostAsync(Post post);
-        Task UpdatePostAsync(Post post);
+        void UpdatePost(Post post);
         Task <Post> GetPostByExpression(Expression<Func<Post, bool>> expression);
         //Task<IEnumerable<Post>> GetTopLikePost(int blogId ,int count);
         //Task<IEnumerable<Post>> GetTopSharePost(int blogId, int count);
@@ -43,8 +43,5 @@ namespace Domain.BlogsAggregate
         Task UpdateTableOfContentAsync(TableOfContent tableOfContent);
         Task DeleteTableOfContentAsync(int id);
         #endregion
-
-
-
     }
 }

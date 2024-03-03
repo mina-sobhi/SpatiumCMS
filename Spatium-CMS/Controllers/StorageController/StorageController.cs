@@ -190,8 +190,6 @@ namespace Spatium_CMS.Controllers.StorageController
                     responseitem.NumberOfFiles = folder.Files.Count();
                     respone.Add(responseitem);
                 }
-                if (respone.Count <= 0)
-                    throw new SpatiumException("No Content");
                 return Ok(respone);
             });
         }

@@ -34,7 +34,7 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.TableOfContents.FindAsync(id);
         }
 
-        public async Task UpdateAsync(TableOfContent tableOfContent)
+        public void UpdateAsync(TableOfContent tableOfContent)
         {
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }

@@ -8,15 +8,15 @@ namespace Infrastructure.Extensions
 {
     public static class UserManagerExtensions
     {
-        public static async Task<ApplicationUser> FindUserInBlogAsync(this UserManager<ApplicationUser> userManager,int blogId, string userId)
+        public static async Task<ApplicationUser> FindUserInBlogAsync(this UserManager<ApplicationUser> userManager, int blogId, string userId)
         {
-            return await userManager.Users.Where(x=>x.BlogId==blogId && x.Id==userId).FirstOrDefaultAsync();
+            return await userManager.Users.Where(x => x.BlogId == blogId && x.Id == userId).FirstOrDefaultAsync();
         }
 
         public static async Task<ApplicationUser> FindUserByEmailIgnoreFilter(this UserManager<ApplicationUser> userManager, string email)
         {
-            return await userManager.Users.Include(r=>r.Role)
-                                          .ThenInclude(x=>x.RolePermission)
+            return await userManager.Users.Include(r => r.Role)
+                                          .ThenInclude(x => x.RolePermission)
                                           .IgnoreQueryFilters()
                                           .FirstOrDefaultAsync(x => x.Email == email);
         }
@@ -29,9 +29,9 @@ namespace Infrastructure.Extensions
             return await userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId && x.Id == userId).FirstOrDefaultAsync();
         }
 
-        public static async Task<List<ApplicationUser>> FindUsersInBlogIncludingRole(this UserManager<ApplicationUser> userManager, int blogId ,GetEntitiyParams entityParams)
+        public static async Task<List<ApplicationUser>> FindUsersInBlogIncludingRole(this UserManager<ApplicationUser> userManager, int blogId, GetEntitiyParams entityParams)
         {
-            var query =  userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId).AsQueryable();
+            var query = userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId).AsQueryable();
 
             if (!string.IsNullOrEmpty(entityParams.FilterColumn) && !string.IsNullOrEmpty(entityParams.FilterValue))
             {
@@ -50,16 +50,16 @@ namespace Infrastructure.Extensions
 
             var paginatedQuery = query.Skip((entityParams.Page - 1) * entityParams.PageSize).Take(entityParams.PageSize);
 
-            return paginatedQuery.ToList();
-            
+            return await paginatedQuery.ToListAsync();
+
         }
 
         public static async Task<UsersAnalytics> GetBlogUersAnalytics(this UserManager<ApplicationUser> userManager, int blogId)
         {
-            var allUsers=  userManager.Users.Where(x => x.BlogId == blogId);
-            var TotalCount=allUsers.Count();
-            var ActivateUsers =allUsers.Count();
-            var DeActivateUsers =allUsers.Count();
+            var allUsers = userManager.Users.Where(x => x.BlogId == blogId);
+            var TotalCount = await allUsers.CountAsync();
+            var ActivateUsers = await allUsers.CountAsync();
+            var DeActivateUsers = await allUsers.CountAsync();
             return new UsersAnalytics()
             {
                 TotalCount = TotalCount,

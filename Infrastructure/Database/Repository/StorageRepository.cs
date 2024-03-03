@@ -113,7 +113,7 @@ namespace Infrastructure.Database.Repository
             }
 
             var paginatedQuery = query.Skip((fileParams.Page - 1) * fileParams.PageSize).Take(fileParams.PageSize);
-            return paginatedQuery.ToList();
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<StaticFile> GetFileAsync(int id, int blogId)
         {
