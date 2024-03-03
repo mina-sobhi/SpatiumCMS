@@ -8,17 +8,17 @@ namespace Domain.BlogsAggregate
         #region Blog
         Task<IEnumerable<Blog>> FindAllAsync(int lastPageId, int NumberofRecord);
          Task<Blog> GetByIdAsync(int id);
-        Task<IEnumerable<Blog>> GetBlogsAsync();
-        Task CreateAsync(Blog blog);
-        Task UpdateAsync(Blog blog);
-        Task DeleteAsync(int id);
+        //Task<IEnumerable<Blog>> GetBlogsAsync();
+        //Task CreateAsync(Blog blog);
+        //Task UpdateAsync(Blog blog);
+        //Task DeleteAsync(int id);
         #endregion
 
         #region Comment
         Task<Comment> GetCommentByIdAsync(int id);
         Task<IEnumerable<Comment>> GetCommentsAsync(int postId, int blogId, string FilterColumn, string FilterValue);
         Task CreateCommentAsync(Comment comment);
-        Task UpdateCommentAsync(Comment comment);
+        void UpdateCommentAsync(Comment comment);
         Task DeleteCommentAsync(int id);
         #endregion
 
@@ -40,7 +40,7 @@ namespace Domain.BlogsAggregate
         Task<TableOfContent> GetTableOfContentByIdAsync(int id);
         Task<IEnumerable<TableOfContent>> GetTableOfContentAsync();
         Task CreateTableOfContentAsync(TableOfContent tableOfContent);
-        Task UpdateTableOfContentAsync(TableOfContent tableOfContent);
+        void UpdateTableOfContentAsync(TableOfContent tableOfContent);
         Task DeleteTableOfContentAsync(int id);
         #endregion
     }

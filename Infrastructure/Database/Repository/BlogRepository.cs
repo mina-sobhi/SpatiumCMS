@@ -22,29 +22,10 @@ namespace Infrastructure.Database.Repository
                         .ToListAsync();
                     return nextPage;
                 }
-                public async Task CreateAsync(Blog blog)
-                {
-                    await SpatiumDbContent.Blogs.AddAsync(blog);
-                }
-
-                public async Task DeleteAsync(int id)
-                {
-                    SpatiumDbContent.Blogs.Remove(await GetByIdAsync(id));
-                }
-
-                public async Task<IEnumerable<Blog>> GetBlogsAsync()
-                {
-                    return await SpatiumDbContent.Blogs.ToListAsync();
-                }
 
                 public async Task<Blog> GetByIdAsync(int id)
                 {
                     return await SpatiumDbContent.Blogs.FindAsync(id);
-                }
-
-                public void UpdateAsync(Blog blog)
-                {
-                    SpatiumDbContent.Update(blog);
                 }
 
         #endregion
@@ -157,7 +138,6 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.Posts.ToListAsync();
         }
-
         #endregion
 
         #region TableOfContent
@@ -181,7 +161,7 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.TableOfContents.FindAsync(id);
         }
 
-        public void UpdateTableOfContent(TableOfContent tableOfContent)
+        public void UpdateTableOfContentAsync(TableOfContent tableOfContent)
         {
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }
