@@ -62,19 +62,31 @@ namespace Spatium_CMS.Controllers.CommentController
 
         [HttpPost]
         [Authorize]
+        [Route("CreateComment")]
         [PermissionFilter(PermissionsEnum.CreateComment)]
-        public Task<IActionResult> CreateComment(CommentRequest commentRequest)
+        public Task<IActionResult> CreateComment([FromQuery]CommentRequest commentRequest)
         {
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
+
                 var post=await unitOfWork.BlogRepository.GetPostByIdAsync(commentRequest.PostId, blogId)?? throw new SpatiumException(ResponseMessages.PostNotFound);
 
                 if (!post.CommentsAllowed)
-                    throw new SpatiumException($"Post Dose not Allowed Comment");
+                    throw new SpatiumException("Post Dose not Allowed Comment");
 
                 var commentinput = mapper.Map<CommentInput>(commentRequest);
+                commentinput.CreatedById = GetUserId();
                 var comment = new Comment(commentinput);
+
+                var userPermissions = User.Claims.Where(x => x.Type.Equals("Permissions")).ToList();
+                if (userPermissions.Any(p => p.Value == "401"))
+                {
+                    if (commentRequest.StatusId!=null)
+                    {
+                        comment.ChangeCommentStatus(commentRequest.StatusId.Value);
+                    }
+                }
 
                 await unitOfWork.BlogRepository.CreateCommentAsync(comment);
                 await unitOfWork.SaveChangesAsync();
@@ -89,28 +101,20 @@ namespace Spatium_CMS.Controllers.CommentController
         }
 
         [HttpPut]
+        [Route("ChangeCommentStatus")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateComment)]
-        public Task<IActionResult> UpdateComment(UpdateCommentRequest updateCommentRequest)
+        public Task<IActionResult> ChangeCommentStatus(int commentId,CommentStatusEnum commentStatus)
         {
             return TryCatchLogAsync(async () =>
             {
-                var blogId = GetBlogId();
-                var post = await unitOfWork.BlogRepository.GetPostByIdAsync(updateCommentRequest.PostId, blogId) ?? throw new SpatiumException(ResponseMessages.PostNotFound);
-
-                if (!post.CommentsAllowed)
-                    throw new SpatiumException($"Post Comments Is Closed ");
-
-                var Comment = await unitOfWork.BlogRepository.GetCommentByIdAsync(updateCommentRequest.Id)?? 
-                    throw new SpatiumException("Comment Not Found");
-
-                var commentinput = mapper.Map<CommentUpdateInput>(updateCommentRequest);
-                Comment.Update(commentinput);
+                var comment = await unitOfWork.BlogRepository.GetCommentByIdAsync(commentId) ??
+                        throw new SpatiumException("Comment Not Found!!");
+                comment.ChangeCommentStatus(commentStatus);
                 await unitOfWork.SaveChangesAsync();
-
-                return Ok(new 
+                return Ok(new
                 {
-                    Message = $"comment Updated Successfuly"
+                    Message = $"Comment Status Changed  Successfuly"
                 });
             });
         }
