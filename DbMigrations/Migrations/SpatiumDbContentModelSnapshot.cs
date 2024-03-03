@@ -54,7 +54,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ActivityLogs", (string)null);
+                    b.ToTable("ActivityLogs");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.ApplicationUser", b =>
@@ -173,7 +173,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("UserPermissionId");
 
-                    b.ToTable("RolePermission", (string)null);
+                    b.ToTable("RolePermission");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserModule", b =>
@@ -189,7 +189,7 @@ namespace Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserModules", (string)null);
+                    b.ToTable("UserModules");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserPermission", b =>
@@ -213,7 +213,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("UserModuleId");
 
-                    b.ToTable("UserPermissions", (string)null);
+                    b.ToTable("UserPermissions");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.UserRole", b =>
@@ -293,12 +293,9 @@ namespace Migrations.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StorageId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Blogs", (string)null);
+                    b.ToTable("Blogs");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Comment", b =>
@@ -343,7 +340,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Like", b =>
@@ -375,7 +372,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Like", (string)null);
+                    b.ToTable("Like");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Post", b =>
@@ -450,7 +447,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Share", b =>
@@ -482,7 +479,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Share", (string)null);
+                    b.ToTable("Share");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.TableOfContent", b =>
@@ -514,7 +511,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("TableOfContents", (string)null);
+                    b.ToTable("TableOfContents");
                 });
 
             modelBuilder.Entity("Domain.LookupsAggregate.CommentStatus", b =>
@@ -629,7 +626,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("StorageId");
 
-                    b.ToTable("Folders", (string)null);
+                    b.ToTable("Folders");
                 });
 
             modelBuilder.Entity("Domain.StorageAggregate.StaticFile", b =>
@@ -687,7 +684,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("FolderId");
 
-                    b.ToTable("Files", (string)null);
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("Domain.StorageAggregate.Storage", b =>
@@ -717,10 +714,9 @@ namespace Migrations.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("BlogId")
-                        .IsUnique();
+                    b.HasIndex("BlogId");
 
-                    b.ToTable("Storages", (string)null);
+                    b.ToTable("Storages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -850,7 +846,7 @@ namespace Migrations.Migrations
             modelBuilder.Entity("Domain.ApplicationUserAggregate.ApplicationUser", b =>
                 {
                     b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1111,8 +1107,8 @@ namespace Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
-                        .WithOne("Storage")
-                        .HasForeignKey("Domain.StorageAggregate.Storage", "BlogId")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1200,7 +1196,7 @@ namespace Migrations.Migrations
                 {
                     b.Navigation("Posts");
 
-                    b.Navigation("Storage");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Comment", b =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class AddLikeShareTBL : Migration
+    public partial class ShareAndLikeTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240227123409_AddLikeShareTBL")]
-    partial class AddLikeShareTBL
+    [Migration("20240303094414_ShareAndLikeTables")]
+    partial class ShareAndLikeTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -295,9 +295,6 @@ namespace Migrations.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StorageId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -720,8 +717,7 @@ namespace Migrations.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("BlogId")
-                        .IsUnique();
+                    b.HasIndex("BlogId");
 
                     b.ToTable("Storages");
                 });
@@ -853,7 +849,7 @@ namespace Migrations.Migrations
             modelBuilder.Entity("Domain.ApplicationUserAggregate.ApplicationUser", b =>
                 {
                     b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1114,8 +1110,8 @@ namespace Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.BlogsAggregate.Blog", "Blog")
-                        .WithOne("Storage")
-                        .HasForeignKey("Domain.StorageAggregate.Storage", "BlogId")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1203,7 +1199,7 @@ namespace Migrations.Migrations
                 {
                     b.Navigation("Posts");
 
-                    b.Navigation("Storage");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Comment", b =>

@@ -22,7 +22,6 @@ namespace Domain.BlogsAggregate
         #region Properties
         public string Name { get; private set; }
         public string FavIconPath { get; private set; }
-
         #endregion
 
         #region Navigational Properties
