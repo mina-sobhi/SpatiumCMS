@@ -143,6 +143,17 @@ namespace Spatium_CMS.Controllers.StorageController
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
                 if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
 
+                foreach (var item in moveBulk.FolderIds)
+                {
+                    var tabdb = unitOfWork.GetFolderFamaily(item).ToList();
+                    if(tabdb!=null)
+                    {
+                      if(tabdb.Any(f=>f.Id == moveBulk.DestinationId))
+                             throw new SpatiumException("Invalid Destination!");
+                    }
+                }
+               
+
                 foreach (var folderId in moveBulk.FolderIds)
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);

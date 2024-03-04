@@ -63,6 +63,8 @@ namespace Infrastructure.Database.Database
             base.OnConfiguring(optionsBuilder);
         }
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             #region Entities Relationship
@@ -90,6 +92,10 @@ namespace Infrastructure.Database.Database
             #region Idintity-Configration
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
+            #endregion
+
+            #region FunConfigration 
+            modelBuilder.HasDbFunction(typeof(SpatiumDbContent).GetMethod(nameof(FolderAndChild), new[] { typeof(int) }));
             #endregion
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -134,5 +140,8 @@ namespace Infrastructure.Database.Database
 
             return changes.ToString();
         }
+
+        public IQueryable<Folder> FolderAndChild(int FolderId)
+    => FromExpression(() => FolderAndChild(FolderId));
     }
 }
