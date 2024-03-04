@@ -16,6 +16,9 @@ using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
+
+using static System.Net.Mime.MediaTypeNames;
+
 using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
@@ -317,11 +320,10 @@ namespace Spatium_CMS.Controllers.StorageController
                         throw new SpatiumException(ResponseMessages.InvalidFileName);
                     }
                     string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
-                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName))
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName,FileRequest.FolderId))
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
-                   
 
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
@@ -362,39 +364,46 @@ namespace Spatium_CMS.Controllers.StorageController
             {
                 if (ModelState.IsValid)
                 {
-                    var blogId=GetBlogId();
-                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id,blogId);
+                    var blogId = GetBlogId();
+                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
+                  
+
                     if (OldFile != null)
                     {
+                        
                         string fileName = Request.Name;
                         if (string.IsNullOrEmpty(fileName))
                         {
                             throw new SpatiumException(ResponseMessages.InvalidFileName);
                         }
+                        string newFileName = _attachmentService.GetDesireFileName(Request.File, fileName);
 
-                        if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName))
+                        if (await unitOfWork.StorageRepository.CheckFileName(Request.Name, Request.Id, OldFile.FolderId))
                         {
-                            throw new SpatiumException($"{fileName} Already Exist!");
-                        }
-                        string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
-                        string imageUrl = $"{blogId}/{fileName}";
-                        string fullFilePath = Path.Combine(uploadPath, fileName);
-
-                        
-                        if (!System.IO.File.Exists(fullFilePath))
-                        {
-                            throw new SpatiumException("File not found on the server.");
+                            throw new SpatiumException($"{fileName} Already Exists in the same folder!");
                         }
 
-                        using (var stream = new FileStream(fullFilePath, FileMode.OpenOrCreate))
+
+
+                        string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
+
+                        if (System.IO.File.Exists(uploadPath))
                         {
-                            
+                            System.IO.File.Delete(uploadPath);
+                        }
+                        string imageUrl = $"{blogId}/{newFileName}";
+                     
+                        var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
+                        using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
+                        {
+
                             await Request.File.CopyToAsync(stream);
                         }
                         var UserId = GetUserId();
                         var UpdateFile = mapper.Map<UpdateFileInput>(Request);
                         UpdateFile.Url = imageUrl;
                         UpdateFile.LastUpdate = DateTime.Now;
+                        UpdateFile.BlogId = blogId;              
                         UpdateFile.Createdby = UserId;
                         OldFile.Update(UpdateFile);
                         await unitOfWork.SaveChangesAsync();
@@ -438,7 +447,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("MoveFilesBulk")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateMedia)]
-        public Task<IActionResult> MoveFilesBulk(List<int> filesIds, int? folderIdDestination=null)
+        public Task<IActionResult> MoveFilesBulk(List<int> filesIds, int? folderIdDestination = null)
         {
             return TryCatchLogAsync(async () =>
             {
