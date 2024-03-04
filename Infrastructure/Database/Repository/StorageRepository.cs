@@ -94,6 +94,8 @@ namespace Infrastructure.Database.Repository
             }
         }
 
+        }
+
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
@@ -137,34 +139,26 @@ namespace Infrastructure.Database.Repository
             await SpatiumDbContent.Storages.AddAsync(storage);
         }
 
-        public async Task<bool> ChechFileNameExists(string FileName)
+        public async Task<bool> ChechFileNameExists(string FileName,  int? folderid)
         {
-            var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName) is not null ? true : false;
+            var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName &&f.FolderId==folderid) is not null ? true : false;
             return IsExist;
         }
+  
+        public async Task<bool> CheckFileName(string FileName, int fileId, int? FolderId)
+        {
+            
+            var IsExist = await SpatiumDbContent.Files
+                .FirstOrDefaultAsync(f => f.FolderId == FolderId && f.Name == FileName && f.Id != fileId);
+            return IsExist != null;
+        }
+
 
         public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
         {
             return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
         }
 
-        public List<Folder> GetFolderHierarchy(int folderId)
-        {
-            return SpatiumDbContent.Folders.FromSqlRaw(@"
-                      WITH folderTree AS(
-select f.Id, f.Name,f.ParentId,f.BlogId,f.CreatedById,f.CreationDate,f.Description,f.StorageId,f.IsDeleted from Folders  f
-where id =6 
-
-union all 
-
-select subfolders.Id,subfolders.Name,subfolders.ParentId,subFolders.BlogId,subFolders.CreatedById,subFolders.CreationDate,subFolders.Description,subFolders.StorageId,subFolders.IsDeleted from Folders subFolders
-join folderTree tree 
-on tree.id=subFolders.ParentId
-)
-
-select * from folderTree
-                            ", folderId).AsNoTracking().IgnoreQueryFilters().AsEnumerable().ToList();
-        }
         #endregion
     }
 }
