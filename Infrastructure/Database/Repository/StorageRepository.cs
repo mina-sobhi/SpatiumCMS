@@ -1,6 +1,5 @@
 ﻿using Domain.Base;
 using Domain.StorageAggregate;
-using Infrastructure.Database.CTE;
 using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;

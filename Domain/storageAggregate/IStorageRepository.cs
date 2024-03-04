@@ -1,6 +1,5 @@
 ﻿
 using Domain.Base;
-using Infrastructure.Database.CTE;
 
 namespace Domain.StorageAggregate
 {
