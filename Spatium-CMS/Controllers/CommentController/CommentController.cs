@@ -80,12 +80,12 @@ namespace Spatium_CMS.Controllers.CommentController
                 var comment = new Comment(commentinput);
 
                 var userPermissions = User.Claims.Where(x => x.Type.Equals("Permissions")).ToList();
-                if (userPermissions.Any(p => p.Value == "401"))
+                if (commentRequest.StatusId != null)
                 {
-                    if (commentRequest.StatusId!=null)
-                    {
+                    if (userPermissions.Any(p => p.Value == "401"))
                         comment.ChangeCommentStatus(commentRequest.StatusId.Value);
-                    }
+                    else
+                        throw new SpatiumException("You Don't Have Permission To Add Status ");
                 }
 
                 await unitOfWork.BlogRepository.CreateCommentAsync(comment);
