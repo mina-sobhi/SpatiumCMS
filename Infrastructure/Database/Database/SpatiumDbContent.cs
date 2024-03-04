@@ -4,6 +4,7 @@ using Domain.Base;
 using Domain.BlogsAggregate;
 using Domain.LookupsAggregate;
 using Domain.StorageAggregate;
+using Infrastructure.Database.CTE;
 using Infrastructure.Database.Helper;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +50,9 @@ namespace Infrastructure.Database.Database
 
         #endregion
 
-
+        #region CTE
+        public DbSet<FolderHeriarcyCTE> FolderHeriarcyCTE { get; set; }
+        #endregion
         #endregion
 
         public SpatiumDbContent(DbContextOptions<SpatiumDbContent> options) : base(options) { }
@@ -87,6 +90,12 @@ namespace Infrastructure.Database.Database
             #region Idintity-Configration
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
+            #endregion
+
+
+            #region CTE
+            modelBuilder.Entity<FolderHeriarcyCTE>().HasNoKey().ToView(null);
+
             #endregion
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -18,7 +18,6 @@ using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
 using Spatium_CMS.Controllers.UserRoleController.Request;
 
-
 namespace Spatium_CMS.Controllers.StorageController
 {
     [Route("api/[controller]")]
@@ -141,8 +140,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-                if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
-
+                var destinationFolder = await unitOfWork.StorageRepository.GetFolderAsync(moveBulk.DestinationId.Value, blogId) ?? throw new SpatiumException("Invalid Folder Destination");
+                
+                if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) 
+                    throw new SpatiumException("Invalid Destination!");
                 foreach (var folderId in moveBulk.FolderIds)
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
@@ -163,6 +164,19 @@ namespace Spatium_CMS.Controllers.StorageController
                 return Ok(response);
             });
         }
+
+        [HttpGet]
+        [Route("GetFolderHeriaracy")]
+        public Task<IActionResult> FolderHirarcy()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var hirarcy =  unitOfWork.StorageRepository.GetFolderHierarchy(6);
+                var res=mapper.Map<ViewFolderResponse>(hirarcy);
+                return Ok(res);
+            });
+        }
+
 
         [HttpGet()]
         [Route("ShowAllFolders")]
@@ -355,7 +369,6 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("UpdateFile")]
         [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.UpdateMedia)]
-
         public Task<IActionResult> UpdateFile(UpdateFileRequest Request)
         {
             return TryCatchLogAsync(async () =>
@@ -371,7 +384,6 @@ namespace Spatium_CMS.Controllers.StorageController
                         {
                             throw new SpatiumException(ResponseMessages.InvalidFileName);
                         }
-
                         if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName))
                         {
                             throw new SpatiumException($"{fileName} Already Exist!");
@@ -379,8 +391,6 @@ namespace Spatium_CMS.Controllers.StorageController
                         string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
                         string imageUrl = $"{blogId}/{fileName}";
                         string fullFilePath = Path.Combine(uploadPath, fileName);
-
-                        
                         if (!System.IO.File.Exists(fullFilePath))
                         {
                             throw new SpatiumException("File not found on the server.");
@@ -388,7 +398,6 @@ namespace Spatium_CMS.Controllers.StorageController
 
                         using (var stream = new FileStream(fullFilePath, FileMode.OpenOrCreate))
                         {
-                            
                             await Request.File.CopyToAsync(stream);
                         }
                         var UserId = GetUserId();

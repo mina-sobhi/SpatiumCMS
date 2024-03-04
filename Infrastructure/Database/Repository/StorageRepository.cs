@@ -1,9 +1,11 @@
 ﻿using Domain.Base;
 using Domain.StorageAggregate;
+using Infrastructure.Database.CTE;
 using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Asn1.X509;
 using Utilities.Exceptions;
 namespace Infrastructure.Database.Repository
 {
@@ -91,7 +93,6 @@ namespace Infrastructure.Database.Repository
             {
                 throw new SpatiumException($"File  NOT Exist!");
             }
-
         }
 
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
@@ -146,6 +147,24 @@ namespace Infrastructure.Database.Repository
         public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
         {
             return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
+        }
+
+        public List<Folder> GetFolderHierarchy(int folderId)
+        {
+            return SpatiumDbContent.Folders.FromSqlRaw(@"
+                      WITH folderTree AS(
+select f.Id, f.Name,f.ParentId,f.BlogId,f.CreatedById,f.CreationDate,f.Description,f.StorageId,f.IsDeleted from Folders  f
+where id =6 
+
+union all 
+
+select subfolders.Id,subfolders.Name,subfolders.ParentId,subFolders.BlogId,subFolders.CreatedById,subFolders.CreationDate,subFolders.Description,subFolders.StorageId,subFolders.IsDeleted from Folders subFolders
+join folderTree tree 
+on tree.id=subFolders.ParentId
+)
+
+select * from folderTree
+                            ", folderId).AsNoTracking().IgnoreQueryFilters().AsEnumerable().ToList();
         }
         #endregion
     }
