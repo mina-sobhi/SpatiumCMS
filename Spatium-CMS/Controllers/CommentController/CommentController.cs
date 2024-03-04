@@ -12,6 +12,7 @@ using Utilities.Results;
 using Microsoft.AspNetCore.Authorization;
 using Spatium_CMS.Filters;
 using Utilities.Enums;
+using Spatium_CMS.Controllers.PostController.Response;
 
 namespace Spatium_CMS.Controllers.CommentController
 {
@@ -59,6 +60,28 @@ namespace Spatium_CMS.Controllers.CommentController
                 return Ok(commentResponses);
             });
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("GetTopPostsCommented")]
+        [PermissionFilter(PermissionsEnum.ReadComment)]
+        public Task<IActionResult> GetTopPostsCommented()
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                var blogId = GetBlogId();
+
+                var posts = await unitOfWork.BlogRepository.GetTotalComments(blogId)?? throw new SpatiumException("Post Dose Not Contain Comments");
+
+                List<TopPostsCommentedResponse> postsResponses = new List<TopPostsCommentedResponse>();
+                foreach (var item in posts)
+                {
+                    postsResponses.Add(mapper.Map<TopPostsCommentedResponse>(item));
+                }
+                return Ok(postsResponses);
+            });
+        }
+
 
         [HttpPost]
         [Authorize]

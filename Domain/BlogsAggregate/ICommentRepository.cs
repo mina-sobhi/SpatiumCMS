@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.BlogsAggregate
+﻿namespace Domain.BlogsAggregate
 {
     public interface ICommentRepository
     {
@@ -13,5 +7,6 @@ namespace Domain.BlogsAggregate
         Task CreateAsync(Comment  comment);
         Task UpdateAsync(Comment comment);
         Task DeleteAsync(int id);
+   
     }
 }
