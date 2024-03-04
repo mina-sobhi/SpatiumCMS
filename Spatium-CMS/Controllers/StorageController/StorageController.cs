@@ -16,7 +16,9 @@ using Utilities.Results;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Domain.Base;
 using Microsoft.AspNetCore.StaticFiles;
+
 using static System.Net.Mime.MediaTypeNames;
+
 using Spatium_CMS.Controllers.UserRoleController.Request;
 
 
@@ -103,24 +105,30 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-
+                bool isApplied = false;
                 foreach (var folderId in deleteBulk.FolderIds)
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
                     folder.Delete();
+                    isApplied = true;
                 }
                 foreach (var fileId in deleteBulk.FilesIds)
                 {
                     var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
                     file.Delete();
+                    isApplied = true;
                 }
-                await unitOfWork.SaveChangesAsync();
-                var response = new SpatiumResponse()
+                if (isApplied)
                 {
-                    Message = ResponseMessages.FoldersAndFilesDeletedSuccessfully,
-                    Success = true,
-                };
-                return Ok(response);
+                    await unitOfWork.SaveChangesAsync();
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.FoldersAndFilesDeletedSuccessfully,
+                        Success = true,
+                    };
+                    return Ok(response);
+                }
+                throw new SpatiumException("Empty List!");
             });
         }
 
@@ -186,8 +194,6 @@ namespace Spatium_CMS.Controllers.StorageController
                     responseitem.NumberOfFiles = folder.Files.Count();
                     respone.Add(responseitem);
                 }
-                if (respone.Count <= 0)
-                    throw new SpatiumException("No Content");
                 return Ok(respone);
             });
         }
@@ -296,10 +302,11 @@ namespace Spatium_CMS.Controllers.StorageController
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
 
-                    if (FileRequest.FolderId != null)
+                    if (FileRequest.FolderId!=null)
                     {
                         var folder = await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                     }
+
                     string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blogId.ToString());
                     if (!Directory.Exists(uploadPath))
                     {
@@ -317,7 +324,6 @@ namespace Spatium_CMS.Controllers.StorageController
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
-
 
                     _attachmentService.ValidateFileSize(FileRequest.file);
                     string fullfilePath = Path.Combine(uploadPath, newFileName);
@@ -491,7 +497,7 @@ namespace Spatium_CMS.Controllers.StorageController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId);
+                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId)??throw new SpatiumException("there are not files found !!");
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }
@@ -534,8 +540,11 @@ namespace Spatium_CMS.Controllers.StorageController
         {
             var blogId=GetBlogId();
             var currentDirectory = Directory.GetCurrentDirectory();
-            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.FileNotFound);
+            var file = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
 
+            if (file == null)
+                return BadRequest(ResponseMessages.FileNotFound);
+            
             var path = Path.Combine(currentDirectory, @"wwwroot\", file.UrlPath);
             var bytes = await System.IO.File.ReadAllBytesAsync(path);
             var provider = new FileExtensionContentTypeProvider();
@@ -558,11 +567,15 @@ namespace Spatium_CMS.Controllers.StorageController
             {
 
                 var blogId = GetBlogId();
+                if (folderId!=null)
+                {
+                    var folder = unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ??throw new SpatiumException("folder not found !!");
+                }
                 var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
 
                 var filesToZip = _attachmentService.FilesToExtract(files);
                 var Identifire = new Random();
-                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t")  +".zip");
+                var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString() + ".zip");
                 await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
 
                 var fileStreamToReturn = new FileStream(zipArchivePath, FileMode.Open);

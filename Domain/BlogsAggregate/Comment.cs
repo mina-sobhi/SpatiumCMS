@@ -12,7 +12,6 @@ namespace Domain.BlogsAggregate
         public int? ParentCommentId { get; private set; }
         public int PostId { get; private set; }
         public int StatusId { get; private set; }
-       
         public string CreatedbyId { get; private set; }
 
         #region Navigational Properties
@@ -39,9 +38,15 @@ namespace Domain.BlogsAggregate
             this.ParentCommentId = commentInput.ParentCommentId == null ? null : commentInput.ParentCommentId.Value;
             this.Content = commentInput.Content;
             this.PostId = commentInput.PostId;
-            this.StatusId = commentInput.StatusId;
+            this.CreatedbyId = commentInput.CreatedById;
+            this.StatusId = (int)CommentStatusEnum.Pending;
         }
         #endregion
+
+        public void ChangeCommentStatus(CommentStatusEnum status)
+        {
+            this.StatusId =(int) status;
+        }
 
         public  void Update(CommentUpdateInput commentInput)
         {

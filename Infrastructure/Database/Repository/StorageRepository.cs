@@ -86,13 +86,13 @@ namespace Infrastructure.Database.Repository
                 {
                     File.Delete(uploadPath);
                 }
-
                 SpatiumDbContent.Files.Remove(file);
-            }
-            else
+            }else
             {
-            throw new SpatiumException($"File  NOT Exist!");
-                
+                throw new SpatiumException($"File  NOT Exist!");
+            }
+
+       
             }
 
         }
@@ -117,7 +117,7 @@ namespace Infrastructure.Database.Repository
             }
 
             var paginatedQuery = query.Skip((fileParams.Page - 1) * fileParams.PageSize).Take(fileParams.PageSize);
-            return paginatedQuery.ToList();
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<StaticFile> GetFileAsync(int id, int blogId)
         {
@@ -145,14 +145,19 @@ namespace Infrastructure.Database.Repository
             var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName &&f.FolderId==folderid) is not null ? true : false;
             return IsExist;
         }
-
-      
+  
         public async Task<bool> CheckFileName(string FileName, int fileId, int? FolderId)
         {
             
             var IsExist = await SpatiumDbContent.Files
                 .FirstOrDefaultAsync(f => f.FolderId == FolderId && f.Name == FileName && f.Id != fileId);
             return IsExist != null;
+        }
+
+
+        public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
+        {
+            return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
         }
 
         #endregion

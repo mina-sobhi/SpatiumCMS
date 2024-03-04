@@ -40,7 +40,7 @@ namespace Infrastructure.Database.Repository
 
             var paginatedQuery = query.Skip((postParams.Page - 1) * postParams.PageSize).Take(postParams.PageSize);
 
-            return paginatedQuery.ToList();
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<Post> GetByIdAsync(int id , int blogId)
         {

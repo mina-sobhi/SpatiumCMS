@@ -22,29 +22,10 @@ namespace Infrastructure.Database.Repository
                         .ToListAsync();
                     return nextPage;
                 }
-                public async Task CreateAsync(Blog blog)
-                {
-                    await SpatiumDbContent.Blogs.AddAsync(blog);
-                }
-
-                public async Task DeleteAsync(int id)
-                {
-                    SpatiumDbContent.Blogs.Remove(await GetByIdAsync(id));
-                }
-
-                public async Task<IEnumerable<Blog>> GetBlogsAsync()
-                {
-                    return await SpatiumDbContent.Blogs.ToListAsync();
-                }
 
                 public async Task<Blog> GetByIdAsync(int id)
                 {
                     return await SpatiumDbContent.Blogs.FindAsync(id);
-                }
-
-                public async Task UpdateAsync(Blog blog)
-                {
-                    SpatiumDbContent.Update(blog);
                 }
 
         #endregion
@@ -78,7 +59,7 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.Comments.FindAsync(commentId);
         }
 
-        public async Task UpdateCommentAsync(Comment comment)
+        public void UpdateCommentAsync(Comment comment)
         {
             SpatiumDbContent.Comments.Update(comment);
         }
@@ -86,6 +67,10 @@ namespace Infrastructure.Database.Repository
         #endregion
 
         #region Post
+        public async Task<Post> GetPostByIdAsync(int postId)
+        {
+            return await SpatiumDbContent.Posts.SingleOrDefaultAsync(p=> p.Id == postId);
+        }
         public async Task<IEnumerable<Post>> filterAsync(int status, string contain = "")
         {
             if (string.IsNullOrEmpty(contain))
@@ -115,7 +100,7 @@ namespace Infrastructure.Database.Repository
 
             var paginatedQuery = query.Skip((postParams.Page - 1) * postParams.PageSize).Take(postParams.PageSize);
 
-            return paginatedQuery.ToList();
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<Post> GetPostByIdAsync(int id, int blogId)
         {
@@ -131,7 +116,7 @@ namespace Infrastructure.Database.Repository
             await SpatiumDbContent.Posts.AddAsync(post);
         }
 
-        public async Task UpdatePostAsync(Post post)
+        public void UpdatePost(Post post)
         {
             SpatiumDbContent.Posts.Update(post);
         }
@@ -157,7 +142,6 @@ namespace Infrastructure.Database.Repository
         {
             return await SpatiumDbContent.Posts.ToListAsync();
         }
-
         #endregion
 
         #region TableOfContent
@@ -181,11 +165,32 @@ namespace Infrastructure.Database.Repository
             return await SpatiumDbContent.TableOfContents.FindAsync(id);
         }
 
-        public async Task UpdateTableOfContentAsync(TableOfContent tableOfContent)
+        public void UpdateTableOfContentAsync(TableOfContent tableOfContent)
         {
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }
 
+        #endregion
+        #region Like
+        public async Task CreateLiketAsync(Like like)
+        {
+            await SpatiumDbContent.Likes.AddAsync(like);
+        }
+        public async Task<Like> GetLiketByPostIdAndCreatedByIdAsync(int postId, string userId)
+        {
+            return await SpatiumDbContent.Likes.SingleOrDefaultAsync(l => l.PostId == postId && l.CreatedbyId == userId);
+        }
+
+        public async Task DeleteLiketAsync(Like like)
+        {
+            SpatiumDbContent.Likes.Remove(await GetLiketByPostIdAndCreatedByIdAsync(like.PostId, like.CreatedbyId));
+        }
+        #endregion
+        #region Share
+        public async  Task CreateSharetAsync(Share share)
+        {
+            await SpatiumDbContent.Shares.AddAsync(share);
+        }
         #endregion
     }
 }
