@@ -457,10 +457,16 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAsync(folderIdDestination.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                 }
-
-                foreach (var file in filesIds)
+                var foldersFiles = await unitOfWork.StorageRepository.getFileByFolderId(folderIdDestination);
+                foreach (var fileId in filesIds)
                 {
-                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(file, blogId) ?? throw new SpatiumException("File Not Existed To Move");
+                    var f = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
+                    foreach (var file in foldersFiles)
+                    {
+                        if (f.Name==file.Name) throw new SpatiumException($"{file.Name} Already Existed  Within This Folder ");
+                    }
+
+                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException("File Not Existed To Move");
                     fileToMove.MoveToFolderId(folderIdDestination);
                     await unitOfWork.SaveChangesAsync();
                 }

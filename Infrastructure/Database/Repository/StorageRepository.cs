@@ -154,7 +154,10 @@ namespace Infrastructure.Database.Repository
 
         public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
         {
-            return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
+            if (FolderId == null)
+                return await SpatiumDbContent.Files.Where(f=>f.FolderId == null).ToListAsync();  
+            else
+                return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
         }
 
         #endregion
