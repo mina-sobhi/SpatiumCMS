@@ -1,22 +1,20 @@
-﻿using Domain.ApplicationUserAggregate;
-using Domain.Base;
-
+﻿
 namespace Domain.BlogsAggregate
 {
-    public class Share : EntityBase
+    public class Share 
     {
-        public bool IsShare { get; private set; }
-        public string CreatedbyId { get; private set; }
+        public int Id { get; private set; }
+        public DateTime CreationDate { get; private set; } = DateTime.UtcNow;
         public int PostId { get; private set; }
 
-        public virtual ApplicationUser Createdby { get; private set; }
         public virtual Post Post { get; private set; }
         #region Ctor
         public Share()
+        {}
+        public Share(int postId)
         {
-
+            this.PostId = postId;
         }
         #endregion
-
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Domain.ApplicationUserAggregate;
-using Domain.Base;
+
+using Domain.BlogsAggregate.Input;
 
 namespace Domain.BlogsAggregate
 {
     public class Like 
     {
-        public int Id { get; protected set; }
-        public DateTime CreationDate { get; protected set; } = DateTime.UtcNow;
+        public int Id { get; private set; }
+        public DateTime CreationDate { get; private set; } = DateTime.UtcNow;
         public string CreatedbyId { get; private set; }
         public int PostId { get; private set; }
 
@@ -16,7 +17,11 @@ namespace Domain.BlogsAggregate
         #region Ctor
         public Like()
         {
-            
+        }
+        public Like(LikeInput likeInput)
+        {
+            this.PostId = likeInput.PostId;
+            this.CreatedbyId = likeInput.CreatedbyId;
         }
         #endregion
     }

@@ -67,6 +67,10 @@ namespace Infrastructure.Database.Repository
         #endregion
 
         #region Post
+        public async Task<Post> GetPostByIdAsync(int postId)
+        {
+            return await SpatiumDbContent.Posts.SingleOrDefaultAsync(p=> p.Id == postId);
+        }
         public async Task<IEnumerable<Post>> filterAsync(int status, string contain = "")
         {
             if (string.IsNullOrEmpty(contain))
@@ -166,6 +170,27 @@ namespace Infrastructure.Database.Repository
             SpatiumDbContent.TableOfContents.Update(tableOfContent);
         }
 
+        #endregion
+        #region Like
+        public async Task CreateLiketAsync(Like like)
+        {
+            await SpatiumDbContent.Likes.AddAsync(like);
+        }
+        public async Task<Like> GetLiketByPostIdAndCreatedByIdAsync(int postId, string userId)
+        {
+            return await SpatiumDbContent.Likes.SingleOrDefaultAsync(l => l.PostId == postId && l.CreatedbyId == userId);
+        }
+
+        public async Task DeleteLiketAsync(Like like)
+        {
+            SpatiumDbContent.Likes.Remove(await GetLiketByPostIdAndCreatedByIdAsync(like.PostId, like.CreatedbyId));
+        }
+        #endregion
+        #region Share
+        public async  Task CreateSharetAsync(Share share)
+        {
+            await SpatiumDbContent.Shares.AddAsync(share);
+        }
         #endregion
     }
 }

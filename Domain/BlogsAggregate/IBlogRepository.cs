@@ -34,6 +34,7 @@ namespace Domain.BlogsAggregate
         //Task<IEnumerable<Post>> GetTopSharePost(int blogId, int count);
         Task<IEnumerable<Post>> GetAllPostByBlogId(int blogId);
 
+        Task<Post> GetPostByIdAsync(int postId);
         #endregion
 
         #region TableOfContent
@@ -42,6 +43,14 @@ namespace Domain.BlogsAggregate
         Task CreateTableOfContentAsync(TableOfContent tableOfContent);
         void UpdateTableOfContentAsync(TableOfContent tableOfContent);
         Task DeleteTableOfContentAsync(int id);
+        #endregion
+        #region Like
+        Task CreateLiketAsync(Like like);
+        Task DeleteLiketAsync(Like like);
+        Task<Like> GetLiketByPostIdAndCreatedByIdAsync(int postId , string userId);
+        #endregion
+        #region Share
+        Task CreateSharetAsync(Share share);
         #endregion
     }
 }
