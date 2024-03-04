@@ -92,7 +92,7 @@ namespace Spatium_CMS.AttachmentService
                     throw new SpatiumException("Invalid file type.");
             }
         }
-        private string GetFileTypeFromExtension(string fileName)
+        public string GetFileTypeFromExtension(string fileName)
         {
             string extension = Path.GetExtension(fileName)?.TrimStart('.').ToLower();
             switch (extension)
@@ -111,12 +111,9 @@ namespace Spatium_CMS.AttachmentService
                 case "webm":
                 case "m4v":
                     return "video";
-                case "mp3":
-                case "mpa":
-                case "wma":
-                case "aif":
-                case "cda":
-                    return "record";
+                case "mp3":              
+                case "wma":  
+                return "record";
                 case "csv":
                 case "xlsx":
                 case "xls":
@@ -136,7 +133,7 @@ namespace Spatium_CMS.AttachmentService
             var fileExtension = Path.GetExtension(originalFileName);           
             var cleanFileExtension = fileExtension.TrimStart('.').ToLower();            
             var extentions = new List<string> { "mp4", "3g2", "3gp", "wmv", "webm",
-                "m4v", "mp3", "mpa", "wma", "wma", "aif", "cda",
+                 "mp3",  "wma", 
                 "jpg", "png", "webp", "gif", "bin" ,
                 "csv", "xlsx", "xls", "doc", "docs", "pdf", "txt", "xml"};
             var flag = extentions.Any(x => x.Equals(cleanFileExtension));
