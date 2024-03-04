@@ -64,6 +64,48 @@ namespace Infrastructure.Database.Repository
             SpatiumDbContent.Comments.Update(comment);
         }
 
+        public async Task<List<Post>> GetTotalComments(int blogId)
+        {
+            var topPosts = new List<Post>();
+
+            var blog = await SpatiumDbContent.Blogs
+                .Include(b => b.Posts)
+                    .ThenInclude(p => p.Comments)
+                .FirstOrDefaultAsync(b => b.Id == blogId);
+
+            if (blog == null)
+            {
+                return topPosts;
+            }
+            foreach (var post in blog.Posts)
+            {
+                int commentsCount = CalculateCommentsCount(post);
+            }
+            topPosts = blog.Posts.OrderByDescending(p => p.Comments.Count).Take(5).ToList();
+
+            return topPosts;
+        }
+        private int CalculateCommentsCount(Post post)
+        {
+            int commentsCount = 0;
+            foreach (var comment in post.Comments)
+            {
+                CountComments(comment, out int commentCount);
+                commentsCount += commentCount;
+            }
+
+            return commentsCount;
+        }
+        private void CountComments(Comment comment, out int commentCount)
+        {
+            commentCount = 1;
+            foreach (var reply in comment.Comments)
+            {
+                CountComments(reply, out int replyCount);
+                commentCount += replyCount;
+            }
+        }
+
         #endregion
 
         #region Post
