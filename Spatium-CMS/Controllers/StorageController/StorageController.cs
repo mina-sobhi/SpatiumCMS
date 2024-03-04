@@ -488,7 +488,7 @@ namespace Spatium_CMS.Controllers.StorageController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId);
+                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId)??throw new SpatiumException("there are not files found !!");
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }
@@ -558,6 +558,10 @@ namespace Spatium_CMS.Controllers.StorageController
             {
 
                 var blogId = GetBlogId();
+                if (folderId!=null)
+                {
+                    var folder = unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ??throw new SpatiumException("folder not found !!");
+                }
                 var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
 
                 var filesToZip = _attachmentService.FilesToExtract(files);
