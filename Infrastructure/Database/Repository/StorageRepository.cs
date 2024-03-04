@@ -126,10 +126,7 @@ namespace Infrastructure.Database.Repository
         }
         public async Task<Folder> GetFilesToExtract(int blogId, int? folderId)
         {
-            if (folderId == null)
-                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId);
-            else
-                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id == folderId);
+            return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id == folderId);
         }
 
         public async Task AddStorage(Storage storage)
