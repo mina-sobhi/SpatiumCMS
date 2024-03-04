@@ -4,6 +4,7 @@ using Infrastructure.Database.Database;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Asn1.X509;
 using Utilities.Exceptions;
 namespace Infrastructure.Database.Repository
 {
@@ -91,7 +92,6 @@ namespace Infrastructure.Database.Repository
             {
                 throw new SpatiumException($"File  NOT Exist!");
             }
-
         }
 
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
@@ -137,16 +137,26 @@ namespace Infrastructure.Database.Repository
             await SpatiumDbContent.Storages.AddAsync(storage);
         }
 
-        public async Task<bool> ChechFileNameExists(string FileName)
+        public async Task<bool> ChechFileNameExists(string FileName,  int? folderid)
         {
-            var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName) is not null ? true : false;
+            var IsExist = await SpatiumDbContent.Files.FirstOrDefaultAsync(f => f.Name == FileName &&f.FolderId==folderid) is not null ? true : false;
             return IsExist;
         }
+  
+        public async Task<bool> CheckFileName(string FileName, int fileId, int? FolderId)
+        {
+            
+            var IsExist = await SpatiumDbContent.Files
+                .FirstOrDefaultAsync(f => f.FolderId == FolderId && f.Name == FileName && f.Id != fileId);
+            return IsExist != null;
+        }
+
 
         public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
         {
             return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
         }
+
         #endregion
     }
 }

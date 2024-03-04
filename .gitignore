@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /DbMigrations/Migrations/20240205072351_init.cs
+/Spatium-CMS/wwwroot

@@ -52,7 +52,6 @@ namespace Infrastructure.Database.Database
 
         #endregion
 
-
         #endregion
 
         public SpatiumDbContent(DbContextOptions<SpatiumDbContent> options) : base(options) { }

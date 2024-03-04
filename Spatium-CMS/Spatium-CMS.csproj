@@ -22,4 +22,8 @@
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\3\" />
+  </ItemGroup>
+
 </Project>
