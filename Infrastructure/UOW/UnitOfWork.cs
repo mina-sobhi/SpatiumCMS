@@ -45,6 +45,10 @@ namespace Infrastructure.UOW
                     _spatiumDbContent.Dispose();
             disposed = true;
         }
+        public IQueryable<Folder> GetFolderFamaily(int folderId)
+        {
+            return _spatiumDbContent.FolderAndChild(folderId);
+        }
         //public void BeforeSaveChanages(string UserId)
         //{
             
