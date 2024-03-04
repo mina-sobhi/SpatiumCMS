@@ -19,7 +19,6 @@ namespace Domain.StorageAggregate
         void UpdateFolder(Folder folder);
         Task<bool> ChechNameExists(int blogId, int? parenetId , string FolderName);
         Task<Folder> GetFolderByName(string FolderName , int blogId , int? ParentId);
-        List<Folder> GetFolderHierarchy(int folderId);
         #endregion
 
         #region Files

@@ -94,8 +94,6 @@ namespace Infrastructure.Database.Repository
             }
         }
 
-        }
-
         public async Task<List<StaticFile>> GetAllFilesAsync(GetEntitiyParams fileParams, int blogId)
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();

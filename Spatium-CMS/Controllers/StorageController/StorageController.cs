@@ -168,19 +168,6 @@ namespace Spatium_CMS.Controllers.StorageController
             });
         }
 
-        [HttpGet]
-        [Route("GetFolderHeriaracy")]
-        public Task<IActionResult> FolderHirarcy()
-        {
-            return TryCatchLogAsync(async () =>
-            {
-                var hirarcy =  unitOfWork.StorageRepository.GetFolderHierarchy(6);
-                var res=mapper.Map<ViewFolderResponse>(hirarcy);
-                return Ok(res);
-            });
-        }
-
-
         [HttpGet()]
         [Route("ShowAllFolders")]
         [Authorize]
