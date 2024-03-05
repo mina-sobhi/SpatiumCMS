@@ -14,9 +14,10 @@ namespace Spatium_CMS.AttachmentService
 
         #region Extarct Files
         Task CreateZipArchive(List<string> filesToZip, string zipArchivePath);
-        List<string>FilesToExtract(Folder folder); 
+        List<string>FilesToExtract(Folder folder);
+        List<string> RootFilesToExtarct(IEnumerable<StaticFile> Files);
         #endregion
-       
+
 
     }
 }
