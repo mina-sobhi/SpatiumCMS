@@ -306,9 +306,6 @@ namespace Migrations.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CommentStatusId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
@@ -332,13 +329,13 @@ namespace Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CommentStatusId");
-
                     b.HasIndex("CreatedbyId");
 
                     b.HasIndex("ParentCommentId");
 
                     b.HasIndex("PostId");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Comments");
                 });
@@ -907,11 +904,6 @@ namespace Migrations.Migrations
 
             modelBuilder.Entity("Domain.BlogsAggregate.Comment", b =>
                 {
-                    b.HasOne("Domain.LookupsAggregate.CommentStatus", "CommentStatus")
-                        .WithMany()
-                        .HasForeignKey("CommentStatusId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Domain.ApplicationUserAggregate.ApplicationUser", "Createdby")
                         .WithMany()
                         .HasForeignKey("CreatedbyId")
@@ -928,13 +920,19 @@ namespace Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CommentStatus");
+                    b.HasOne("Domain.LookupsAggregate.CommentStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Createdby");
 
                     b.Navigation("ParentComment");
 
                     b.Navigation("Post");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Domain.BlogsAggregate.Like", b =>

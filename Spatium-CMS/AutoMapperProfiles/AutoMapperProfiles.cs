@@ -49,6 +49,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 #region Comment
                 CreateMap<Comment, CommentResponse>().ReverseMap();
                 CreateMap<CommentRequest, CommentInput>().ReverseMap();
+                CreateMap<Post, TopPostsCommentedResponse>();
                 #endregion
 
                 #region User Management
@@ -116,10 +117,6 @@ namespace Spatium_CMS.AutoMapperProfiles
 
 
                 #endregion
-
-
-
-
 
                 #region Storage
                 CreateMap<AddFolderInput, CreateFolderRequest>().ReverseMap();

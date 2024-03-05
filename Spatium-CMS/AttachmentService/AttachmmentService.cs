@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.StorageAggregate;
+using Org.BouncyCastle.Asn1.X509;
 using System.IO.Compression;
 using Utilities.Exceptions;
 
@@ -169,6 +170,15 @@ namespace Spatium_CMS.AttachmentService
                     var subfolderFiles = FilesToExtract(subfolder);
                     filesToExtract.AddRange(subfolderFiles);
                 }
+            }
+            return filesToExtract;
+        }
+        public List<string>RootFilesToExtarct(IEnumerable<StaticFile>Files)
+        {
+            var filesToExtract = new List<string>();
+            foreach (var file in Files)
+            {
+                filesToExtract.Add(Path.Combine(environment.WebRootPath, file.UrlPath));
             }
             return filesToExtract;
         }

@@ -1,4 +1,5 @@
 ﻿using Domain.BlogsAggregate;
+using Domain.StorageAggregate;
 using Infrastructure.Database.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -22,7 +23,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task DeleteAsync(int id)
         {
-           SpatiumDbContent.Comments.Remove(await GetByIdAsync(id));
+            SpatiumDbContent.Comments.Remove(await GetByIdAsync(id));
         }
 
         public async Task<IEnumerable<Comment>> GetBlogsAsync()
@@ -32,12 +33,13 @@ namespace Infrastructure.Database.Repository
 
         public async Task<Comment> GetByIdAsync(int id)
         {
-           return await SpatiumDbContent.Comments.FindAsync(id);
+            return await SpatiumDbContent.Comments.FindAsync(id);
         }
-
         public async Task UpdateAsync(Comment comment)
         {
             SpatiumDbContent.Comments.Update(comment);
         }
+        
+
     }
 }
