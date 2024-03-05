@@ -385,11 +385,9 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
-                  
 
                     if (OldFile != null)
-                    {
-                        
+                    {                        
                         string fileName = Request.Name;
                         if (string.IsNullOrEmpty(fileName))
                         {
@@ -402,20 +400,26 @@ namespace Spatium_CMS.Controllers.StorageController
                             throw new SpatiumException($"{fileName} Already Exists in the same folder!");
                         }
 
-
-
                         string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
+
+                        if (Request.File==null)
+                        {
+                            using (var stream = new FileStream(uploadPath, FileMode.Open))
+                            {
+                                await Request.File.CopyToAsync(stream);
+                            }
+                        }
 
                         if (System.IO.File.Exists(uploadPath))
                         {
                             System.IO.File.Delete(uploadPath);
                         }
+
                         string imageUrl = $"{blogId}/{newFileName}";
                      
                         var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
                         using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
                         {
-
                             await Request.File.CopyToAsync(stream);
                         }
                         var UserId = GetUserId();
@@ -476,10 +480,16 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAsync(folderIdDestination.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                 }
-
-                foreach (var file in filesIds)
+                var foldersFiles = await unitOfWork.StorageRepository.getFileByFolderId(folderIdDestination);
+                foreach (var fileId in filesIds)
                 {
-                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(file, blogId) ?? throw new SpatiumException("File Not Existed To Move");
+                    var f = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
+                    foreach (var file in foldersFiles)
+                    {
+                        if (f.Name==file.Name) throw new SpatiumException($"{file.Name} Already Existed  Within This Folder ");
+                    }
+
+                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException("File Not Existed To Move");
                     fileToMove.MoveToFolderId(folderIdDestination);
                     await unitOfWork.SaveChangesAsync();
                 }
@@ -580,19 +590,24 @@ namespace Spatium_CMS.Controllers.StorageController
         [Route("ExtractFiles")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.ExportMedia)]
-        public Task<IActionResult> ExtractFiles(int? folderId)
+        public Task<IActionResult> ExtractFiles(int? folderId=null)
         {
             return TryCatchLogAsync(async () =>
             {
 
                 var blogId = GetBlogId();
-                if (folderId!=null)
+                var filesToZip = new List<string>();
+                if (folderId != null)
                 {
-                    var folder = unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ??throw new SpatiumException("folder not found !!");
+                    var folder =await unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ?? throw new SpatiumException("folder not found !!");
+                    var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
+                     filesToZip = _attachmentService.FilesToExtract(files);
                 }
-                var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
-
-                var filesToZip = _attachmentService.FilesToExtract(files);
+                else
+                {
+                    var files = await unitOfWork.StorageRepository.getFileByFolderId(null) ?? throw new SpatiumException("There are not files !!");
+                    filesToZip = _attachmentService.RootFilesToExtarct(files) ; 
+                }
                 var Identifire = new Random();
                 var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString() + ".zip");
                 await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);
