@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Domain.ApplicationUserAggregate;
 using Domian.Interfaces;
-using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 using System.Security.Claims;
 using Utilities.Exceptions;
 using Utilities.Results;

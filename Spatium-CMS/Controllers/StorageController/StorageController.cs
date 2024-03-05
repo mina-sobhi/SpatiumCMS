@@ -43,7 +43,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [HttpGet]
         [Route("FoldersAndFileCount")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
         public Task<IActionResult> Delete([FromQuery] int folderId)
         {
             return TryCatchLogAsync(async () =>
@@ -134,7 +134,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [HttpPut]
         [Route("MoveFolderBullk")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
         public Task<IActionResult> MoveFolderBullk(MoveBulkRequest moveBulk)
         {
             return TryCatchLogAsync(async () =>
@@ -143,7 +143,10 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-
+                if (moveBulk.DestinationId != null)
+                {
+                    var destinationFolder = await unitOfWork.StorageRepository.GetFolderAsync(moveBulk.DestinationId.Value, blogId) ?? throw new SpatiumException("Invalid Destination");
+                }
                 if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
 
                 foreach (var item in moveBulk.FolderIds)
@@ -154,6 +157,13 @@ namespace Spatium_CMS.Controllers.StorageController
                       if(tabdb.Any(f=>f.Id == moveBulk.DestinationId))
                              throw new SpatiumException("Invalid Destination!");
                     }
+                }
+                var destinationTree = storag.Folders.Where(f => f.ParentId == moveBulk.DestinationId).ToList();
+                foreach (var folderId in moveBulk.FolderIds)
+                {
+                    var fodername = storag.Folders.FirstOrDefault(f => f.Id == folderId).Name.ToLower();
+                    if (destinationTree.Any(f => f.Name.ToLower() == fodername))
+                        throw new SpatiumException($"Invalid Name {fodername} Already Exist!");
                 }
                 foreach (var folderId in moveBulk.FolderIds)
                 {
@@ -188,7 +198,8 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException("Invalid Blog Id");
-
+                if (FolderId != null && !storage.Folders.Any(x => x.Id == FolderId))
+                    throw new SpatiumException("Invalid Folder!");
                 List<ViewFolderResponse> respone = new List<ViewFolderResponse>();
                 foreach (var folder in storage.Folders.Where(f => f.ParentId == FolderId))
                 {
