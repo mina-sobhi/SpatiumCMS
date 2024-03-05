@@ -34,7 +34,7 @@ pipeline {
         }
         stage("Build Docker Image"){
             steps{
-                sh 'docker build -t abdelrahman9655/cms_backend  -f SpatiumHR/Dockerfile .'
+                sh 'docker build -t abdelrahman9655/cms_backend   .'
             }
         }
         stage('Login To Dockerhub'){
