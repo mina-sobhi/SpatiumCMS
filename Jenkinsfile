@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('checkout') {
             steps {
-                git branch: 'Pipeline', credentialsId: 'githup', url: 'https://github.com/mina-sobhi/SpatiumCMS.git'   
+                git branch: 'Pipeline', credentialsId: 'github', url: 'https://github.com/mina-sobhi/SpatiumCMS.git'   
                 echo 'checkouting...'
             }
         }
