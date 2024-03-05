@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using static System.Net.Mime.MediaTypeNames;
 
 using Spatium_CMS.Controllers.UserRoleController.Request;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -507,7 +508,14 @@ namespace Spatium_CMS.Controllers.StorageController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId)??throw new SpatiumException("there are not files found !!");
+                if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
+
+                if (entityParams.StartDate > entityParams.EndDate || entityParams.EndDate < entityParams.StartDate) throw new SpatiumException("the datetime invalid !!");
+                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId);
+                if (files.IsNullOrEmpty())
+                {
+                    throw new SpatiumException("there are not files found !!");
+                }
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }

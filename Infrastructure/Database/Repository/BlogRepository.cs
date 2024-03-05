@@ -125,9 +125,21 @@ namespace Infrastructure.Database.Repository
         {
             var query = SpatiumDbContent.Posts.Where(x => x.BlogId == blogId).AsQueryable();
 
-            if (!string.IsNullOrEmpty(postParams.FilterColumn) && !string.IsNullOrEmpty(postParams.FilterValue))
+            if (!string.IsNullOrEmpty(postParams.FilterColumn))
             {
-                query = query.ApplyFilter(postParams.FilterColumn, postParams.FilterValue);
+                if (!string.IsNullOrEmpty(postParams.FilterValue) && postParams.StartDate == null && postParams.EndDate == null)
+                {
+                    query = query.ApplyFilter(postParams.FilterColumn, postParams.FilterValue);
+                }
+                if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "creationdate")
+                {
+                    query = query.Where(p => p.CreationDate >= postParams.StartDate && p.CreationDate == postParams.EndDate || p.CreationDate < postParams.EndDate);
+                }
+                if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "lastupdate")
+                {
+                    query = query.Where(p => p.LastUpdate >= postParams.StartDate && p.LastUpdate == postParams.EndDate || p.LastUpdate < postParams.EndDate);
+                }
+
             }
 
             if (!string.IsNullOrEmpty(postParams.SortColumn))

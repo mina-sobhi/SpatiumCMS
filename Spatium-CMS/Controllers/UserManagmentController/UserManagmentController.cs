@@ -8,6 +8,7 @@ using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Controllers.UserManagmentController.Response;
@@ -189,9 +190,17 @@ namespace Spatium_CMS.Controllers.UserManagmentController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var users = await userManager.FindUsersInBlogIncludingRole(blogId, entityParams) ?? throw new SpatiumException("there are not users !!");
+
+                if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
+
+                if (entityParams.StartDate > entityParams.EndDate || entityParams.EndDate < entityParams.StartDate) throw new SpatiumException("the datetime invalid !!");
+
+                var users = await userManager.FindUsersInBlogIncludingRole(blogId, entityParams);
+                if (users.IsNullOrEmpty())
+                    throw new SpatiumException("there are not users !!");
                 var detailesResult = mapper.Map<List<ViewUsersResponse>>(users);
                 return Ok(detailesResult);
+
             });
         }
         [HttpGet]
