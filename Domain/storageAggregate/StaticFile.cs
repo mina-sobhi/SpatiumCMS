@@ -60,6 +60,7 @@ namespace Domain.StorageAggregate
             this.Name = input.Name;   
             this.Caption = input.Caption;          
             this.Alt = input.Alt;
+            this.Extention = input.Extention;
             this.Dimension = input.Dimension;
             this.LastUpdate= DateTime.UtcNow;
             this.UrlPath = input.Url;
