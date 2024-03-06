@@ -42,7 +42,7 @@ namespace Spatium_CMS.Middlewares
                 }
                 var user = await userManager.FindUserByEmailIgnoreFilter(email);
        
-                if (user==null || user.RoleId != TokenRoleId || !user.IsAccountActive)
+                if (user==null || user.RoleId != TokenRoleId || user.UserStatusId!=1)
                 {
                     await ResponsBody(context);
                     return;
