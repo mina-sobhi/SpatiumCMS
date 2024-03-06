@@ -55,6 +55,7 @@
         public const string InvalidFolder = "Invalid folder!";
         public const string StorageNotFound = "No storage for this blog!";
         public const string InvalidFileName = "Invalid File Name";
+        public const string InvalidFile = "Invalid File";
         public const string FileDeletedSuccessfully = "File Deleted Successfully";
         public const string FolderCreatedSuccessfully = "Folder Created Successfully";
         public const string FoldersAndFilesMovedSuccessfully = "Selected folders and files are Moved Successfully!";

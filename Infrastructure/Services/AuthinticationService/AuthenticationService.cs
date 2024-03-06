@@ -259,7 +259,7 @@ namespace Infrastructure.Services.AuthinticationService
                         Success = false,
                     };
                 }
-                if (user.OTPGeneratedAt != null && DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(30))
+                if (user.OTPGeneratedAt != null && DateTime.UtcNow < user.OTPGeneratedAt.Value.AddSeconds(30))
                 {
                     return new SpatiumResponse<string>()
                     {

@@ -104,6 +104,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+
                 bool isApplied = false;
                 foreach (var folderId in deleteBulk.FolderIds)
                 {
@@ -113,7 +114,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 }
                 foreach (var fileId in deleteBulk.FilesIds)
                 {
-                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFile);
                     file.Delete();
                     isApplied = true;
                 }
