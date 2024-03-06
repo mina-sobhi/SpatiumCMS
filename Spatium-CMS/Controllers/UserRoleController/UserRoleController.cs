@@ -14,6 +14,7 @@ using Utilities.Exceptions;
 using System.Data;
 using Utilities.Results;
 using System.Buffers;
+using Domain.Base;
 
 namespace Spatium_CMS.Controllers.UserRoleController
 {
@@ -109,13 +110,19 @@ namespace Spatium_CMS.Controllers.UserRoleController
         [HttpGet]
         [Route("GetAllRoles")]
         [Authorize(Roles = "Super Admin")]
-        public Task<IActionResult> GetAllRoles([FromQuery] ViewRolePrams parms)
+        public Task<IActionResult> GetAllRoles([FromQuery] GetEntitiyParams entityParams)
         {
             return TryCatchLogAsync(async () =>
             {
                 var userId = GetUserId();
                 var blogId = GetBlogId();
-                var roles = await unitOfWork.RoleRepository.GetRolesAsync(parms, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidRole);
+                if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
+
+                if (entityParams.StartDate > entityParams.EndDate || entityParams.EndDate < entityParams.StartDate) throw new SpatiumException("the datetime invalid !!");
+
+                var roles = await unitOfWork.RoleRepository.GetRolesAsync(entityParams, blogId);
+                if (roles.IsNullOrEmpty())
+                    throw new SpatiumException("There Are Not Roles Founded !!");
                 var roleResponse = mapper.Map<List<ViewRoles>>(roles);
                 return Ok(roleResponse);
             });

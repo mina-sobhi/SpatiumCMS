@@ -10,5 +10,8 @@
         public string FilterValue { get; set; }
         public string SortColumn { get; set; }
         public bool IsDescending { get; set; } = false;
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
     }
 }
