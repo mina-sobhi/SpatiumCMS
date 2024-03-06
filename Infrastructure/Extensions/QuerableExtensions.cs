@@ -1,14 +1,13 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Utilities.Exceptions;
-using Utilities.Results;
+
 
 namespace Infrastructure.Extensions
 {
     public static class QuerableExtensions
     {
         #region ApplyFilter 
-        public static IQueryable<TEntity> ApplyFilter<TEntity>(this IQueryable<TEntity> query, string columnName, string filterValue) where TEntity : class
+        public static IQueryable<TEntity> ApplyFilter<TEntity>(this IQueryable<TEntity> query, string columnName, string filterValue ) where TEntity : class
         {
             columnName = columnName.ToLower();
             var actualColumnName = typeof(TEntity).GetProperties().FirstOrDefault(p => p.Name.ToLower() == columnName)?.Name;
@@ -17,6 +16,7 @@ namespace Infrastructure.Extensions
             {
                 throw new ArgumentException($"Column '{columnName}' does not exist.");
             }
+
             var parameterExp = Expression.Parameter(typeof(TEntity), "x");
             var propertyExp = Expression.Property(parameterExp, actualColumnName);
             MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });

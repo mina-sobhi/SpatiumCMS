@@ -17,6 +17,7 @@ using Utilities.Exceptions;
 using Infrastructure.Extensions;
 using Infrastructure.Strategies.PostStatusStrategy.Factory;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.IdentityModel.Tokens;
 namespace Spatium_CMS.Controllers.PostController
 {
     [Route("api/[controller]")]
@@ -236,7 +237,15 @@ namespace Spatium_CMS.Controllers.PostController
             {
                 var userId = GetUserId();
                 var blogId = GetBlogId();
+
+                if ((postParams.StartDate != null && postParams.EndDate == null) || (postParams.EndDate != null && postParams.StartDate == null))   throw new SpatiumException("You sholud enter both of date start and end date");
+
+                if (postParams.StartDate > postParams.EndDate || postParams.EndDate < postParams.StartDate)
+                    throw new SpatiumException("The datetime invalid !!");
+
                 var posts = await unitOfWork.BlogRepository.GetPostsAsync(postParams, blogId);
+                if (posts.IsNullOrEmpty())
+                    throw new SpatiumException("There are not posts !!");
                 List<PostRespone> postsResponse = new List<PostRespone>();
                 foreach (var item in posts)
                 {
