@@ -15,7 +15,7 @@ namespace Domian.Interfaces
         IStorageRepository StorageRepository { get; }
         #endregion
         Task SaveChangesAsync();
-         IQueryable<Folder> GetFolderFamaily(int folderId);
+         IQueryable<Folder> GetFolderFamaily(int folderId,int blogId);
 
     }
 }
