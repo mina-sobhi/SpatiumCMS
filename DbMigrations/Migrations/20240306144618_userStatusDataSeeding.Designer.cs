@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240306125603_AddUserStatusLookUpSeeding")]
-    partial class AddUserStatusLookUpSeeding
+    [Migration("20240306144618_userStatusDataSeeding")]
+    partial class userStatusDataSeeding
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

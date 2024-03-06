@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Migrations.Migrations
 {
     [DbContext(typeof(SpatiumDbContent))]
-    [Migration("20240306124957_AddUserStatusLookUp")]
-    partial class AddUserStatusLookUp
+    [Migration("20240306144538_statusLookup")]
+    partial class statusLookup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -157,6 +157,8 @@ namespace Migrations.Migrations
                     b.HasIndex("ParentUserId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("UserStatusId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -570,6 +572,22 @@ namespace Migrations.Migrations
                     b.ToTable("RoleIcon", "Lookup");
                 });
 
+            modelBuilder.Entity("Domain.LookupsAggregate.UserStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserStatus", "Lookup");
+                });
+
             modelBuilder.Entity("Domain.StorageAggregate.Folder", b =>
                 {
                     b.Property<int>("Id")
@@ -847,11 +865,19 @@ namespace Migrations.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Domain.LookupsAggregate.UserStatus", "UserStatus")
+                        .WithMany()
+                        .HasForeignKey("UserStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Blog");
 
                     b.Navigation("ParentUser");
 
                     b.Navigation("Role");
+
+                    b.Navigation("UserStatus");
                 });
 
             modelBuilder.Entity("Domain.ApplicationUserAggregate.RolePermission", b =>
