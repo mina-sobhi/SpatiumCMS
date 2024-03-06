@@ -11,7 +11,7 @@ namespace Migrations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                            CREATE FUNCTION [dbo].[FolderAndChild](@FolderId int)
+                            CREATE FUNCTION [dbo].[FolderAndChild](@FolderId int,@BlogId int)
 
                             RETURNS TABLE
 
@@ -25,7 +25,7 @@ namespace Migrations.Migrations
 
                             select * from Folders  
 
-                            where Id=@FolderId
+                            where Id=@FolderId AND BlogId=@BlogId
 
                             union all
 
