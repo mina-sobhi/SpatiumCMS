@@ -153,7 +153,7 @@ namespace Spatium_CMS.Controllers.StorageController
 
                 foreach (var item in moveBulk.FolderIds)
                 {
-                    var tabdb = unitOfWork.GetFolderFamaily(item).ToList();
+                    var tabdb = unitOfWork.GetFolderFamaily(item,blogId).ToList();
                     if(tabdb!=null)
                     {
                       if(tabdb.Any(f=>f.Id == moveBulk.DestinationId))

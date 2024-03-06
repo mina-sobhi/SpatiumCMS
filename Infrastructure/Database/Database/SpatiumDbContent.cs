@@ -94,7 +94,7 @@ namespace Infrastructure.Database.Database
             #endregion
 
             #region FunConfigration 
-            modelBuilder.HasDbFunction(typeof(SpatiumDbContent).GetMethod(nameof(FolderAndChild), new[] { typeof(int) }));
+            modelBuilder.HasDbFunction(typeof(SpatiumDbContent).GetMethod(nameof(FolderAndChild), new[] { typeof(int),typeof(int) }));
             #endregion
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -140,7 +140,7 @@ namespace Infrastructure.Database.Database
             return changes.ToString();
         }
 
-        public IQueryable<Folder> FolderAndChild(int FolderId)
-    => FromExpression(() => FolderAndChild(FolderId));
+        public IQueryable<Folder> FolderAndChild(int FolderId,int BlogId )
+    => FromExpression(() => FolderAndChild(FolderId, BlogId));
     }
 }
