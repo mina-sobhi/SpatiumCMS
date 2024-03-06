@@ -106,7 +106,7 @@ namespace Infrastructure.Database.Repository
                 }
                 if (fileParams.StartDate != null && fileParams.EndDate != null && fileParams.FilterColumn.ToLower() == "creationdate")
                 {
-                    query = query.Where(p => p.CreationDate >= fileParams.StartDate && p.CreationDate == fileParams.EndDate|| p.CreationDate < fileParams.EndDate);
+                    query = query.Where(p => p.CreationDate.Date >= fileParams.StartDate.Value.Date && p.CreationDate.Date <= fileParams.EndDate.Value.Date);
                 }
                 if (fileParams.StartDate != null && fileParams.EndDate != null && fileParams.FilterColumn.ToLower() == "lastupdate")
                 {

@@ -377,7 +377,7 @@ namespace Spatium_CMS.Controllers.StorageController
         }
         [HttpPut]
         [Route("UpdateFile")]
-        [Authorize(Roles = "Super Admin")]
+        [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateMedia)]
         public Task<IActionResult> UpdateFile(UpdateFileRequest Request)
         {
@@ -618,7 +618,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [HttpGet]
         [Route("ExtractFiles")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.ExportMedia)]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
         public Task<IActionResult> ExtractFiles(int? folderId=null)
         {
             return TryCatchLogAsync(async () =>

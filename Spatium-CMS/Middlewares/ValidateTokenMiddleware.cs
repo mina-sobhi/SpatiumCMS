@@ -48,7 +48,7 @@ namespace Spatium_CMS.Middlewares
                     return;
                 }
                 var tokenPermisons =context.User?.Claims.Where(x => x.Type.Equals("Permissions")).Select(x => Convert.ToInt32(x.Value)).ToList();
-                if (tokenPermisons ==null || !tokenPermisons.SequenceEqual(user.Role.RolePermission.Select(p => p.UserPermissionId).ToList()))
+                if (tokenPermisons ==null || !tokenPermisons.SequenceEqual(user.Role.RolePermission.Where(x=>!x.IsDeleted).Select(p => p.UserPermissionId).ToList()))
                 {
                    await ResponsBody(context);
                     return;

@@ -139,7 +139,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task<UserRole> GetRoleByIdForUpdate(string roleId)
         {
-            return await SpatiumDbContent.Roles.Include(x => x.RolePermission).Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
+            return await SpatiumDbContent.Roles.Include(x => x.RolePermission).IgnoreQueryFilters().Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
         }
 
         public async Task<List<ApplicationUser>> GetUsersInRoleAsync(string roleId)
