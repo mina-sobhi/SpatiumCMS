@@ -34,7 +34,7 @@ pipeline {
         }
         stage("Build Docker Image"){
             steps{
-                sh 'docker build -t abdelrahman9655/cms_backend   .'
+                sh 'docker build -t abdelrahman9655/cms_backend:$BUILD_NUMBER  . '
             }
         }
         stage('Login To Dockerhub'){
