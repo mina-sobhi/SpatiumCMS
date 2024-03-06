@@ -80,7 +80,7 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
-            modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
+            //modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
             modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<UserPermission>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);

@@ -21,6 +21,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 using Spatium_CMS.Controllers.UserRoleController.Request;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -31,13 +32,16 @@ namespace Spatium_CMS.Controllers.StorageController
         private readonly IAttachmentService _attachmentService;
 
         private readonly IConfiguration _configration;
+        private readonly IWebHostEnvironment _enviroenment;
+
         public StorageController(ILogger<StorageController> logger, IMapper mapper, 
                                 IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager,
-                                IAttachmentService attachmentService, IConfiguration configration)
+                                IAttachmentService attachmentService, IConfiguration configration, IWebHostEnvironment enviroenment)
                                 : base(unitOfWork, mapper, logger, userManager)
         {
             _attachmentService = attachmentService;
             _configration = configration;
+            _enviroenment = enviroenment;
         }
 
         #region FolderApis
@@ -468,6 +472,47 @@ namespace Spatium_CMS.Controllers.StorageController
             });
 
         }
+
+        [HttpPut]
+        [Route("UpdateFile2")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> UpdateFile2(UpdateFileRequest Request)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var blogId = GetBlogId();
+                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
+                    if (OldFile == null) throw new SpatiumException("File Not Found !!");
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(Request.Name, OldFile.FolderId))
+                        throw new SpatiumException($"{OldFile.Name} Already Exist!");
+
+
+                    string filePath = Request.File != null ? await _attachmentService.SaveAttachment($"{blogId}/", Request.File, _enviroenment.WebRootPath, Request.Name) : await _attachmentService.SaveAttachment($"{blogId}/", Request.File, _enviroenment.WebRootPath, OldFile.Name);
+
+                    string fileSize = Request.File != null ? Request.File.Length.ToString() : OldFile.FileSize;
+                    string fileExtenssion = Request.File != null ? Path.GetExtension(Request.File.FileName) : OldFile.Extention;
+         
+                    var UserId = GetUserId();
+                    var UpdateFile = mapper.Map<UpdateFileInput>(Request);
+                    UpdateFile.Url = filePath;
+                    UpdateFile.LastUpdate = DateTime.Now;
+                    UpdateFile.BlogId = blogId;
+                    UpdateFile.Createdby = UserId;
+                    UpdateFile.FileSize = fileSize;
+                    UpdateFile.Extention = fileExtenssion;
+                    OldFile.Update(UpdateFile);
+                    await unitOfWork.SaveChangesAsync();
+
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+
+
         [HttpDelete]
         [Route("Delete")]
         [Authorize]
