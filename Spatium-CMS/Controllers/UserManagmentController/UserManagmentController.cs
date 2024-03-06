@@ -148,16 +148,16 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         [Route("ChangeUserActivation/{userId}")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateUser)]
-        public Task<IActionResult> ChangeUserActivation(string userId, bool activeStatus = true)
+        public Task<IActionResult> ChangeUserActivation(string userId,UserStatusEnum userStatus)
         {
             return TryCatchLogAsync(async () =>
             {
                 var parentUserId = GetUserId();
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
-                if (user.IsAccountActive == activeStatus)
+                if (user.UserStatusId == (int) userStatus || user.UserStatusId == 3 )
                     throw new SpatiumException(ResponseMessages.CannotChangeStatus);
-                user.ChangeActivation(activeStatus);
+                user.ChangeActivation(userStatus);
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
                 {

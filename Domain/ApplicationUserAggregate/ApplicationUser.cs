@@ -1,6 +1,9 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
 using Domain.BlogsAggregate;
+using Domain.LookupsAggregate;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using Utilities.Enums;
 
 namespace Domain.ApplicationUserAggregate
 {
@@ -17,7 +20,7 @@ namespace Domain.ApplicationUserAggregate
             RoleId = input.RoleId;
             JobTitle = input.JobTitle.Trim();
             ProfileImagePath = input.ProfileImagePath.Trim();
-            IsAccountActive = true;
+            UserStatusId = 3;
             if (!string.IsNullOrEmpty(input.ParentUserId))
             {
                 ParentUserId = input.ParentUserId;
@@ -42,7 +45,8 @@ namespace Domain.ApplicationUserAggregate
         public string RoleId { get; private set; }
         public string JobTitle { get; private set; }
         public string ProfileImagePath { get; private set; }
-        public bool IsAccountActive { get; private set; }
+        //public bool IsAccountActive { get; private set; }
+        public int UserStatusId { get;private set; }
         public string ParentUserId { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public string OTP { get; private set; }
@@ -54,6 +58,8 @@ namespace Domain.ApplicationUserAggregate
         public virtual ApplicationUser ParentUser { get; private set; }
         public virtual UserRole Role { get; private set; }
         public virtual Blog Blog { get; private set; }
+        [EnumDataType(typeof(UserStatus))]
+        public virtual UserStatus UserStatus { get; private set; }
         #endregion
 
         #region Virtual List
@@ -87,9 +93,9 @@ namespace Domain.ApplicationUserAggregate
             ProfileImagePath=input.ProfileImagePath;
         }
 
-        public void ChangeActivation(bool activeStatus)
+        public void ChangeActivation(UserStatusEnum userStatus)
         {
-            IsAccountActive= activeStatus;
+            this.UserStatusId= (int)userStatus;
         }
 
         public void Unassign()

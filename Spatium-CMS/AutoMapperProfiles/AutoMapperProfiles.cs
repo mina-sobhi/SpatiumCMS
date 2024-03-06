@@ -103,7 +103,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
                    .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom(src => src.ProfileImagePath))
-                   .ForMember(dest => dest.IsAccountActive, otp => otp.MapFrom(src => src.IsAccountActive))
+                   //.ForMember(dest => dest.IsAccountActive, otp => otp.MapFrom(src => src.IsAccountActive))
                    .ForMember(dest => dest.Email, otp => otp.MapFrom(src => src.Email))
                    .ForMember(dest => dest.RoleName, otp => otp.MapFrom(r => r.Role.Name))
                    .ForMember(dest => dest.CreatedAt, otp => otp.MapFrom(r => r.CreatedAt));
@@ -123,7 +123,8 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<FileInput, AddFileRequest>().ReverseMap();
                 CreateMap<UpdateFileInput, UpdateFileRequest>().ReverseMap();
                 CreateMap<StaticFile, ViewFile>()
-                    .ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>());
+                    .ForMember(dest => dest.UrlPath, otp => otp.MapFrom<FileUrlResolver>())
+                    .ForMember(dest=>dest.LastUpdated,otp=>otp.MapFrom(src=>src.LastUpdate));
                 #endregion
             }
         }
