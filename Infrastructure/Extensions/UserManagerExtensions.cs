@@ -3,6 +3,7 @@ using Domain.Base;
 using Infrastructure.Extensions.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Utilities.Enums;
 
 namespace Infrastructure.Extensions
 {
@@ -40,9 +41,8 @@ namespace Infrastructure.Extensions
                 }
                 if (entityParams.StartDate != null && entityParams.EndDate != null && entityParams.FilterColumn.ToLower() == "createdat")
                 {
-                    query = query.Where(p => p.CreatedAt >= entityParams.StartDate && p.CreatedAt == entityParams.EndDate || p.CreatedAt < entityParams.EndDate);
+                    query = query.Where(p => p.CreatedAt.Date >= entityParams.StartDate.Value && p.CreatedAt.Date <= entityParams.EndDate.Value);
                 }
-
             }
 
             if (!string.IsNullOrEmpty(entityParams.SortColumn))
@@ -65,8 +65,8 @@ namespace Infrastructure.Extensions
         {
             var allUsers = userManager.Users.Where(x => x.BlogId == blogId);
             var TotalCount = await allUsers.CountAsync();
-            var ActivateUsers = await allUsers.CountAsync();
-            var DeActivateUsers = await allUsers.CountAsync();
+            var ActivateUsers = await allUsers.Where(u=>u.UserStatusId==(int)UserStatusEnum.Active).CountAsync();
+            var DeActivateUsers = await allUsers.Where(u => u.UserStatusId == (int)UserStatusEnum.DeActive).CountAsync();
             return new UsersAnalytics()
             {
                 TotalCount = TotalCount,

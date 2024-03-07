@@ -133,11 +133,11 @@ namespace Infrastructure.Database.Repository
                 }
                 if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "creationdate")
                 {
-                    query = query.Where(p => p.CreationDate >= postParams.StartDate && p.CreationDate == postParams.EndDate || p.CreationDate < postParams.EndDate);
+                    query = query.Where(p => p.CreationDate.Date >= postParams.StartDate.Value && p.CreationDate.Date <= postParams.EndDate.Value);
                 }
                 if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "lastupdate")
                 {
-                    query = query.Where(p => p.LastUpdate >= postParams.StartDate && p.LastUpdate == postParams.EndDate || p.LastUpdate < postParams.EndDate);
+                    query = query.Where(p => p.LastUpdate.Value >= postParams.StartDate.Value && p.LastUpdate.Value <= postParams.EndDate.Value);
                 }
 
             }
