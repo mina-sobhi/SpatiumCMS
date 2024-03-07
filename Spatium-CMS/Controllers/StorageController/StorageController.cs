@@ -328,7 +328,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
 
-                    if (FileRequest.FolderId!=null)
+                    if (FileRequest.FolderId != null)
                     {
                         var folder = await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                     }
@@ -345,19 +345,14 @@ namespace Spatium_CMS.Controllers.StorageController
                     {
                         throw new SpatiumException(ResponseMessages.InvalidFileName);
                     }
+
                     string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
-                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName,FileRequest.FolderId))
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName, FileRequest.FolderId))
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
 
                     _attachmentService.ValidateFileSize(FileRequest.file);
-                    string fullfilePath = Path.Combine(uploadPath, newFileName);
-                    using (var stream = new FileStream(fullfilePath, FileMode.Create))
-                    {
-                        await FileRequest.file.CopyToAsync(stream);
-                    }
-
                     string imageUrl = $"{blogId}/{newFileName}";
                     var InputFile = mapper.Map<FileInput>(FileRequest);
                     InputFile.CreatedById = UserId;
@@ -367,6 +362,11 @@ namespace Spatium_CMS.Controllers.StorageController
                     InputFile.FolderId = FileRequest.FolderId;
                     InputFile.Extention = _attachmentService.GetFileExtention(FileRequest.file);
                     var file = new StaticFile(InputFile);
+                    string fullfilePath = Path.Combine(uploadPath, newFileName);
+                    using (var stream = new FileStream(fullfilePath, FileMode.Create))
+                    {
+                        await FileRequest.file.CopyToAsync(stream);
+                    }
                     await unitOfWork.StorageRepository.CreateFileAsync(file);
                     await unitOfWork.SaveChangesAsync();
                     var response = new SpatiumResponse()
@@ -391,11 +391,8 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var blogId = GetBlogId();
                     var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
-                  
-
                     if (OldFile != null)
                     {
-                        
                         string fileName = Request.Name;
                         if (string.IsNullOrEmpty(fileName))
                         {
@@ -407,21 +404,13 @@ namespace Spatium_CMS.Controllers.StorageController
                         }
                         if (Request.File is not null)
                         {
+                            _attachmentService.CheckFileExtension(Request.File);
+                            _attachmentService.ValidateFileSize(Request.File);
                             string newFileName = _attachmentService.GetDesireFileName(Request.File, fileName);
                             string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
-
-                            if (System.IO.File.Exists(uploadPath))
-                            {
-                                System.IO.File.Delete(uploadPath);
-                            }
                             string imageUrl = $"{blogId}/{newFileName}";
-
-                            var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
-                            using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
-                            {
-
-                                await Request.File.CopyToAsync(stream);
-                            }
+                            string FileExtention = _attachmentService.GetFileExtention(Request.File);
+                            var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + FileExtention);
                             string filesize = Request.File.Length.ToString();
                             var UserId = GetUserId();
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
@@ -430,20 +419,23 @@ namespace Spatium_CMS.Controllers.StorageController
                             UpdateFile.BlogId = blogId;
                             UpdateFile.Createdby = UserId;
                             UpdateFile.FileSize = filesize;
-                            UpdateFile.Extention=_attachmentService.GetFileExtention(Request.File);
+                            UpdateFile.Extention = _attachmentService.GetFileExtention(Request.File);
                             OldFile.Update(UpdateFile);
+
+                            if (System.IO.File.Exists(uploadPath))
+                            {
+                                System.IO.File.Delete(uploadPath);
+                            }
+                            using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
+                            {
+                                await Request.File.CopyToAsync(stream);
+                            }
                             await unitOfWork.SaveChangesAsync();
                         }
                         else
                         {
                             string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
                             var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
-                            System.IO.File.Copy(uploadPath, NewFilepath);
-
-                            if (System.IO.File.Exists(uploadPath))
-                            {
-                                System.IO.File.Delete(uploadPath);
-                            }
                             string imageUrl = $"{blogId}/{Request.Name}{OldFile.Extention}";
                             var UserId = GetUserId();
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
@@ -452,10 +444,17 @@ namespace Spatium_CMS.Controllers.StorageController
                             UpdateFile.BlogId = blogId;
                             UpdateFile.Extention = OldFile.Extention;
                             UpdateFile.Createdby = UserId;
-                            OldFile.Update(UpdateFile);
+                            if (OldFile.Name != Request.Name)
+                            {
+                                OldFile.Update(UpdateFile);
+                                System.IO.File.Copy(uploadPath, NewFilepath);
+                                if (System.IO.File.Exists(uploadPath))
+                                {
+                                    System.IO.File.Delete(uploadPath);
+                                }
+                            }
                             await unitOfWork.SaveChangesAsync();
                         }
-
                         var response = new SpatiumResponse()
                         {
                             Message = ResponseMessages.FileUpdatedSuccessfully,
