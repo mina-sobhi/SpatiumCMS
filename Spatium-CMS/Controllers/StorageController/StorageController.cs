@@ -328,7 +328,7 @@ namespace Spatium_CMS.Controllers.StorageController
                     var blogId = GetBlogId();
                     var UserId = GetUserId();
 
-                    if (FileRequest.FolderId!=null)
+                    if (FileRequest.FolderId != null)
                     {
                         var folder = await unitOfWork.StorageRepository.GetFolderAsync(FileRequest.FolderId.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                     }
@@ -345,8 +345,9 @@ namespace Spatium_CMS.Controllers.StorageController
                     {
                         throw new SpatiumException(ResponseMessages.InvalidFileName);
                     }
+
                     string newFileName = _attachmentService.GetDesireFileName(FileRequest.file, fileName);
-                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName,FileRequest.FolderId))
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(fileName, FileRequest.FolderId))
                     {
                         throw new SpatiumException($"{fileName} Already Exist!");
                     }
@@ -408,8 +409,9 @@ namespace Spatium_CMS.Controllers.StorageController
                             string newFileName = _attachmentService.GetDesireFileName(Request.File, fileName);
                             string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
                             string imageUrl = $"{blogId}/{newFileName}";
-                            string FileExtention=_attachmentService.GetFileExtention(Request.File);
-                            var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + FileExtention);                        
+                            string FileExtention = _attachmentService.GetFileExtention(Request.File);
+                            var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + FileExtention);
+
                             string filesize = Request.File.Length.ToString();
                             var UserId = GetUserId();
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
@@ -427,16 +429,18 @@ namespace Spatium_CMS.Controllers.StorageController
                             }
                             using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
                             {
-                              await Request.File.CopyToAsync(stream);
+
+                                await Request.File.CopyToAsync(stream);
                             }
-                                await unitOfWork.SaveChangesAsync();
+                            await unitOfWork.SaveChangesAsync();
                         }
                         else
                         {
-                           string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
-                           var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);  
-                           string imageUrl = $"{blogId}/{Request.Name}{OldFile.Extention}";
-                           var UserId = GetUserId();
+                            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), OldFile.Name + OldFile.Extention);
+                            var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
+                            string imageUrl = $"{blogId}/{Request.Name}{OldFile.Extention}";
+                            var UserId = GetUserId();
+
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
                             UpdateFile.Url = imageUrl;
                             UpdateFile.LastUpdate = DateTime.Now;
