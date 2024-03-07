@@ -145,17 +145,20 @@ namespace Spatium_CMS.Controllers.UserManagmentController
 
         [HttpGet]
         [Route("ChangeUserActivation/{userId}")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [PermissionFilter(PermissionsEnum.UpdateUser)]
         public Task<IActionResult> ChangeUserActivation(string userId,UserStatusEnum userStatus)
         {
             return TryCatchLogAsync(async () =>
             {
-                var parentUserId = GetUserId();
+                var curentUserId = GetUserId();
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
-                if (user.UserStatusId == (int) userStatus || user.UserStatusId == 3 )
-                    throw new SpatiumException(ResponseMessages.CannotChangeStatus);
+                if (user.UserStatusId == (int) userStatus || user.UserStatusId == 3 || userId== curentUserId)
+                    throw new SpatiumException("can not cahange user status !!");
+                if ((int) userStatus == 3)
+                    throw new SpatiumException("can not cahange user status to be pending !!");
+
                 user.ChangeActivation(userStatus);
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
@@ -183,12 +186,13 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         }
         [HttpGet]
         [Route("GetUserAllUsers")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> GetUserAllUsers([FromQuery]GetEntitiyParams entityParams)
         {
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
+                var userId=GetUserId();
 
                 if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
 
@@ -204,7 +208,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         }
         [HttpGet]
         [Route("GetUsersAnalytics")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         public Task<IActionResult> GetUsersAnalytics()
         {
             return TryCatchLogAsync(async () =>
@@ -216,6 +220,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         }
         [HttpGet]
         [Route("GetUserActivity")]
+        [Authorize(Roles = "Super Admin")]
         [Authorize]
         public Task<IActionResult> GetUserActivity()
         {
