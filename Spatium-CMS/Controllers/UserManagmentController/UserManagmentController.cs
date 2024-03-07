@@ -76,7 +76,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                         var response = new SpatiumResponse()
                         {
                             Message=ResponseMessages.UserCreatedSuccessfully,
-                            Success=true
+                            Success=true 
                         };
                         return Ok(response);
                     }
@@ -85,7 +85,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 return BadRequest(ModelState);
             });
         }
-
         [HttpPut]
         [Route("UpdateUser")]
         [Authorize]
@@ -235,6 +234,43 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     });
                 }
                 return Ok(response);
+            });
+        }
+
+        [HttpGet]
+        [Route("ResendInvitaion")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.CreateUser)]
+        public Task<IActionResult> ResendInvitaion(string UserId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+               
+                    var invatedUser = await userManager.FindByIdAsync(UserId);
+                    var suberAdminId = GetUserId();
+                    var blogId = GetBlogId();
+                    var user = await userManager.FindUserInBlogAsync(blogId, suberAdminId) ?? throw new SpatiumException("You Are Not In This Blog");
+                    if (invatedUser.ParentUserId != user.Id)
+                        throw new SpatiumException("You Are Not Create This User ");
+                    if (invatedUser.EmailConfirmed == true)
+                        throw new SpatiumException("This User Is Not Pending");
+
+                    var token = await userManager.GenerateEmailConfirmationTokenAsync(invatedUser);
+                    var encodedToken = WebUtility.UrlEncode(token);
+                    invatedUser.ChangeOTP(OTPGenerator.GenerateOTP());
+                    await unitOfWork.SaveChangesAsync();
+
+                    string MailBody = $"<h1> Your OTP is {invatedUser.OTP} </h1> <br/> <a style='padding:10px;background-color:blue;color:#fff ;text-decoration:none' href ='https://localhost:7109/api/Authentication/ConfirmEmail?email={invatedUser.Email}&token={encodedToken}'> Verification Email </a>";
+                    await sendMailService.SendMail(invatedUser.Email, "Spatium CMS Verification Email!", MailBody);
+
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.UserCreatedSuccessfully,
+                        Success = true
+                    };
+                    return Ok(response);
+               
+
             });
         }
     }

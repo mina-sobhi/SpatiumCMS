@@ -411,6 +411,7 @@ namespace Spatium_CMS.Controllers.StorageController
                             string imageUrl = $"{blogId}/{newFileName}";
                             string FileExtention = _attachmentService.GetFileExtention(Request.File);
                             var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + FileExtention);
+
                             string filesize = Request.File.Length.ToString();
                             var UserId = GetUserId();
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
@@ -428,6 +429,7 @@ namespace Spatium_CMS.Controllers.StorageController
                             }
                             using (var stream = new FileStream(NewFilepath, FileMode.OpenOrCreate))
                             {
+
                                 await Request.File.CopyToAsync(stream);
                             }
                             await unitOfWork.SaveChangesAsync();
@@ -438,6 +440,7 @@ namespace Spatium_CMS.Controllers.StorageController
                             var NewFilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", OldFile.BlogId.ToString(), Request.Name + OldFile.Extention);
                             string imageUrl = $"{blogId}/{Request.Name}{OldFile.Extention}";
                             var UserId = GetUserId();
+
                             var UpdateFile = mapper.Map<UpdateFileInput>(Request);
                             UpdateFile.Url = imageUrl;
                             UpdateFile.LastUpdate = DateTime.Now;
