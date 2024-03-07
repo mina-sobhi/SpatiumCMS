@@ -20,6 +20,8 @@ namespace Domain.BlogsAggregate
         Task CreateCommentAsync(Comment comment);
         void UpdateCommentAsync(Comment comment);
         Task DeleteCommentAsync(int id);
+
+        Task<List<Post>> GetTotalComments(int blogId);
         #endregion
 
         #region Post

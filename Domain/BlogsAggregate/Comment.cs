@@ -18,7 +18,7 @@ namespace Domain.BlogsAggregate
         public virtual Comment ParentComment { get; private set; }
         public virtual Post Post { get; private set; }
         public virtual ApplicationUser Createdby { get; private set; }
-        public virtual CommentStatus CommentStatus { get; private set; }
+        public virtual CommentStatus Status { get; private set; }
         #endregion
 
         #region Virtual Lists
@@ -45,7 +45,7 @@ namespace Domain.BlogsAggregate
 
         public void ChangeCommentStatus(CommentStatusEnum status)
         {
-            this.StatusId =(int) status;
+            this.StatusId = (int) status;
         }
 
         public  void Update(CommentUpdateInput commentInput)
@@ -61,6 +61,6 @@ namespace Domain.BlogsAggregate
         public void ChangeStatus(CommentStatusEnum status) {
             StatusId = (int)status;
         }
-      
+     
     }
 }

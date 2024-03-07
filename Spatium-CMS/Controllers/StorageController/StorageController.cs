@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.StaticFiles;
 using static System.Net.Mime.MediaTypeNames;
 
 using Spatium_CMS.Controllers.UserRoleController.Request;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
 
 namespace Spatium_CMS.Controllers.StorageController
 {
@@ -30,20 +32,23 @@ namespace Spatium_CMS.Controllers.StorageController
         private readonly IAttachmentService _attachmentService;
 
         private readonly IConfiguration _configration;
+        private readonly IWebHostEnvironment _enviroenment;
+
         public StorageController(ILogger<StorageController> logger, IMapper mapper, 
                                 IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager,
-                                IAttachmentService attachmentService, IConfiguration configration)
+                                IAttachmentService attachmentService, IConfiguration configration, IWebHostEnvironment enviroenment)
                                 : base(unitOfWork, mapper, logger, userManager)
         {
             _attachmentService = attachmentService;
             _configration = configration;
+            _enviroenment = enviroenment;
         }
 
         #region FolderApis
         [HttpGet]
         [Route("FoldersAndFileCount")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
         public Task<IActionResult> Delete([FromQuery] int folderId)
         {
             return TryCatchLogAsync(async () =>
@@ -104,6 +109,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
+
                 bool isApplied = false;
                 foreach (var folderId in deleteBulk.FolderIds)
                 {
@@ -113,7 +119,7 @@ namespace Spatium_CMS.Controllers.StorageController
                 }
                 foreach (var fileId in deleteBulk.FilesIds)
                 {
-                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFileName);
+                    var file = await unitOfWork.StorageRepository.GetFileAsync(fileId,blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFile);
                     file.Delete();
                     isApplied = true;
                 }
@@ -134,7 +140,7 @@ namespace Spatium_CMS.Controllers.StorageController
         [HttpPut]
         [Route("MoveFolderBullk")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.DeleteMedia)]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
         public Task<IActionResult> MoveFolderBullk(MoveBulkRequest moveBulk)
         {
             return TryCatchLogAsync(async () =>
@@ -143,10 +149,28 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storag = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId);
-                var destinationFolder = await unitOfWork.StorageRepository.GetFolderAsync(moveBulk.DestinationId.Value, blogId) ?? throw new SpatiumException("Invalid Folder Destination");
-                
-                if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) 
-                    throw new SpatiumException("Invalid Destination!");
+                if (moveBulk.DestinationId != null)
+                {
+                    var destinationFolder = await unitOfWork.StorageRepository.GetFolderAsync(moveBulk.DestinationId.Value, blogId) ?? throw new SpatiumException("Invalid Destination");
+                }
+                if(moveBulk.DestinationId!=null && moveBulk.FolderIds.Contains(moveBulk.DestinationId.Value)) throw new SpatiumException("Invalid Destination!");
+
+                foreach (var item in moveBulk.FolderIds)
+                {
+                    var tabdb = unitOfWork.GetFolderFamaily(item,blogId).ToList();
+                    if(tabdb!=null)
+                    {
+                      if(tabdb.Any(f=>f.Id == moveBulk.DestinationId))
+                             throw new SpatiumException("Invalid Destination!");
+                    }
+                }
+                var destinationTree = storag.Folders.Where(f => f.ParentId == moveBulk.DestinationId).ToList();
+                foreach (var folderId in moveBulk.FolderIds)
+                {
+                    var fodername = storag.Folders.FirstOrDefault(f => f.Id == folderId).Name.ToLower();
+                    if (destinationTree.Any(f => f.Name.ToLower() == fodername))
+                        throw new SpatiumException($"Invalid Name {fodername} Already Exist!");
+                }
                 foreach (var folderId in moveBulk.FolderIds)
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAndFileByStorageIdAndFolderId(storag.Id, folderId, blogId) ?? throw new SpatiumException(ResponseMessages.InvalidFolder);
@@ -180,7 +204,8 @@ namespace Spatium_CMS.Controllers.StorageController
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserInBlogAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
                 var storage = await unitOfWork.StorageRepository.GetStorageByBlogId(blogId) ?? throw new SpatiumException("Invalid Blog Id");
-
+                if (FolderId != null && !storage.Folders.Any(x => x.Id == FolderId))
+                    throw new SpatiumException("Invalid Folder!");
                 List<ViewFolderResponse> respone = new List<ViewFolderResponse>();
                 foreach (var folder in storage.Folders.Where(f => f.ParentId == FolderId))
                 {
@@ -355,7 +380,7 @@ namespace Spatium_CMS.Controllers.StorageController
         }
         [HttpPut]
         [Route("UpdateFile")]
-        [Authorize(Roles = "Super Admin")]
+        [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateMedia)]
         public Task<IActionResult> UpdateFile(UpdateFileRequest Request)
         {
@@ -445,7 +470,47 @@ namespace Spatium_CMS.Controllers.StorageController
             });
 
         }
-       
+
+        [HttpPut]
+        [Route("UpdateFile2")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.UpdateMedia)]
+        public Task<IActionResult> UpdateFile2(UpdateFileRequest Request)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var blogId = GetBlogId();
+                    var OldFile = await unitOfWork.StorageRepository.GetFileAsync(Request.Id, blogId);
+                    if (OldFile == null) throw new SpatiumException("File Not Found !!");
+                    if (await unitOfWork.StorageRepository.ChechFileNameExists(Request.Name, OldFile.FolderId))
+                        throw new SpatiumException($"{OldFile.Name} Already Exist!");
+
+
+                    string filePath = Request.File != null ? await _attachmentService.SaveAttachment($"{blogId}/", Request.File, _enviroenment.WebRootPath, Request.Name) : await _attachmentService.SaveAttachment($"{blogId}/", Request.File, _enviroenment.WebRootPath, OldFile.Name);
+
+                    string fileSize = Request.File != null ? Request.File.Length.ToString() : OldFile.FileSize;
+                    string fileExtenssion = Request.File != null ? Path.GetExtension(Request.File.FileName) : OldFile.Extention;
+         
+                    var UserId = GetUserId();
+                    var UpdateFile = mapper.Map<UpdateFileInput>(Request);
+                    UpdateFile.Url = filePath;
+                    UpdateFile.LastUpdate = DateTime.Now;
+                    UpdateFile.BlogId = blogId;
+                    UpdateFile.Createdby = UserId;
+                    UpdateFile.FileSize = fileSize;
+                    UpdateFile.Extention = fileExtenssion;
+                    OldFile.Update(UpdateFile);
+                    await unitOfWork.SaveChangesAsync();
+
+                }
+                return BadRequest(ModelState);
+            });
+
+        }
+
+
         [HttpDelete]
         [Route("Delete")]
         [Authorize]
@@ -480,10 +545,16 @@ namespace Spatium_CMS.Controllers.StorageController
                 {
                     var folder = await unitOfWork.StorageRepository.GetFolderAsync(folderIdDestination.Value, blogId) ?? throw new SpatiumException($"Folder Not Found");
                 }
-
-                foreach (var file in filesIds)
+                var foldersFiles = await unitOfWork.StorageRepository.getFileByFolderId(folderIdDestination);
+                foreach (var fileId in filesIds)
                 {
-                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(file, blogId) ?? throw new SpatiumException("File Not Existed To Move");
+                    var f = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId);
+                    foreach (var file in foldersFiles)
+                    {
+                        if (f.Name==file.Name) throw new SpatiumException($"{file.Name} Already Existed  Within This Folder ");
+                    }
+
+                    var fileToMove = await unitOfWork.StorageRepository.GetFileAsync(fileId, blogId) ?? throw new SpatiumException("File Not Existed To Move");
                     fileToMove.MoveToFolderId(folderIdDestination);
                     await unitOfWork.SaveChangesAsync();
                 }
@@ -520,7 +591,14 @@ namespace Spatium_CMS.Controllers.StorageController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId)??throw new SpatiumException("there are not files found !!");
+                if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
+
+                if (entityParams.StartDate > entityParams.EndDate || entityParams.EndDate < entityParams.StartDate) throw new SpatiumException("the datetime invalid !!");
+                var files = await unitOfWork.StorageRepository.GetAllFilesAsync(entityParams, blogId);
+                if (files.IsNullOrEmpty())
+                {
+                    throw new SpatiumException("there are not files found !!");
+                }
                 return Ok(mapper.Map<List<ViewFile>>(files));
             });
         }
@@ -583,20 +661,25 @@ namespace Spatium_CMS.Controllers.StorageController
         [HttpGet]
         [Route("ExtractFiles")]
         [Authorize]
-        [PermissionFilter(PermissionsEnum.ExportMedia)]
-        public Task<IActionResult> ExtractFiles(int? folderId)
+        [PermissionFilter(PermissionsEnum.ReadMedia)]
+        public Task<IActionResult> ExtractFiles(int? folderId=null)
         {
             return TryCatchLogAsync(async () =>
             {
 
                 var blogId = GetBlogId();
-                if (folderId!=null)
+                var filesToZip = new List<string>();
+                if (folderId != null)
                 {
-                    var folder = unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ??throw new SpatiumException("folder not found !!");
+                    var folder =await unitOfWork.StorageRepository.GetFolderAsync(folderId.Value, blogId) ?? throw new SpatiumException("folder not found !!");
+                    var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
+                     filesToZip = _attachmentService.FilesToExtract(files);
                 }
-                var files = await unitOfWork.StorageRepository.GetFilesToExtract(blogId, folderId) ?? throw new SpatiumException("There are not files !!");
-
-                var filesToZip = _attachmentService.FilesToExtract(files);
+                else
+                {
+                    var files = await unitOfWork.StorageRepository.getFileByFolderId(null) ?? throw new SpatiumException("There are not files !!");
+                    filesToZip = _attachmentService.RootFilesToExtarct(files) ; 
+                }
                 var Identifire = new Random();
                 var zipArchivePath = Path.Combine(Path.GetTempPath(),"Spatium_Cms_"+DateTime.Now.ToString("M")+"_"+DateTime.Now.ToString("t") + Identifire.Next(1, 100000).ToString() + ".zip");
                 await _attachmentService.CreateZipArchive(filesToZip, zipArchivePath);

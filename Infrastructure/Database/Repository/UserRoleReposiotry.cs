@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Domain.ApplicationUserAggregate.Inputs;
 using Infrastructure.Extensions;
 using Domain.LookupsAggregate;
+using Domain.Base;
 
 namespace Infrastructure.Database.Repository
 {
@@ -39,25 +40,34 @@ namespace Infrastructure.Database.Repository
             return await result.ToListAsync();
         }
 
-        public async Task<IReadOnlyList<UserRole>> GetRolesAsync(ViewRolePrams viewRoleParams, int blogId)
+        public async Task<IReadOnlyList<UserRole>> GetRolesAsync(GetEntitiyParams entitiyParams, int blogId)
         {
-            if (viewRoleParams.IsActive == false)
+            var query = SpatiumDbContent.Roles.Include(x => x.ApplicationUsers.Where(y => y.BlogId == blogId)).AsQueryable();
+
+            if (!string.IsNullOrEmpty(entitiyParams.FilterColumn))
             {
-                return await SpatiumDbContent.Roles
-               .Where(r => r.IsActive == viewRoleParams.IsActive)
-                .Skip((viewRoleParams.PageIndex - 1) * viewRoleParams.PageSize)
-               .Take(viewRoleParams.PageSize)
-               .Include(ru => ru.ApplicationUsers.Where(x => x.BlogId == blogId))
-               .ToListAsync();
+                if (!string.IsNullOrEmpty(entitiyParams.FilterValue) && entitiyParams.StartDate == null && entitiyParams.EndDate == null)
+                {
+                    query = query.ApplyFilter(entitiyParams.FilterColumn, entitiyParams.FilterValue);
+                }
+                if (entitiyParams.StartDate != null && entitiyParams.EndDate != null && entitiyParams.FilterColumn.ToLower() == "createdat")
+                {
+                    query = query.Where(p => p.CreatedAt >= entitiyParams.StartDate && p.CreatedAt == entitiyParams.EndDate || p.CreatedAt < entitiyParams.EndDate);
+                }
             }
-            else
+
+            if (!string.IsNullOrEmpty(entitiyParams.SortColumn))
             {
-                return await SpatiumDbContent.Roles
-                .Skip((viewRoleParams.PageIndex - 1) * viewRoleParams.PageSize)
-               .Take(viewRoleParams.PageSize)
-               .Include(ru => ru.ApplicationUsers.Where(x => x.BlogId == blogId))
-               .ToListAsync();
+                query = query.ApplySort(entitiyParams.SortColumn, entitiyParams.IsDescending);
             }
+
+            if (!string.IsNullOrEmpty(entitiyParams.SearchColumn) && !string.IsNullOrEmpty(entitiyParams.SearchValue))
+            {
+                query = query.ApplySearch(entitiyParams.SearchColumn, entitiyParams.SearchValue);
+            }
+
+            var paginatedQuery = query.Skip((entitiyParams.Page - 1) * entitiyParams.PageSize).Take(entitiyParams.PageSize);
+            return await paginatedQuery.ToListAsync();
         }
         public async Task<List<UserModule>> GetModuleWithPermissions()
         {
@@ -129,7 +139,7 @@ namespace Infrastructure.Database.Repository
 
         public async Task<UserRole> GetRoleByIdForUpdate(string roleId)
         {
-            return await SpatiumDbContent.Roles.Include(x => x.RolePermission).Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
+            return await SpatiumDbContent.Roles.Include(x => x.RolePermission).IgnoreQueryFilters().Where(x => x.Id == roleId && x.RoleOwnerId != null).FirstOrDefaultAsync();
         }
 
         public async Task<List<ApplicationUser>> GetUsersInRoleAsync(string roleId)

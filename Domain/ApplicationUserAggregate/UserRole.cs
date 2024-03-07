@@ -2,10 +2,8 @@
 using Domain.BlogsAggregate;
 using Domain.LookupsAggregate;
 using Microsoft.AspNetCore.Identity;
-using System.Security;
 using Utilities.Exceptions;
 using Utilities.Results;
-
 namespace Domain.ApplicationUserAggregate
 {
     public class UserRole : IdentityRole
@@ -19,6 +17,7 @@ namespace Domain.ApplicationUserAggregate
         public string Color { get; private set; } 
         public int? BlogId { get; private set; }
         public int? RoleIconId { get; private set; }
+        public DateTime? CreatedAt { get; private set; }
 
 
         #endregion
@@ -50,6 +49,7 @@ namespace Domain.ApplicationUserAggregate
             RoleIconId = userRoleInput.RoleIconId;
             Color = userRoleInput.Color;
             this.IsDeleted = false;
+            this.CreatedAt=DateTime.UtcNow;
             BlogId = userRoleInput.BlogId ?? throw new SpatiumException(ResponseMessages.BlogIdCannotBeNull);
             foreach (var permissionId in userRoleInput.UserPermissionId)
             {

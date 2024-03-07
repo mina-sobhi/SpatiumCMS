@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using Utilities.Enums;
 using Utilities.Helpers;
 using Utilities.Results;
 
@@ -127,6 +128,7 @@ namespace Infrastructure.Services.AuthinticationService
                     {
                         user.ClearOTP();
                         _logger.LogInformation("Email Confirmed forr user {user} at {time}", user, DateTime.UtcNow);
+                        user.ChangeActivation(UserStatusEnum.Active);
                         await userManager.UpdateAsync(user);
 
                         return new SpatiumResponse
@@ -259,7 +261,7 @@ namespace Infrastructure.Services.AuthinticationService
                         Success = false,
                     };
                 }
-                if (user.OTPGeneratedAt != null && DateTime.UtcNow < user.OTPGeneratedAt.Value.AddMinutes(30))
+                if (user.OTPGeneratedAt != null && DateTime.UtcNow < user.OTPGeneratedAt.Value.AddSeconds(30))
                 {
                     return new SpatiumResponse<string>()
                     {

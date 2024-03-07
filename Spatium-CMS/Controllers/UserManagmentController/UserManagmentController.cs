@@ -8,6 +8,7 @@ using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Controllers.UserManagmentController.Response;
@@ -75,7 +76,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                         var response = new SpatiumResponse()
                         {
                             Message=ResponseMessages.UserCreatedSuccessfully,
-                            Success=true
+                            Success=true 
                         };
                         return Ok(response);
                     }
@@ -84,7 +85,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 return BadRequest(ModelState);
             });
         }
-
         [HttpPut]
         [Route("UpdateUser")]
         [Authorize]
@@ -147,16 +147,16 @@ namespace Spatium_CMS.Controllers.UserManagmentController
         [Route("ChangeUserActivation/{userId}")]
         [Authorize]
         [PermissionFilter(PermissionsEnum.UpdateUser)]
-        public Task<IActionResult> ChangeUserActivation(string userId, bool activeStatus = true)
+        public Task<IActionResult> ChangeUserActivation(string userId,UserStatusEnum userStatus)
         {
             return TryCatchLogAsync(async () =>
             {
                 var parentUserId = GetUserId();
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
-                if (user.IsAccountActive == activeStatus)
+                if (user.UserStatusId == (int) userStatus || user.UserStatusId == 3 )
                     throw new SpatiumException(ResponseMessages.CannotChangeStatus);
-                user.ChangeActivation(activeStatus);
+                user.ChangeActivation(userStatus);
                 await unitOfWork.SaveChangesAsync();
                 var response = new SpatiumResponse()
                 {
@@ -189,9 +189,17 @@ namespace Spatium_CMS.Controllers.UserManagmentController
             return TryCatchLogAsync(async () =>
             {
                 var blogId = GetBlogId();
-                var users = await userManager.FindUsersInBlogIncludingRole(blogId, entityParams) ?? throw new SpatiumException("there are not users !!");
+
+                if ((entityParams.StartDate != null && entityParams.EndDate == null) || (entityParams.EndDate != null && entityParams.StartDate == null)) throw new SpatiumException("you sholud enter both of date start and end date");
+
+                if (entityParams.StartDate > entityParams.EndDate || entityParams.EndDate < entityParams.StartDate) throw new SpatiumException("the datetime invalid !!");
+
+                var users = await userManager.FindUsersInBlogIncludingRole(blogId, entityParams);
+                if (users.IsNullOrEmpty())
+                    throw new SpatiumException("there are not users !!");
                 var detailesResult = mapper.Map<List<ViewUsersResponse>>(users);
                 return Ok(detailesResult);
+
             });
         }
         [HttpGet]
@@ -226,6 +234,43 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     });
                 }
                 return Ok(response);
+            });
+        }
+
+        [HttpGet]
+        [Route("ResendInvitaion")]
+        [Authorize(Roles = "Super Admin")]
+        [PermissionFilter(PermissionsEnum.CreateUser)]
+        public Task<IActionResult> ResendInvitaion(string UserId)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+               
+                    var invatedUser = await userManager.FindByIdAsync(UserId);
+                    var suberAdminId = GetUserId();
+                    var blogId = GetBlogId();
+                    var user = await userManager.FindUserInBlogAsync(blogId, suberAdminId) ?? throw new SpatiumException("You Are Not In This Blog");
+                    if (invatedUser.ParentUserId != user.Id)
+                        throw new SpatiumException("You Are Not Create This User ");
+                    if (invatedUser.EmailConfirmed == true)
+                        throw new SpatiumException("This User Is Not Pending");
+
+                    var token = await userManager.GenerateEmailConfirmationTokenAsync(invatedUser);
+                    var encodedToken = WebUtility.UrlEncode(token);
+                    invatedUser.ChangeOTP(OTPGenerator.GenerateOTP());
+                    await unitOfWork.SaveChangesAsync();
+
+                    string MailBody = $"<h1> Your OTP is {invatedUser.OTP} </h1> <br/> <a style='padding:10px;background-color:blue;color:#fff ;text-decoration:none' href ='https://localhost:7109/api/Authentication/ConfirmEmail?email={invatedUser.Email}&token={encodedToken}'> Verification Email </a>";
+                    await sendMailService.SendMail(invatedUser.Email, "Spatium CMS Verification Email!", MailBody);
+
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.UserCreatedSuccessfully,
+                        Success = true
+                    };
+                    return Ok(response);
+               
+
             });
         }
     }

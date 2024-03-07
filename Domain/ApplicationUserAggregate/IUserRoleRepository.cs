@@ -1,4 +1,5 @@
 ﻿using Domain.ApplicationUserAggregate.Inputs;
+using Domain.Base;
 using Domain.LookupsAggregate;
 
 
@@ -10,7 +11,7 @@ namespace Domain.ApplicationUserAggregate
         public Task<UserRole> GetAssignRoleById(int blogId, string roleId);
         public Task<IReadOnlyList<ApplicationUser>> GetUsersByBlogIdAndRolePriority(int blogId, int priorityOfCurrent);
         public Task<List<UserRole>> SearchInRole(string CoulmnName, string Value);
-        public Task<IReadOnlyList<UserRole>> GetRolesAsync(ViewRolePrams prams, int blogId);
+        public Task<IReadOnlyList<UserRole>> GetRolesAsync(GetEntitiyParams entitiyParams, int blogId);
         public Task<List<int>> GetRolePermissionIds(string roleId);
         public Task<UserRole> GetRoleByIdForUpdate(string roleId);
         public Task<UserRole> GetRoleByIdAsync(string roleId, int blogId);

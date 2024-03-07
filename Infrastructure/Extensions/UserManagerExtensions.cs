@@ -32,10 +32,17 @@ namespace Infrastructure.Extensions
         public static async Task<List<ApplicationUser>> FindUsersInBlogIncludingRole(this UserManager<ApplicationUser> userManager, int blogId, GetEntitiyParams entityParams)
         {
             var query = userManager.Users.Include(x => x.Role).Where(x => x.BlogId == blogId).AsQueryable();
-
-            if (!string.IsNullOrEmpty(entityParams.FilterColumn) && !string.IsNullOrEmpty(entityParams.FilterValue))
+            if (!string.IsNullOrEmpty(entityParams.FilterColumn))
             {
-                query = query.ApplyFilter(entityParams.FilterColumn, entityParams.FilterValue);
+                if (!string.IsNullOrEmpty(entityParams.FilterValue) && entityParams.StartDate == null && entityParams.EndDate == null)
+                {
+                    query = query.ApplyFilter(entityParams.FilterColumn, entityParams.FilterValue);
+                }
+                if (entityParams.StartDate != null && entityParams.EndDate != null && entityParams.FilterColumn.ToLower() == "createdat")
+                {
+                    query = query.Where(p => p.CreatedAt >= entityParams.StartDate && p.CreatedAt == entityParams.EndDate || p.CreatedAt < entityParams.EndDate);
+                }
+
             }
 
             if (!string.IsNullOrEmpty(entityParams.SortColumn))

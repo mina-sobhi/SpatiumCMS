@@ -62,6 +62,8 @@ namespace Infrastructure.Database.Database
             base.OnConfiguring(optionsBuilder);
         }
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             #region Entities Relationship
@@ -78,7 +80,7 @@ namespace Infrastructure.Database.Database
             modelBuilder.Entity<Post>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<TableOfContent>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
-            modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
+            //modelBuilder.Entity<ApplicationUser>().HasQueryFilter(x => x.IsAccountActive);
             modelBuilder.Entity<UserRole>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<UserPermission>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<RolePermission>().HasQueryFilter(x => !x.IsDeleted);
@@ -89,6 +91,10 @@ namespace Infrastructure.Database.Database
             #region Idintity-Configration
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
+            #endregion
+
+            #region FunConfigration 
+            modelBuilder.HasDbFunction(typeof(SpatiumDbContent).GetMethod(nameof(FolderAndChild), new[] { typeof(int),typeof(int) }));
             #endregion
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -133,5 +139,8 @@ namespace Infrastructure.Database.Database
 
             return changes.ToString();
         }
+
+        public IQueryable<Folder> FolderAndChild(int FolderId,int BlogId )
+    => FromExpression(() => FolderAndChild(FolderId, BlogId));
     }
 }

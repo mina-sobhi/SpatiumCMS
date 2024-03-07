@@ -98,9 +98,21 @@ namespace Infrastructure.Database.Repository
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
 
-            if (!string.IsNullOrEmpty(fileParams.FilterColumn) && !string.IsNullOrEmpty(fileParams.FilterValue))
+            if (!string.IsNullOrEmpty(fileParams.FilterColumn))
             {
-                query = query.ApplyFilter(fileParams.FilterColumn, fileParams.FilterValue);
+                if (!string.IsNullOrEmpty(fileParams.FilterValue) && fileParams.StartDate == null && fileParams.EndDate == null)
+                {
+                    query = query.ApplyFilter(fileParams.FilterColumn, fileParams.FilterValue);
+                }
+                if (fileParams.StartDate != null && fileParams.EndDate != null && fileParams.FilterColumn.ToLower() == "creationdate")
+                {
+                    query = query.Where(p => p.CreationDate.Date >= fileParams.StartDate.Value.Date && p.CreationDate.Date <= fileParams.EndDate.Value.Date);
+                }
+                if (fileParams.StartDate != null && fileParams.EndDate != null && fileParams.FilterColumn.ToLower() == "lastupdate")
+                {
+                    query = query.Where(p => p.LastUpdate >= fileParams.StartDate && p.LastUpdate == fileParams.EndDate || p.LastUpdate < fileParams.EndDate);
+                }
+
             }
 
             if (!string.IsNullOrEmpty(fileParams.SortColumn))
@@ -126,10 +138,7 @@ namespace Infrastructure.Database.Repository
         }
         public async Task<Folder> GetFilesToExtract(int blogId, int? folderId)
         {
-            if (folderId == null)
-                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId);
-            else
-                return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id == folderId);
+            return await SpatiumDbContent.Folders.Include(f => f.Files).Include(f => f.Folders).FirstOrDefaultAsync(f => f.BlogId == blogId && f.Id == folderId);
         }
 
         public async Task AddStorage(Storage storage)
@@ -154,7 +163,10 @@ namespace Infrastructure.Database.Repository
 
         public async Task<IEnumerable<StaticFile>> getFileByFolderId(int? FolderId)
         {
-            return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
+            if (FolderId == null)
+                return await SpatiumDbContent.Files.Where(f=>f.FolderId == null).ToListAsync();  
+            else
+                return await SpatiumDbContent.Files.Where(f => f.FolderId == FolderId).ToListAsync();
         }
 
         #endregion

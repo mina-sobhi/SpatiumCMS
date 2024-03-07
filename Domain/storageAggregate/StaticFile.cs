@@ -16,7 +16,7 @@ namespace Domain.StorageAggregate
         public string Caption { get; private set; }
         public string FileSize { get; private set; }
         public string Alt { get; private set; }
-        public string  Dimension { get; private set; }
+        public string Dimension { get; private set; }
         public string CreatedById { get; private set; }
         public int? FolderId { get; private set; }
         public int BlogId { get; private set; }
@@ -33,11 +33,11 @@ namespace Domain.StorageAggregate
         #region Ctor
         public StaticFile()
         {
-            
+
         }
         public StaticFile(FileInput input)
         {
-            validations(input.Name, input.Caption, input.Alt);           
+            validations(input.Name, input.Caption, input.Alt);
             this.CreationDate = DateTime.UtcNow;
             this.FolderId = input.FolderId;
             this.CreatedById = input.CreatedById;
@@ -50,19 +50,19 @@ namespace Domain.StorageAggregate
             this.Dimension = input.Dimension;
             this.UrlPath = input.UrlPath;
         }
-      
+
         #endregion
 
         #region Method
         public void Update(UpdateFileInput input)
         {
             validations(input.Name, input.Caption, input.Alt);
-            this.Name = input.Name;   
-            this.Caption = input.Caption;          
+            this.Name = input.Name;
+            this.Caption = input.Caption;
             this.Alt = input.Alt;
             this.Extention = input.Extention;
             this.Dimension = input.Dimension;
-            this.LastUpdate= DateTime.UtcNow;
+            this.LastUpdate = DateTime.UtcNow;
             this.UrlPath = input.Url;
         }
         public void Delete()
@@ -72,12 +72,13 @@ namespace Domain.StorageAggregate
 
         private void validations(string Name, string Caption, string Alt)
         {
-
+            if (Name == null || Caption == null || Alt == null)
+                throw new SpatiumException("Invalid data");
             if (Name.Length < 2 || Name.Length > 50)
             {
                 throw new SpatiumException("File Name Must be in the Range of 2 to 50 characters.");
             }
-             if (Caption.Length < 20 || Caption.Length > 200)
+            if (Caption.Length < 20 || Caption.Length > 200)
             {
                 throw new SpatiumException("File Caption Must be in the Range of 20 to 200 characters.");
             }

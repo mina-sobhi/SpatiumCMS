@@ -64,6 +64,48 @@ namespace Infrastructure.Database.Repository
             SpatiumDbContent.Comments.Update(comment);
         }
 
+        public async Task<List<Post>> GetTotalComments(int blogId)
+        {
+            var topPosts = new List<Post>();
+
+            var blog = await SpatiumDbContent.Blogs
+                .Include(b => b.Posts)
+                    .ThenInclude(p => p.Comments)
+                .FirstOrDefaultAsync(b => b.Id == blogId);
+
+            if (blog == null)
+            {
+                return topPosts;
+            }
+            foreach (var post in blog.Posts)
+            {
+                int commentsCount = CalculateCommentsCount(post);
+            }
+            topPosts = blog.Posts.OrderByDescending(p => p.Comments.Count).Take(5).ToList();
+
+            return topPosts;
+        }
+        private int CalculateCommentsCount(Post post)
+        {
+            int commentsCount = 0;
+            foreach (var comment in post.Comments)
+            {
+                CountComments(comment, out int commentCount);
+                commentsCount += commentCount;
+            }
+
+            return commentsCount;
+        }
+        private void CountComments(Comment comment, out int commentCount)
+        {
+            commentCount = 1;
+            foreach (var reply in comment.Comments)
+            {
+                CountComments(reply, out int replyCount);
+                commentCount += replyCount;
+            }
+        }
+
         #endregion
 
         #region Post
@@ -83,9 +125,21 @@ namespace Infrastructure.Database.Repository
         {
             var query = SpatiumDbContent.Posts.Where(x => x.BlogId == blogId).AsQueryable();
 
-            if (!string.IsNullOrEmpty(postParams.FilterColumn) && !string.IsNullOrEmpty(postParams.FilterValue))
+            if (!string.IsNullOrEmpty(postParams.FilterColumn))
             {
-                query = query.ApplyFilter(postParams.FilterColumn, postParams.FilterValue);
+                if (!string.IsNullOrEmpty(postParams.FilterValue) && postParams.StartDate == null && postParams.EndDate == null)
+                {
+                    query = query.ApplyFilter(postParams.FilterColumn, postParams.FilterValue);
+                }
+                if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "creationdate")
+                {
+                    query = query.Where(p => p.CreationDate >= postParams.StartDate && p.CreationDate == postParams.EndDate || p.CreationDate < postParams.EndDate);
+                }
+                if (postParams.StartDate != null && postParams.EndDate != null && postParams.FilterColumn.ToLower() == "lastupdate")
+                {
+                    query = query.Where(p => p.LastUpdate >= postParams.StartDate && p.LastUpdate == postParams.EndDate || p.LastUpdate < postParams.EndDate);
+                }
+
             }
 
             if (!string.IsNullOrEmpty(postParams.SortColumn))
