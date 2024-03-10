@@ -94,7 +94,7 @@ namespace Domain.ApplicationUserAggregate
         }
         public void Update(ApplicationUserUpdateInputSuperAdmin  input)
         {
-            this.FullName = input.UserName;
+            this.FullName = input.FullName;
             this.RoleId = input.RoleId;
             PhoneNumber = input.Phone;
      
