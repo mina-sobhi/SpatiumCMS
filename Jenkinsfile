@@ -28,7 +28,8 @@ pipeline {
         }
         stage('Publishing') {
             steps {
-                sh 'dotnet publish -c Release -o ./publish'  
+                sh 'dotnet publish -c Release -o ./publish'
+                sh'pwd'
                 echo 'publishing ...'
             }
         }
