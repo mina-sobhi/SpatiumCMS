@@ -2,6 +2,7 @@
 using Domain.ApplicationUserAggregate;
 using Domain.ApplicationUserAggregate.Inputs;
 using Domain.Base;
+using Domain.BlogsAggregate;
 using Domain.Interfaces;
 using Domian.Interfaces;
 using Infrastructure.Extensions;
@@ -9,10 +10,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Spatium_CMS.AttachmentService;
 using Spatium_CMS.Controllers.AuthenticationController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Request;
 using Spatium_CMS.Controllers.UserManagmentController.Response;
 using Spatium_CMS.Filters;
+using System;
 using System.Net;
 using Utilities.Enums;
 using Utilities.Exceptions;
@@ -27,13 +30,19 @@ namespace Spatium_CMS.Controllers.UserManagmentController
     public class UserManagmentController : CmsControllerBase
     {
         private readonly ISendMailService sendMailService;
+        private readonly IAttachmentService attachmentService;
+        private readonly IConfiguration configration;
+        private readonly IWebHostEnvironment enviroenment;
         private readonly IConfiguration configuration;
 
         public UserManagmentController(IUnitOfWork unitOfWork, IMapper maper,
-            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger)
+            UserManager<ApplicationUser> userManager, ISendMailService sendMailService, ILogger<UserManagmentController> logger, IAttachmentService attachmentService, IConfiguration configration, IWebHostEnvironment enviroenment)
             : base(unitOfWork, maper, logger, userManager)
         {
             this.sendMailService = sendMailService;
+            this.attachmentService = attachmentService;
+            this.configration = configration;
+            this.enviroenment = enviroenment;
         }
 
         [HttpPost]
@@ -49,11 +58,23 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     if (createUserRequest.RoleId == MainRolesIdsEnum.SuperAdmin.GetDescription())
                         throw new SpatiumException(ResponseMessages.InvalidRole);
                     var userId = GetUserId();
+                    var blogId=GetBlogId();
+
                     var loginUser = await userManager.FindByIdAsync(userId)??throw new SpatiumException(ResponseMessages.UserNotFound);
+
+                    if (createUserRequest.ImageProfile != null)
+                    {
+                        if (createUserRequest.ImageProfile.ContentType.ToLower() != "image/jpg" &&
+                        createUserRequest.ImageProfile.ContentType.ToLower() != "image/x-png" &&
+                        createUserRequest.ImageProfile.ContentType.ToLower() != "image/png")
+                            throw new SpatiumException("The Image You Are Selected Or Uploaded Is Not Valid!!");
+                    }
+                   
+                    string filePath = createUserRequest.ImageProfile != null ? await attachmentService.SaveAttachment($"{blogId}/ImagesProfile/", createUserRequest.ImageProfile, enviroenment.WebRootPath, userId):null; 
 
                     var applicationUserInput = new ApplicationUserInput();
                     applicationUserInput.FullName = createUserRequest.FullName;
-                    applicationUserInput.ProfileImagePath = createUserRequest.ProfileImagePath;
+                    applicationUserInput.ProfileImagePath = filePath;
                     applicationUserInput.Email  =   createUserRequest.Email;
                     applicationUserInput.RoleId = createUserRequest.RoleId;
                     applicationUserInput.JobTitle = "UnAssigned";
@@ -95,8 +116,21 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
+                    var blogId=GetBlogId();
                     var user = await userManager.FindByIdAsync(userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                    if (updateUserRequest.ImageProfile != null)
+                    {
+                        if (updateUserRequest.ImageProfile.ContentType.ToLower() != "image/jpg" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/jpeg" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/x-png" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/png")
+                            throw new SpatiumException("The Image You Are Selected Or Uploaded Is Not Valid!!");
+                    }
+
+                    string filePath = updateUserRequest.ImageProfile != null ? await attachmentService.SaveAttachment($"{blogId}/ImagesProfile/", updateUserRequest.ImageProfile, enviroenment.WebRootPath, userId) : user.ProfileImagePath;
+
                     var userUpdateInput = mapper.Map<ApplicationUserUpdateInput>(updateUserRequest);
+                    userUpdateInput.ProfileImagePath= filePath;
                     user.Update(userUpdateInput);
                     await unitOfWork.SaveChangesAsync();
                     var response = new SpatiumResponse()

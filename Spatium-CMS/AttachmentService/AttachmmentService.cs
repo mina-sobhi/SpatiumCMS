@@ -31,6 +31,12 @@ namespace Spatium_CMS.AttachmentService
             }
             string fileName = $"{imageName}{Path.GetExtension(formfile.FileName)}";
             string ImagePath = Path.Combine(filePath, fileName);
+
+            if (File.Exists(ImagePath))
+            {
+                File.Delete(ImagePath);
+            }
+
             using (FileStream stream = File.Create(ImagePath))
             {
                 await formfile.CopyToAsync(stream);
