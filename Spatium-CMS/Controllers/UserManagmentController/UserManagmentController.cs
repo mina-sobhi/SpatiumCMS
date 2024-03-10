@@ -273,5 +273,37 @@ namespace Spatium_CMS.Controllers.UserManagmentController
 
             });
         }
+        // not Completed 
+        [HttpPut]
+        [Route("UpdateUserAsSuperAdmin")]
+        [Authorize(Roles = "Super Admin")]
+        public Task<IActionResult> UpdateUserAsSuperAdmin(UpdateUserAsSuperAdminRequest updateUserRequest)
+        {
+            return TryCatchLogAsync(async () =>
+            {
+                if (ModelState.IsValid)
+                {
+                    var userId = GetUserId();
+                    var Admin = await userManager.FindByIdAsync(userId) ?? throw new SpatiumException("Invalid Super Admin Id");
+                    var user = await userManager.FindByIdAsync(updateUserRequest.UserId) ?? throw new SpatiumException("Invalid User Id");
+                    
+                    if(Admin.Id != user.ParentUserId)
+                        throw new SpatiumException("You Can Not Update This User ");
+                    if (updateUserRequest.RoleId == MainRolesIdsEnum.SuperAdmin.GetDescription())
+                        throw new SpatiumException(" Blog Contain Onley Super Admin");
+
+                    var userUpdateInput = mapper.Map<ApplicationUserUpdateInputSuperAdmin>(updateUserRequest);
+                    user.Update(userUpdateInput);
+                    await unitOfWork.SaveChangesAsync();
+                    var response = new SpatiumResponse()
+                    {
+                        Message = ResponseMessages.UserUpdatedSuccessfully,
+                        Success = true
+                    };
+                    return Ok(response);
+                }
+                return BadRequest(ModelState);
+            });
+        }
     }
 }
