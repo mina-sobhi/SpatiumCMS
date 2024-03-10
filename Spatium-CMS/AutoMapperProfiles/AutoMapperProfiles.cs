@@ -55,7 +55,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 #region User Management
                 CreateMap<ApplicationUserUpdateInput, UpdateUserRequest>().ReverseMap();
               
-
+                CreateMap<ApplicationUserUpdateInputSuperAdmin, UpdateUserAsSuperAdminRequest>().ReverseMap();
 
                 #endregion
 

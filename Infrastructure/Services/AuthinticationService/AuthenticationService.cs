@@ -11,6 +11,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Utilities.Enums;
+using Utilities.Extensions;
 using Utilities.Helpers;
 using Utilities.Results;
 
@@ -130,6 +131,9 @@ namespace Infrastructure.Services.AuthinticationService
                         _logger.LogInformation("Email Confirmed forr user {user} at {time}", user, DateTime.UtcNow);
                         user.ChangeActivation(UserStatusEnum.Active);
                         await userManager.UpdateAsync(user);
+                        // welecome message 
+                        if(user.RoleId == MainRolesIdsEnum.SuperAdmin.GetDescription())
+                            await mailService.SendMail(user.Email, "Spatium CMS Welcom!", $"Welcome to the Spatium CMS ");
 
                         return new SpatiumResponse
                         {
@@ -193,14 +197,17 @@ namespace Infrastructure.Services.AuthinticationService
                         },
                     };
                 }
-                if (user.UserStatusId == (int)UserStatusEnum.DeActive)
+
+                if(user.UserStatusId == (int)UserStatusEnum.DeActive)
                 {
                     return new SpatiumResponse<LoggedInUser>()
                     {
                         Success = false,
                         Message = "You Are Not Active Yet!",
+ 
                     };
                 }
+
                 var tokenParams = await GenerateToken(user);
                 var loggedInUser = new LoggedInUser()
                 {

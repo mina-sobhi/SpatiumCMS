@@ -92,6 +92,13 @@ namespace Domain.ApplicationUserAggregate
             PhoneNumber=input.PhoneNumber;
             ProfileImagePath=input.ProfileImagePath;
         }
+        public void Update(ApplicationUserUpdateInputSuperAdmin  input)
+        {
+            this.FullName = input.UserName;
+            this.RoleId = input.RoleId;
+            PhoneNumber = input.Phone;
+     
+        }
 
         public void ChangeActivation(UserStatusEnum userStatus)
         {
