@@ -19,7 +19,7 @@ namespace Domain.ApplicationUserAggregate
             UserName = input.Email.Trim();
             RoleId = input.RoleId;
             JobTitle = input.JobTitle.Trim();
-            ProfileImagePath = input.ProfileImagePath.Trim();
+            ProfileImagePath = input.ProfileImagePath;
             UserStatusId = 3;
             if (!string.IsNullOrEmpty(input.ParentUserId))
             {

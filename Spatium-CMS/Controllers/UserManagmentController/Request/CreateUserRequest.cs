@@ -13,9 +13,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController.Request
         [Required(ErrorMessage = "Role Id is Required ")]
         public string RoleId { get; set; }
 
-        [Required(ErrorMessage = " Iamge is Required ")]
-        public string ProfileImagePath { get; set; }
-
         [Required(ErrorMessage = "Email is Required ")]
         public string Email { get; set; }
 
@@ -27,5 +24,6 @@ namespace Spatium_CMS.Controllers.UserManagmentController.Request
         [Compare(nameof(Password), ErrorMessage = "Password doesn't Match")]
         [Required(ErrorMessage = "ConfirmPassword is Required ")]
         public string ConfirmPassword { get; set; }
+        public IFormFile? ImageProfile { get; set; }
     }
 }

@@ -21,6 +21,7 @@ using Spatium_CMS.Extensions;
 using Domain.StorageAggregate;
 using Spatium_CMS.Controllers.StorageController.Response;
 using Spatium_CMS.Controllers.UserManagmentController.Response;
+using static System.Net.WebRequestMethods;
 
 namespace Spatium_CMS.AutoMapperProfiles
 {
@@ -89,7 +90,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 //GetUserDetailes
                 CreateMap<ApplicationUser, ViewUserProfileResult>()
                     .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
-                    .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom(src => src.ProfileImagePath))
+                    .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom<UserProfileDetailesResolver>())
                     .ForMember(dest => dest.Email, otp => otp.MapFrom(src => src.Email))
                     .ForMember(dest => dest.PhoneNumber, otp => otp.MapFrom(src => src.PhoneNumber))
                     .ForMember(dest => dest.RoleName, otp => otp.MapFrom(r => r.Role.Name));
@@ -102,7 +103,7 @@ namespace Spatium_CMS.AutoMapperProfiles
                 CreateMap<ApplicationUser, ViewUsersResponse>()
                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
-                   .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom(src => src.ProfileImagePath))
+                   .ForMember(dest => dest.ProfileImagePath, otp => otp.MapFrom<UserProfileResolver>())
                    .ForMember(dest => dest.UserStatus, otp => otp.MapFrom(src => src.UserStatus.Name))
                    .ForMember(dest => dest.Email, otp => otp.MapFrom(src => src.Email))
                    .ForMember(dest => dest.RoleName, otp => otp.MapFrom(r => r.Role.Name))
