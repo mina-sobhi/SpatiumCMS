@@ -193,7 +193,14 @@ namespace Infrastructure.Services.AuthinticationService
                         },
                     };
                 }
-
+                if (user.UserStatusId == (int)UserStatusEnum.DeActive)
+                {
+                    return new SpatiumResponse<LoggedInUser>()
+                    {
+                        Success = false,
+                        Message = "You Are Not Active Yet!",
+                    };
+                }
                 var tokenParams = await GenerateToken(user);
                 var loggedInUser = new LoggedInUser()
                 {

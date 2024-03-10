@@ -98,6 +98,7 @@ namespace Infrastructure.Database.Repository
         {
             var query = SpatiumDbContent.Files.Where(f => f.BlogId == blogId).AsQueryable();
 
+            
             if (!string.IsNullOrEmpty(fileParams.FilterColumn))
             {
                 if (!string.IsNullOrEmpty(fileParams.FilterValue) && fileParams.StartDate == null && fileParams.EndDate == null)

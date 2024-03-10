@@ -154,7 +154,7 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 var curentUserId = GetUserId();
                 var blogId = GetBlogId();
                 var user = await userManager.FindUserByIdInBlogIgnoreFilterAsync(blogId, userId) ?? throw new SpatiumException(ResponseMessages.UserNotFound);
-                if (user.UserStatusId == (int) userStatus || user.UserStatusId == 3 || userId== curentUserId)
+                if (user.UserStatusId == (int) userStatus || user.UserStatusId == (int)UserStatusEnum.Pending || userId== curentUserId)
                     throw new SpatiumException("can not cahange user status !!");
                 if ((int) userStatus == 3)
                     throw new SpatiumException("can not cahange user status to be pending !!");
