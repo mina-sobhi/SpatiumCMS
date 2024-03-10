@@ -65,13 +65,12 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                     if (createUserRequest.ImageProfile != null)
                     {
                         if (createUserRequest.ImageProfile.ContentType.ToLower() != "image/jpg" &&
-                        createUserRequest.ImageProfile.ContentType.ToLower() != "image/jpeg" &&
                         createUserRequest.ImageProfile.ContentType.ToLower() != "image/x-png" &&
                         createUserRequest.ImageProfile.ContentType.ToLower() != "image/png")
-                            throw new SpatiumException("The Image You Are Selected / Uploaded Is Not Valid!!");
+                            throw new SpatiumException("The Image You Are Selected Or Uploaded Is Not Valid!!");
                     }
                    
-                    string filePath = createUserRequest.ImageProfile != null ? await attachmentService.SaveAttachment($"{blogId}/ImagesProfile/", createUserRequest.ImageProfile, enviroenment.WebRootPath, createUserRequest.FullName):null; 
+                    string filePath = createUserRequest.ImageProfile != null ? await attachmentService.SaveAttachment($"{blogId}/ImagesProfile/", createUserRequest.ImageProfile, enviroenment.WebRootPath, userId):null; 
 
                     var applicationUserInput = new ApplicationUserInput();
                     applicationUserInput.FullName = createUserRequest.FullName;
@@ -117,8 +116,21 @@ namespace Spatium_CMS.Controllers.UserManagmentController
                 if (ModelState.IsValid)
                 {
                     var userId = GetUserId();
+                    var blogId=GetBlogId();
                     var user = await userManager.FindByIdAsync(userId)?? throw new SpatiumException(ResponseMessages.UserNotFound);
+                    if (updateUserRequest.ImageProfile != null)
+                    {
+                        if (updateUserRequest.ImageProfile.ContentType.ToLower() != "image/jpg" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/jpeg" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/x-png" &&
+                        updateUserRequest.ImageProfile.ContentType.ToLower() != "image/png")
+                            throw new SpatiumException("The Image You Are Selected Or Uploaded Is Not Valid!!");
+                    }
+
+                    string filePath = updateUserRequest.ImageProfile != null ? await attachmentService.SaveAttachment($"{blogId}/ImagesProfile/", updateUserRequest.ImageProfile, enviroenment.WebRootPath, userId) : user.ProfileImagePath;
+
                     var userUpdateInput = mapper.Map<ApplicationUserUpdateInput>(updateUserRequest);
+                    userUpdateInput.ProfileImagePath= filePath;
                     user.Update(userUpdateInput);
                     await unitOfWork.SaveChangesAsync();
                     var response = new SpatiumResponse()
