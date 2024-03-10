@@ -35,7 +35,7 @@ pipeline {
         }
         stage("Build Docker Image"){
             steps{
-                sh 'docker build -t abdelrahman9655/cms_backend:$BUILD_NUMBER  Spatium-CMS/Dockerfile  . '
+                sh 'docker build -t abdelrahman9655/cms_backend:$BUILD_NUMBER  -f Spatium-CMS/Dockerfile  . '
             }
         }
         stage('Login To Dockerhub'){
