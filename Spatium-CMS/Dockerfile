@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 # Copy the .NET project file and restore dependencies
 COPY *.csproj .
-RUN dotnet restore
+# RUN dotnet restore
 # Copy the remaining source code and build the application
 COPY . .
 #RUN dotnet publish -c Release -o out
